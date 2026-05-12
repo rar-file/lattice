@@ -94,9 +94,7 @@ async def test_capture_rejects_empty(settings: Settings, fixture_vault: Path) ->
             assert r.status_code == 400
 
 
-async def test_suggest_finds_anchor_in_paragraph(
-    settings: Settings, fixture_vault: Path
-) -> None:
+async def test_suggest_finds_anchor_in_paragraph(settings: Settings, fixture_vault: Path) -> None:
     """The anchor field should match a substring that maps to an existing note's title."""
 
     app = make_app(settings)
