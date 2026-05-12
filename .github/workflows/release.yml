@@ -60,6 +60,18 @@ jobs:
       - name: Build PyInstaller sidecar
         run: uv run python apps/desktop/src-tauri/build_sidecar.py ${{ matrix.target }}
 
+      - name: Ad-hoc sign sidecar (macOS)
+        if: runner.os == 'macOS'
+        # Tahoe rejects any unsigned binary inside the .app as "damaged".
+        # Ad-hoc signing (`-` as identity) is enough for Gatekeeper to load
+        # it once the user approves the unidentified-developer prompt; no
+        # Apple Developer cert needed. Sign the sidecar here so Tauri's
+        # bundle-time codesign picks up an already-signed nested binary.
+        run: |
+          BIN="apps/desktop/src-tauri/binaries/lattice-api-${{ matrix.target }}"
+          codesign --force --options runtime --sign - "$BIN"
+          codesign --verify --verbose=2 "$BIN"
+
       - name: Install Node
         uses: actions/setup-node@v4
         with:
@@ -80,6 +92,14 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS only: `-` means ad-hoc identity. Tauri's bundler invokes
+          # `codesign --deep --sign -` which signs the .app and re-signs
+          # nested binaries with the same identity, satisfying Tahoe's
+          # signature-load requirement. The user still sees the
+          # "unidentified developer" warning once (right-click → Open, or
+          # System Settings → Privacy & Security → Open Anyway) — we'll
+          # swap in a real Developer ID + notarization later.
+          APPLE_SIGNING_IDENTITY: ${{ runner.os == 'macOS' && '-' || '' }}
         with:
           # `__VERSION__` is replaced by the tag (e.g. v0.1.0) by tauri-action.
           tagName: ${{ github.ref_name }}
