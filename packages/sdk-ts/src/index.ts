@@ -150,6 +150,13 @@ export class LatticeClient {
     return this.req(`/notes/${encodeNotePath(path)}`, { method: "DELETE" });
   }
 
+  renameNote(oldPath: string, newPath: string): Promise<NoteFull> {
+    return this.req<NoteFull>(`/notes-rename/${encodeNotePath(oldPath)}`, {
+      method: "POST",
+      body: JSON.stringify({ new_path: newPath }),
+    });
+  }
+
   search(q: string, opts: { limit?: number; mode?: SearchMode } = {}): Promise<SearchHit[]> {
     const params = new URLSearchParams({ q });
     if (opts.limit) params.set("limit", String(opts.limit));

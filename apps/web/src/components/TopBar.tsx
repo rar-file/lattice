@@ -4,21 +4,14 @@ import type { VaultInfo } from "@lattice/sdk";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
-import {
-  CommandIcon,
-  FolderIcon,
-  LatticeMark,
-  MenuIcon,
-  PlusIcon,
-  SettingsIcon,
-  SparkleIcon,
-} from "./icons";
+import { FolderIcon, LatticeMark, MenuIcon, SearchIcon, SparkleIcon } from "./icons";
 
 interface Props {
   vault: VaultInfo;
   onCapture(): void;
   onClose(): void;
   onFocusSearch(): void;
+  onOpenPalette?(): void;
   onToggleSidebar?: () => void;
 }
 
@@ -27,7 +20,14 @@ interface Props {
  * After a vault is open the path is plumbing detail — we surface the vault
  * NAME prominently and tuck details into a dropdown menu.
  */
-export function TopBar({ vault, onCapture, onClose, onFocusSearch, onToggleSidebar }: Props) {
+export function TopBar({
+  vault,
+  onCapture,
+  onClose,
+  onFocusSearch,
+  onOpenPalette,
+  onToggleSidebar,
+}: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -116,14 +116,28 @@ export function TopBar({ vault, onCapture, onClose, onFocusSearch, onToggleSideb
         )}
       </div>
 
+      {onOpenPalette && (
+        <button
+          type="button"
+          onClick={onOpenPalette}
+          className="btn btn-secondary btn-sm ml-auto max-w-[280px] flex-1 justify-start text-fg-muted"
+          title="Command palette (⌘P)"
+        >
+          <SearchIcon className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden md:inline truncate">Jump to a note or run a command…</span>
+          <span className="hidden md:inline kbd ml-auto shrink-0">⌘P</span>
+        </button>
+      )}
+
       <button
         type="button"
         onClick={onFocusSearch}
-        className="btn btn-secondary btn-sm ml-auto"
+        className={`btn btn-ghost btn-sm ${onOpenPalette ? "" : "ml-auto"}`}
         title="Search (⌘K)"
+        aria-label="Search vault"
       >
-        <span className="hidden md:inline text-fg-muted">Search…</span>
-        <span className="kbd ml-1">⌘K</span>
+        <SearchIcon className="h-4 w-4" />
+        <span className="hidden sm:inline kbd">⌘K</span>
       </button>
 
       <button

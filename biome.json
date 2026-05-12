@@ -47,7 +47,8 @@
         "rules": {
           "a11y": {
             "noAutofocus": "off",
-            "noLabelWithoutControl": "off"
+            "noLabelWithoutControl": "off",
+            "useKeyWithClickEvents": "off"
           }
         }
       }

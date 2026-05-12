@@ -1,0 +1,88 @@
+"use client";
+
+import { XIcon } from "./icons";
+
+interface Props {
+  open: boolean;
+  onClose(): void;
+}
+
+const SHORTCUTS: { section: string; rows: { keys: string[]; label: string }[] }[] = [
+  {
+    section: "Navigation",
+    rows: [
+      { keys: ["⌘", "P"], label: "Command palette — jump to any note or action" },
+      { keys: ["⌘", "K"], label: "Focus search panel" },
+      { keys: ["?"], label: "Show this shortcut help" },
+    ],
+  },
+  {
+    section: "Writing",
+    rows: [
+      { keys: ["⌘", "S"], label: "Save the current note" },
+      { keys: ["⇧", "⌘", "C"], label: "Capture — drop a thought into Inbox" },
+      { keys: ["⌘", "N"], label: "New note in the current vault" },
+    ],
+  },
+  {
+    section: "Vault",
+    rows: [
+      { keys: ["⌘", "/", "⌘", ","], label: "Open settings (tokens, etc.)" },
+      { keys: ["esc"], label: "Close any modal or panel" },
+    ],
+  },
+];
+
+export function KeyboardHelp({ open, onClose }: Props) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
+      onClick={onClose}
+      role="presentation"
+    >
+      <dialog
+        open
+        className="card-elevated w-full max-w-md m-0 p-0 animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
+          <div className="text-[13.5px] font-semibold tracking-tight">Keyboard shortcuts</div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-ghost btn-xs"
+            aria-label="Close"
+          >
+            <XIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
+          {SHORTCUTS.map((sec) => (
+            <section key={sec.section}>
+              <div className="section-label mb-2">{sec.section}</div>
+              <ul className="space-y-1.5">
+                {sec.rows.map((r) => (
+                  <li key={r.label} className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 min-w-[88px]">
+                      {r.keys.map((k, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: shortcut keys aren't reordered
+                        <kbd key={i} className="kbd">
+                          {k}
+                        </kbd>
+                      ))}
+                    </div>
+                    <span className="text-[13px] text-fg-muted">{r.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+        <div className="px-5 py-2.5 border-t border-border-subtle text-[11.5px] text-fg-muted">
+          Press <kbd className="kbd">?</kbd> any time to show this list.
+        </div>
+      </dialog>
+    </div>
+  );
+}

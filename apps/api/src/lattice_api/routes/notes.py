@@ -27,6 +27,10 @@ class WriteNoteRequest(BaseModel):
     body: str
 
 
+class RenameNoteRequest(BaseModel):
+    new_path: str
+
+
 def _require_session(request: Request):
     session = getattr(request.app.state, "vault_session", None)
     if session is None:
@@ -108,3 +112,64 @@ async def delete_note_route(rel_path: str, request: Request) -> dict:
         deleted_disk = True
     deleted_db = await session.indexer.delete_file(abs_path)
     return {"deleted_disk": deleted_disk, "deleted_db": deleted_db}
+
+
+# Rename has its own route off /notes-rename/{old_path:path} rather than
+# living under /notes/{path:path} so it doesn't collide with the catch-all
+# GET/PUT/DELETE handlers above.
+rename_router = APIRouter(prefix="/notes-rename", tags=["notes"])
+
+
+@rename_router.post("/{rel_path:path}", response_model=NoteFull)
+async def rename_note_route(rel_path: str, req: RenameNoteRequest, request: Request) -> NoteFull:
+    """Rename / move a note inside the vault.
+
+    Reads the existing body, writes it at the new path, deletes the old file,
+    and reindexes. Errors if the destination already exists — we don't silently
+    overwrite a different note.
+    """
+
+    session = _require_session(request)
+    src = _safe_resolve(session, rel_path)
+    if not src.exists() or not src.is_file():
+        raise HTTPException(status_code=404, detail="source note not found")
+
+    new_rel = req.new_path.strip().lstrip("/")
+    if not new_rel:
+        raise HTTPException(status_code=400, detail="new_path is required")
+    if not new_rel.lower().endswith(".md"):
+        new_rel = f"{new_rel}.md"
+    dst = _safe_resolve(session, new_rel)
+    if dst == src:
+        # no-op rename — just return the current note
+        note = await request.app.state.storage.get_note(session.vault.id, rel_path)
+        if note is None:  # pragma: no cover
+            raise HTTPException(status_code=500, detail="note disappeared")
+        return NoteFull(
+            path=note.path,
+            title=note.title,
+            frontmatter=note.frontmatter,
+            body=note.body,
+            size=note.size,
+            content_hash=note.content_hash,
+        )
+    if dst.exists():
+        raise HTTPException(status_code=409, detail=f"destination {new_rel} already exists")
+
+    body = src.read_text(encoding="utf-8")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(body, encoding="utf-8")
+    src.unlink()
+    await session.indexer.delete_file(src)
+    await session.indexer.index_file(dst)
+    note = await request.app.state.storage.get_note(session.vault.id, new_rel)
+    if note is None:  # pragma: no cover
+        raise HTTPException(status_code=500, detail="note disappeared after rename")
+    return NoteFull(
+        path=note.path,
+        title=note.title,
+        frontmatter=note.frontmatter,
+        body=note.body,
+        size=note.size,
+        content_hash=note.content_hash,
+    )
