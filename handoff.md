@@ -39,43 +39,17 @@ M0 baseline reminder: monorepo bootstrapped, FastAPI in two modes, full Postgres
 | M2 | Rich token mgmt UI | Plain table is enough |
 | M3 | Voice capture (whisper.cpp) | Feature creep — defer indefinitely |
 
-## M1 — Local everything (≈2 weeks)
+## M1 — Local everything (✅ shipped 2026-05-12)
 
-**Ship the wedge: point Tauri at an Obsidian vault, get semantic search + chat + MCP for Claude Code. All local, no auth, no cloud.**
+**The wedge: Tauri at an Obsidian vault, semantic search + chat + MCP for Claude Code. All local, no auth, no cloud.**
 
-### Scope
-- Vault open: folder picker → walk `*.md` → parse frontmatter → chunk → embed → insert into SQLite + `sqlite-vec` virtual table.
-- Watcher (`watchdog`) reindexes on save (debounce 1s).
-- Hybrid search: vector (sqlite-vec) + FTS5 lexical, merged by reciprocal-rank-fusion.
-- `/chat` endpoint: retrieval (top-k chunks) → Claude completion → response with inline `[1]…[n]` citations.
-- Desktop: Tauri spawns the API as a sidecar (PyInstaller-packed). Vault picker via `tauri-plugin-dialog`. UI: file list left, **plain `<textarea>` editor** middle, search/chat panel right. Save flushes to disk.
-- CLI: `lattice open <path>`, `lattice search "..."`, `lattice chat "..."`, `lattice mcp serve`.
-- **Local stdio MCP server** with tools: `search_notes(query, limit?)`, `read_note(path)`, `list_notes(prefix?)`. This is the moat — it's what makes Claude Code/Cursor read your vault.
+What landed (see "Where we are" above for the file-level summary). Verification criteria below were all met during build-out:
 
-### Critical files to create
-
-| File | Purpose |
-|---|---|
-| `apps/api/src/lattice_api/indexer.py` | Markdown → chunks → embeddings |
-| `apps/api/src/lattice_api/watcher.py` | watchdog wrapper, debounce |
-| `apps/api/src/lattice_api/storage/sqlite.py` | Expand: notes, chunks, sqlite-vec, FTS5 |
-| `apps/api/src/lattice_api/providers/anthropic.py` | Claude impl + prompt caching for vault context |
-| `apps/api/src/lattice_api/providers/embed/fastembed_provider.py` | Local default |
-| `apps/api/src/lattice_api/routes/{vault,search,chat}.py` | HTTP routes |
-| `apps/api/src/lattice_api/mcp_server.py` | stdio MCP entrypoint |
-| `apps/cli/src/lattice_cli/commands/{open,search,chat,mcp}.py` | CLI subcommands |
-| `apps/desktop/src-tauri/src/lib.rs` | Sidecar spawn + lifecycle |
-| `apps/desktop/src-tauri/binaries/lattice-api-*` | PyInstaller-packed sidecar binary |
-| `apps/web/src/components/editor/SimpleEditor.tsx` | textarea-based editor (also used by desktop) |
-| `infra/migrations/0002_sqlite_local.sql` | sqlite-vec + FTS5 setup for local mode |
-
-### Verification
-
-- Drop an existing Obsidian vault into a folder; `lattice open ~/MyVault` indexes a 1k-note vault within 30s.
-- Edit a note in desktop, see it reindex within 2s (watchdog).
-- Semantic query returns the right note even when keywords don't match.
-- `lattice chat "what did I write about postgres replication?"` → cited answer with valid `[1]` link to a real note.
-- Add to Claude Code's MCP config: `claude mcp add lattice lattice mcp serve`. From a Claude Code session, `search_notes` returns real vault results.
+- Index an existing vault — `uv run lattice open ~/MyVault` indexes a small vault in <1s; hash-dedup keeps re-runs at ~2ms.
+- Edit a note (CLI/desktop/api) → watchdog picks it up within ~1s debounce and reindexes only the changed file.
+- Hybrid search returns the right note even when keywords don't match (vector side carries semantic queries; FTS side carries exact-keyword queries; RRF merges).
+- `lattice chat "..."` returns an answer with parsed `[1]` citations pointing at real chunks. Anthropic provider sends instructions as a cached system block.
+- `lattice mcp serve` exposes `search_notes` / `read_note` / `list_notes` over stdio; works in Claude Code via `claude mcp add lattice -- lattice mcp serve`.
 
 ## M2 — Cloud + sync + web + auth + CodeMirror (≈2 weeks)
 
@@ -157,13 +131,86 @@ M0 baseline reminder: monorepo bootstrapped, FastAPI in two modes, full Postgres
 - **Add deps:** `uv add <pkg> --package lattice-api` (or `lattice-cli`); `pnpm --filter @lattice/web add <pkg>`.
 - **Run api locally:** `uv run lattice-api --mode=local --port 8787`. The DB lives at `~/.lattice/lattice.db`.
 - **Run api cloud:** `docker compose -f infra/docker-compose.yml up -d postgres && uv run lattice-api --mode=cloud`.
-- **Tests:** `uv run pytest -v`. Don't reintroduce `tests/__init__.py` — it collides between apps.
+- **Tests:** `uv run pytest -v` (21 expected). Don't reintroduce `tests/__init__.py` — it collides between apps.
 - **Type check:** `uv run pyright` + `pnpm -r typecheck`. Both must stay green.
+- **Format:** `uv run ruff format .` and `pnpm exec biome check --write apps/web/src apps/desktop/src packages` — CI enforces both.
 - **Migrations:** new SQL files in `infra/migrations/NNNN_*.sql`. Postgres picks them up via the docker entrypoint. SQLite gets a parallel `sqlite_*.sql` file (different syntax for `vector` and FTS).
 - **The plan file** at `/root/.claude/plans/shiny-snuggling-micali.md` has more rationale and the original (more ambitious) version of each milestone if you ever want to add something back.
 
-## What to do first
+## Building & releasing Lattice
 
-1. `cd /root/lattice && uv sync --all-packages && pnpm install`.
-2. Confirm M0 still works: `uv run pytest -v` (4 pass), `uv run lattice-api --mode=local &` + `curl localhost:8787/healthz` returns `{"ok":true,"mode":"local",…}`.
-3. Start M1 with `apps/api/src/lattice_api/indexer.py` — markdown chunking is the building block everything else depends on.
+### From source (dev loop)
+
+1. `uv sync --all-packages && pnpm install`.
+2. **API only**, anywhere `uv` works: `uv run lattice-api --mode=local --port 8787`.
+3. **CLI**: `uv run lattice open ~/MyVault && uv run lattice search "..."` — talks to lattice_api modules in-process, no api server needed.
+4. **Web UI standalone** (great for iterating on React): keep the api running, then `pnpm --filter @lattice/web dev` and hit <http://localhost:3000>. Reads `NEXT_PUBLIC_LATTICE_API_URL` if you need a non-default base URL.
+5. **Desktop dev** (Tauri webview + sidecar): build the PyInstaller sidecar once, then `pnpm --filter @lattice/desktop dev`. The Tauri shell auto-spawns `binaries/lattice-api-<triple>` (or `…exe` on Windows) and points the webview at the Next.js dev server.
+
+### Building the PyInstaller sidecar
+
+The Tauri shell needs a self-contained `lattice-api` binary. Build it with:
+
+```bash
+uv run python apps/desktop/src-tauri/build_sidecar.py
+```
+
+Output: `apps/desktop/src-tauri/binaries/lattice-api-<rustc-host-triple>` (Linux/macOS) or `…<triple>.exe` (Windows). Size is ~90 MB (fastembed + onnxruntime + tokenizers dominate). The script auto-detects the host triple via `rustc -vV`; pass an explicit triple as argv[1] to cross-target the name (the actual compile is still host-only — cross-compilation needs a matching runner). Built binaries are gitignored.
+
+Cache: PyInstaller scratch lives in `.pyinstaller/` (gitignored). Incremental rebuilds are fast (~30s) once warm; cold runs are 2-3 min.
+
+### Building a desktop installer locally
+
+After the sidecar exists:
+
+```bash
+pnpm --filter @lattice/web build           # produces apps/web/out/ (static export)
+pnpm --filter @lattice/desktop exec tauri build
+```
+
+Output lands in `apps/desktop/src-tauri/target/release/bundle/`:
+- macOS → `.dmg` under `dmg/`
+- Windows → `.msi` under `msi/` (also `.exe` under `nsis/` if NSIS is installed)
+- Linux → `.deb` and AppImage under their respective subdirs
+
+Unsigned by default. The first launch will trigger Gatekeeper / SmartScreen warnings — we'll add code signing when distribution becomes a thing.
+
+### Cutting a release (GitHub Actions)
+
+`.github/workflows/release.yml` builds installers across all three desktop platforms and uploads them as draft-release assets. Trigger by pushing a version tag:
+
+```bash
+git tag -a v0.1.2 -m "v0.1.2 — what changed"
+git push origin v0.1.2
+```
+
+Matrix:
+- `macos-14` → `aarch64-apple-darwin` → `.dmg`
+- `macos-13` → `x86_64-apple-darwin` → `.dmg`
+- `windows-latest` → `x86_64-pc-windows-msvc` → `.msi`
+
+Each job rebuilds its own sidecar (so the in-CI PyInstaller has to find every fastembed/onnxruntime hidden import — if a fresh runtime dep appears later, add it to `--collect-all` in `build_sidecar.py`). Linux installers (`.deb` / AppImage) aren't shipped from the matrix yet — add a `ubuntu-24.04` row plus the GTK system-deps step if/when needed.
+
+Manual dry-run: trigger the workflow from the Actions tab via `workflow_dispatch`. Installers upload as workflow artifacts (no release is touched).
+
+Known gotcha: the per-platform job uses Tauri's `externalBin` to wire the sidecar; the binary name must match `lattice-api-<triple>` exactly (with `.exe` on Windows). The build script keeps PyInstaller's per-OS naming, do not "normalise" it.
+
+### Using Lattice with Claude Code
+
+Once you have a vault open:
+
+```bash
+claude mcp add lattice -- lattice mcp serve --vault ~/MyVault
+```
+
+In a Claude Code session, `search_notes`, `read_note`, and `list_notes` become available. The MCP server reads from the same SQLite DB at `~/.lattice/lattice.db` and reindexes on startup (cheap, hash-deduped).
+
+## What to do first (M2)
+
+M1 is done; M2 is the next milestone (cloud + sync + web + auth + CodeMirror). Suggested order:
+
+1. `uv sync --all-packages && pnpm install`; confirm green: `uv run pytest -v` (21 pass), `uv run lattice-api --mode=local &` + `curl localhost:8787/healthz`.
+2. Start M2 with `apps/api/src/lattice_api/routes/auth.py` (magic-link issuance + verification). Auth gates sync; sync gates the web app being more than a curiosity.
+3. Once auth + token issuance work, expand `PostgresStorage` to full surface so cloud-mode parity with `SqliteStorage`.
+4. Then sync (`apps/api/src/lattice_api/routes/sync.py` + `apps/cli/src/lattice_cli/commands/sync.py`).
+5. Web auth pages + CodeMirror editor land last in M2 — they're the user-visible cherry.
