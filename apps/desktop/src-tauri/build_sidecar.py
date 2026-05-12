@@ -67,6 +67,16 @@ def main() -> None:
         "--collect-all=sqlite_vec",
         "--hidden-import=lattice_api.main",
         "--hidden-import=lattice_api.mcp_server",
+        # M2-M4 modules. PyInstaller picks them up transitively via main.py,
+        # but listing them explicitly future-proofs against import-order
+        # changes and makes missing-module breakage easy to diagnose.
+        "--hidden-import=lattice_api.routes.auth",
+        "--hidden-import=lattice_api.routes.sync",
+        "--hidden-import=lattice_api.routes.mcp_sse",
+        "--hidden-import=lattice_api.routes.suggest",
+        "--hidden-import=lattice_api.routes.synthesis",
+        "--hidden-import=lattice_api.email",
+        "--hidden-import=email_validator",
         f"--paths={APP_API / 'src'}",
         str(APP_API / "src" / "lattice_api" / "__pyinstaller_entry__.py"),
     ]
