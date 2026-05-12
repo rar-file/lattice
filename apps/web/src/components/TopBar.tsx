@@ -3,7 +3,7 @@
 import type { VaultInfo } from "@lattice/sdk";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { getClient } from "../lib/client";
+import { ThemeToggle } from "./ThemeToggle";
 import { FolderIcon, LatticeMark, MenuIcon, SearchIcon, SparkleIcon } from "./icons";
 
 interface Props {
@@ -139,6 +139,8 @@ export function TopBar({
         <SearchIcon className="h-4 w-4" />
         <span className="hidden sm:inline kbd">⌘K</span>
       </button>
+
+      <ThemeToggle />
 
       <button
         type="button"

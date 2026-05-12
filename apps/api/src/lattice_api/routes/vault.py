@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
@@ -9,6 +10,39 @@ from ..config import Mode
 from ..session import close_vault_session, open_vault_session
 
 router = APIRouter(prefix="/vault", tags=["vault"])
+
+
+def _state_path(request: Request) -> Path:
+    """Where we remember the last-opened vault between launches."""
+    data_dir = request.app.state.settings.local_data_dir
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir / "state.json"
+
+
+def _read_state(request: Request) -> dict:
+    p = _state_path(request)
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _write_state(request: Request, **kv) -> None:
+    p = _state_path(request)
+    state = _read_state(request)
+    state.update(kv)
+    p.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+
+def _default_vault_root() -> Path:
+    """The path we auto-create a vault at if the user has none. Documents/Lattice
+    on platforms where it exists, else ~/Lattice."""
+    docs = Path.home() / "Documents"
+    if docs.is_dir():
+        return docs / "Lattice"
+    return Path.home() / "Lattice"
 
 
 def _reject_in_cloud(request: Request) -> None:
@@ -145,6 +179,13 @@ async def open_vault(req: OpenVaultRequest, request: Request) -> OpenVaultRespon
     except (FileNotFoundError, NotADirectoryError) as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     request.app.state.vault_session = session
+    # Remember this vault so the next launch can reopen it without prompting.
+    try:
+        _write_state(request, last_vault_root=str(session.vault.root_path))
+    except OSError:
+        # Persistence is a convenience — never fail an open because we
+        # couldn't write to ~/.lattice/state.json.
+        pass
     report = await session.indexer.index_vault()
     return OpenVaultResponse(
         vault=VaultInfo(
@@ -158,6 +199,60 @@ async def open_vault(req: OpenVaultRequest, request: Request) -> OpenVaultRespon
             duration_seconds=report.duration_seconds,
         ),
     )
+
+
+@router.post("/auto", response_model=OpenVaultResponse)
+async def auto_vault(request: Request) -> OpenVaultResponse:
+    """Open the user's vault without prompting.
+
+    The default UX should be: launch the app, see your notes. So on every
+    bootstrap the web client calls this endpoint and trusts us to figure
+    out which vault to open:
+
+      1. If a vault session is already active (e.g. dev hot-reload), reuse it.
+      2. If state.json remembers a last-opened vault that still exists, open it.
+      3. Otherwise, pick a default location (``~/Documents/Lattice`` or
+         ``~/Lattice``), create it if missing, seed a Welcome note, and open it.
+
+    Only refuses in cloud mode — there's no on-disk vault to open server-side.
+    """
+
+    _reject_in_cloud(request)
+
+    # (1) reuse an already-open session
+    existing = getattr(request.app.state, "vault_session", None)
+    if existing is not None:
+        return OpenVaultResponse(
+            vault=VaultInfo(
+                id=existing.vault.id,
+                name=existing.vault.name,
+                root_path=existing.vault.root_path,
+            ),
+            indexed=IndexSummary(
+                notes_indexed=0,
+                notes_skipped=0,
+                notes_failed=0,
+                chunks_indexed=0,
+                duration_seconds=0.0,
+            ),
+        )
+
+    # (2) try the remembered path
+    state = _read_state(request)
+    last = state.get("last_vault_root")
+    if isinstance(last, str) and last:
+        candidate = Path(last).expanduser()
+        if candidate.is_dir():
+            return await open_vault(
+                OpenVaultRequest(root_path=str(candidate), name=None), request
+            )
+
+    # (3) fall back to the platform default; create + seed if needed
+    default = _default_vault_root()
+    needs_init = not default.exists() or (default.is_dir() and not any(default.iterdir()))
+    if needs_init:
+        return await init_vault(InitVaultRequest(root_path=str(default), name="Lattice"), request)
+    return await open_vault(OpenVaultRequest(root_path=str(default), name=None), request)
 
 
 @router.post("/close")

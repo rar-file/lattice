@@ -155,25 +155,40 @@ export function LinkIcon(p: IconProps) {
   );
 }
 
-/** Wordmark used in headers and hero. Compact, recognizable, scales to text. */
-export function LatticeMark({ className = "" }: { className?: string }) {
+/** Brand mark — mirrors the bundled app icon (icon.png). Bold L letterform on
+ *  a near-black rounded tile. Stays identical across light/dark themes so the
+ *  in-app logo and the OS icon are visually the same object.
+ */
+export function LatticeMark({
+  className = "",
+  withWordmark = true,
+  size = 22,
+}: {
+  className?: string;
+  withWordmark?: boolean;
+  size?: number;
+}) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] text-accent" aria-hidden>
-        <path
-          d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"
-          fill="currentColor"
-          fillOpacity="0.18"
-        />
-        <path
-          d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-        <path d="M10 7h4M10 17h4M7 10v4M17 10v4" stroke="currentColor" strokeWidth="1.6" />
+      <svg
+        viewBox="0 0 24 24"
+        width={size}
+        height={size}
+        className="shrink-0"
+        aria-hidden
+        role="img"
+        focusable="false"
+      >
+        <title>Lattice</title>
+        <rect x="0" y="0" width="24" height="24" rx="5.5" fill="#0e0d0b" />
+        {/* L letterform — proportions calibrated to icon.png */}
+        <path d="M7.6 5.2h2.4v11.2H17v2.4H7.6V5.2Z" fill="#e8e6e1" />
       </svg>
-      <span className="text-[15px] font-semibold tracking-tight">Lattice</span>
+      {withWordmark && (
+        <span className="text-[15px] font-semibold tracking-[-0.01em] text-fg-default">
+          Lattice
+        </span>
+      )}
     </span>
   );
 }

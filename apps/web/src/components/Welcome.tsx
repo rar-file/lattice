@@ -11,9 +11,6 @@ import {
   FolderIcon,
   FolderPlusIcon,
   LatticeMark,
-  LinkIcon,
-  SearchIcon,
-  SparkleIcon,
 } from "./icons";
 
 type Step = "intro" | "create" | "open" | "cloud";
@@ -23,47 +20,33 @@ interface Props {
 }
 
 /**
- * First-run experience. Shown until a vault is opened. Three paths:
- *  - "Create a new vault" — wizard that calls POST /vault/init
- *  - "Open existing folder" — directly calls POST /vault/open
- *  - "Connect cloud account" — redirects to /login
- *
- * Designed to be the answer to "I have no clue how to use this". Every screen
- * has clear copy explaining what'll happen next and the keyboard shortcuts
- * to learn afterwards.
+ * Vault chooser. Shown only when the auto-open path fails (cloud mode, refused
+ * permissions, or the user explicitly closed their default vault). For the
+ * first-launch case the server creates ``~/Documents/Lattice`` automatically
+ * and the user lands straight in the workspace — so this screen exists as a
+ * recovery dialog, not a marketing landing page.
  */
 export function Welcome({ onOpened }: Props) {
   const [step, setStep] = useState<Step>("intro");
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-canvas">
-      <div className="absolute inset-0 bg-aurora pointer-events-none" aria-hidden />
-      <div className="relative mx-auto flex min-h-screen max-w-4xl flex-col px-6 py-10 md:py-16">
-        <header className="flex items-center justify-between animate-fade-in">
-          <LatticeMark />
-          <a
-            href="https://github.com/rar-file/lattice"
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs text-fg-muted hover:text-fg-default transition-colors focus-ring rounded px-1"
-          >
-            View on GitHub →
-          </a>
-        </header>
-
-        <div className="flex flex-1 flex-col items-center justify-center py-12 md:py-16">
-          {step === "intro" && <Intro onPick={setStep} />}
-          {step === "create" && (
-            <CreateVault onCancel={() => setStep("intro")} onOpened={onOpened} />
-          )}
-          {step === "open" && <OpenVault onCancel={() => setStep("intro")} onOpened={onOpened} />}
-          {step === "cloud" && <ConnectCloud onCancel={() => setStep("intro")} />}
+    <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
+      <div className="w-full max-w-md animate-fade-in">
+        <div className="flex flex-col items-center text-center mb-7">
+          <LatticeMark withWordmark={false} size={44} />
+          <h1 className="mt-4 text-[20px] font-semibold tracking-[-0.02em] text-fg-default">
+            Choose a vault
+          </h1>
+          <p className="mt-1 text-[13px] leading-relaxed text-fg-muted max-w-xs">
+            Pick where Lattice should keep your notes. You can switch vaults any time from the
+            workspace menu.
+          </p>
         </div>
 
-        <footer className="text-center text-[11px] text-fg-faint pb-2">
-          Lattice is local-first. Your notes live as plain Markdown on your disk; the cloud option
-          is opt-in.
-        </footer>
+        {step === "intro" && <Intro onPick={setStep} />}
+        {step === "create" && <CreateVault onCancel={() => setStep("intro")} onOpened={onOpened} />}
+        {step === "open" && <OpenVault onCancel={() => setStep("intro")} onOpened={onOpened} />}
+        {step === "cloud" && <ConnectCloud onCancel={() => setStep("intro")} />}
       </div>
     </main>
   );
@@ -75,119 +58,55 @@ export function Welcome({ onOpened }: Props) {
 
 function Intro({ onPick }: { onPick: (s: Step) => void }) {
   return (
-    <div className="w-full max-w-2xl animate-slide-up">
-      <div className="text-center space-y-4">
-        <h1 className="text-[40px] md:text-[52px] leading-[1.05] font-semibold tracking-[-0.02em] text-fg-default">
-          A vault that thinks
-          <br />
-          <span className="text-accent">with you.</span>
-        </h1>
-        <p className="text-[16px] md:text-[17px] text-fg-muted max-w-xl mx-auto leading-relaxed">
-          Lattice is a local-first knowledge vault that grows smarter as you write. Notes you own,
-          search that understands meaning, and an AI that's grounded in everything you've ever
-          captured.
-        </p>
-      </div>
-
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <ChoiceCard
-          icon={<FolderPlusIcon className="h-5 w-5 text-accent" />}
-          title="Create a new vault"
-          desc="Start fresh — Lattice will set up a folder with a starter note to get you going."
-          onClick={() => onPick("create")}
-          primary
-        />
-        <ChoiceCard
-          icon={<FolderIcon className="h-5 w-5 text-fg-default" />}
-          title="Open existing folder"
-          desc="Point Lattice at a folder of Markdown files (Obsidian, Foam, plain notes)."
-          onClick={() => onPick("open")}
-        />
-        <ChoiceCard
-          icon={<CloudIcon className="h-5 w-5 text-fg-default" />}
-          title="Connect cloud account"
-          desc="Sync across devices and give agents secure access via hosted MCP."
-          onClick={() => onPick("cloud")}
-        />
-      </div>
-
-      <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-        <FeatureBullet
-          icon={<SearchIcon className="h-[18px] w-[18px]" />}
-          title="Hybrid search"
-          desc="Semantic + keyword, ranked together. Find anything by meaning, even if you forgot the exact words."
-        />
-        <FeatureBullet
-          icon={<SparkleIcon className="h-[18px] w-[18px]" />}
-          title="Capture & synthesize"
-          desc="Drop a thought, get a clean atomic note in seconds. Weekly synthesis rolls up your notes."
-        />
-        <FeatureBullet
-          icon={<LinkIcon className="h-[18px] w-[18px]" />}
-          title="Ambient links"
-          desc="Lattice surfaces relevant notes as you write — one click to drop a [[wikilink]]."
-        />
-      </div>
+    <div className="card-elevated divide-y divide-border-subtle overflow-hidden">
+      <ChoiceRow
+        icon={<FolderPlusIcon className="h-4 w-4" />}
+        title="Create a new vault"
+        desc="Fresh folder, seeded with a starter note."
+        onClick={() => onPick("create")}
+      />
+      <ChoiceRow
+        icon={<FolderIcon className="h-4 w-4" />}
+        title="Open an existing folder"
+        desc="Any folder of Markdown — Obsidian, Foam, plain notes."
+        onClick={() => onPick("open")}
+      />
+      <ChoiceRow
+        icon={<CloudIcon className="h-4 w-4" />}
+        title="Connect a cloud account"
+        desc="Sync across devices and authorize agents."
+        onClick={() => onPick("cloud")}
+      />
     </div>
   );
 }
 
-function ChoiceCard({
+function ChoiceRow({
   icon,
   title,
   desc,
   onClick,
-  primary = false,
 }: {
   icon: React.ReactNode;
   title: string;
   desc: string;
   onClick: () => void;
-  primary?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`group relative text-left p-5 rounded-xl border transition-all duration-200 ease-out
-        focus-ring
-        ${
-          primary
-            ? "bg-surface border-accent/30 hover:border-accent/60 hover:shadow-popover"
-            : "bg-surface border-border-subtle hover:border-border-strong hover:shadow-card"
-        }`}
+      className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-sunken focus-ring"
     >
-      <div
-        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-          primary ? "bg-accent-soft" : "bg-sunken"
-        }`}
-      >
+      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-sunken text-fg-muted group-hover:text-fg-default">
         {icon}
-      </div>
-      <div className="mt-4 text-[14px] font-semibold tracking-tight text-fg-default">{title}</div>
-      <p className="mt-1 text-[12.5px] leading-relaxed text-fg-muted">{desc}</p>
-      <ArrowRightIcon className="absolute right-4 top-5 h-4 w-4 text-fg-faint group-hover:text-accent transition-colors" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] font-medium text-fg-default">{title}</span>
+        <span className="block text-[11.5px] text-fg-muted">{desc}</span>
+      </span>
+      <ArrowRightIcon className="h-4 w-4 shrink-0 text-fg-faint group-hover:text-fg-default" />
     </button>
-  );
-}
-
-function FeatureBullet({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-2 text-fg-default">
-        <span className="text-accent">{icon}</span>
-        <span className="text-[13px] font-semibold tracking-tight">{title}</span>
-      </div>
-      <p className="mt-1.5 text-[12.5px] leading-relaxed text-fg-muted">{desc}</p>
-    </div>
   );
 }
 
@@ -462,22 +381,24 @@ function WizardCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full max-w-xl animate-scale-in">
-      <div className="card-elevated p-6 md:p-8">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft shrink-0">
-            {icon}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-[20px] font-semibold tracking-tight text-fg-default">{title}</h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-fg-muted">{subtitle}</p>
-          </div>
+    <div className="card-elevated animate-scale-in p-5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sunken shrink-0 text-fg-default">
+          {icon}
         </div>
-        <div className="mt-6">{children}</div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-fg-default">{title}</h2>
+          <p className="mt-0.5 text-[12px] leading-relaxed text-fg-muted">{subtitle}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-fg-faint hover:text-fg-default text-[11px] focus-ring rounded px-1.5 py-0.5"
+        >
+          Esc
+        </button>
       </div>
-      <p className="mt-3 text-center text-[11px] text-fg-faint">
-        Press <kbd className="kbd">Esc</kbd> to go back at any time.
-      </p>
+      <div className="mt-5">{children}</div>
     </div>
   );
 }

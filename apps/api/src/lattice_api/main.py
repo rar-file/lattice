@@ -73,6 +73,7 @@ def create_app(
     app.include_router(vault.router)
     app.include_router(notes.router)
     app.include_router(notes.rename_router)
+    app.include_router(notes.backlinks_router)
     app.include_router(search.router)
     app.include_router(chat.router)
     app.include_router(sync.router)

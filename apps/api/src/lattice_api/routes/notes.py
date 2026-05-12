@@ -114,10 +114,58 @@ async def delete_note_route(rel_path: str, request: Request) -> dict:
     return {"deleted_disk": deleted_disk, "deleted_db": deleted_db}
 
 
-# Rename has its own route off /notes-rename/{old_path:path} rather than
-# living under /notes/{path:path} so it doesn't collide with the catch-all
-# GET/PUT/DELETE handlers above.
+class BacklinkHit(BaseModel):
+    path: str
+    title: str | None
+    snippet: str
+
+
+# Rename + backlinks live on separate prefixes so they don't get eaten by
+# the `/{rel_path:path}` catch-alls above.
 rename_router = APIRouter(prefix="/notes-rename", tags=["notes"])
+backlinks_router = APIRouter(prefix="/notes-backlinks", tags=["notes"])
+
+
+@backlinks_router.get("/{rel_path:path}", response_model=list[BacklinkHit])
+async def backlinks_route(rel_path: str, request: Request) -> list[BacklinkHit]:
+    """Notes that link to this one via [[wikilink]] syntax.
+
+    Walks the note bodies in Python rather than using FTS — fast enough for
+    vault sizes well into the thousands, and avoids needing a special
+    tokenizer for `[[Title]]` patterns.
+    """
+
+    session = _require_session(request)
+    storage = request.app.state.storage
+    target = await storage.get_note(session.vault.id, rel_path)
+    if target is None:
+        raise HTTPException(status_code=404, detail="note not found")
+
+    base = rel_path.rsplit("/", 1)[-1].removesuffix(".md")
+    candidates: set[str] = {base}
+    if target.title:
+        candidates.add(target.title.strip())
+
+    notes = await storage.list_notes(session.vault.id, limit=10_000)
+    out: list[BacklinkHit] = []
+    for n in notes:
+        if n.path == rel_path:
+            continue
+        full = await storage.get_note(session.vault.id, n.path)
+        if full is None:
+            continue
+        body = full.body
+        low = body.lower()
+        for cand in candidates:
+            needle = f"[[{cand}]]".lower()
+            idx = low.find(needle)
+            if idx >= 0:
+                start = max(0, idx - 40)
+                end = min(len(body), idx + len(needle) + 80)
+                snippet = "…" + body[start:end].replace("\n", " ") + "…"
+                out.append(BacklinkHit(path=n.path, title=n.title, snippet=snippet))
+                break
+    return out
 
 
 @rename_router.post("/{rel_path:path}", response_model=NoteFull)

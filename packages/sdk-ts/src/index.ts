@@ -45,6 +45,12 @@ export interface NoteFull {
   content_hash: string;
 }
 
+export interface BacklinkHit {
+  path: string;
+  title: string | null;
+  snippet: string;
+}
+
 export interface SearchHit {
   note_id: string;
   note_path: string;
@@ -120,6 +126,19 @@ export class LatticeClient {
     });
   }
 
+  /**
+   * Open the user's vault without prompting. Reopens the last-used vault if
+   * there is one, else creates+opens a default vault at ~/Documents/Lattice.
+   * Returns null if the server is in cloud mode (no on-disk vault).
+   */
+  autoVault(): Promise<OpenVaultResponse | null> {
+    return this.req<OpenVaultResponse>("/vault/auto", { method: "POST" }).catch((e) => {
+      // 400 = cloud mode rejection; treat as "no auto vault available"
+      if (e instanceof Error && /cloud/i.test(e.message)) return null;
+      throw e;
+    });
+  }
+
   closeVault(): Promise<{ closed: boolean }> {
     return this.req<{ closed: boolean }>("/vault/close", { method: "POST" });
   }
@@ -155,6 +174,10 @@ export class LatticeClient {
       method: "POST",
       body: JSON.stringify({ new_path: newPath }),
     });
+  }
+
+  backlinks(path: string): Promise<BacklinkHit[]> {
+    return this.req<BacklinkHit[]>(`/notes-backlinks/${encodeNotePath(path)}`);
   }
 
   search(q: string, opts: { limit?: number; mode?: SearchMode } = {}): Promise<SearchHit[]> {

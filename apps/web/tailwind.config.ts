@@ -7,7 +7,14 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        mono: [
+          "var(--font-mono)",
+          "JetBrains Mono",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "monospace",
+        ],
         display: ["var(--font-sans)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
@@ -40,9 +47,9 @@ export default {
         "2xl": "20px",
       },
       boxShadow: {
-        "card": "0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.02)",
-        "popover": "0 10px 30px -10px rgb(0 0 0 / 0.18), 0 4px 8px -4px rgb(0 0 0 / 0.08)",
-        "ring": "0 0 0 3px rgb(var(--accent) / 0.18)",
+        card: "0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.02)",
+        popover: "0 10px 30px -10px rgb(0 0 0 / 0.18), 0 4px 8px -4px rgb(0 0 0 / 0.08)",
+        ring: "0 0 0 3px rgb(var(--accent) / 0.18)",
       },
       keyframes: {
         "fade-in": {

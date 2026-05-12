@@ -6,7 +6,7 @@ import { syntaxHighlighting } from "@codemirror/language";
 import { searchKeymap } from "@codemirror/search";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap, placeholder } from "@codemirror/view";
-import type { LinkSuggestion } from "@lattice/sdk";
+import type { BacklinkHit, LinkSuggestion } from "@lattice/sdk";
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 import { markdownHighlight } from "../lib/cm-highlight";
@@ -34,6 +34,7 @@ export function CodeMirrorEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<LinkSuggestion[]>([]);
+  const [backlinks, setBacklinks] = useState<BacklinkHit[]>([]);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dirty = body !== originalBody;
@@ -91,6 +92,7 @@ export function CodeMirrorEditor({
       setTitle(null);
       setError(null);
       setSuggestions([]);
+      setBacklinks([]);
       return;
     }
     let cancelled = false;
@@ -111,6 +113,15 @@ export function CodeMirrorEditor({
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
+      });
+    // Backlinks fetched in parallel — slow path, render when ready.
+    getClient()
+      .backlinks(notePath)
+      .then((hits) => {
+        if (!cancelled) setBacklinks(hits);
+      })
+      .catch(() => {
+        if (!cancelled) setBacklinks([]);
       });
     return () => {
       cancelled = true;
@@ -281,8 +292,67 @@ export function CodeMirrorEditor({
           </div>
         </div>
       )}
+      {backlinks.length > 0 && (
+        <div className="border-t border-border-subtle bg-surface/40 px-6 py-2.5 animate-slide-up">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <LinkIcon className="h-3.5 w-3.5 text-fg-muted" />
+            <span className="section-label">
+              Linked from {backlinks.length} {backlinks.length === 1 ? "note" : "notes"}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            {backlinks.slice(0, 5).map((b) => (
+              <button
+                key={b.path}
+                type="button"
+                onClick={() => onJumpToNote?.(b.path)}
+                className="text-left rounded-md px-2 py-1.5 hover:bg-sunken transition-colors focus-ring"
+              >
+                <div className="text-[12.5px] font-medium text-fg-default truncate">
+                  {b.title?.trim() || stripMd(basename(b.path))}
+                </div>
+                <div className="text-[11.5px] text-fg-muted truncate">{b.snippet}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <EditorFooter body={body} notePath={notePath} />
     </div>
   );
+}
+
+function EditorFooter({ body, notePath }: { body: string; notePath: string }) {
+  const words = countWords(body);
+  // ~225 wpm is the median for prose reading on screen.
+  const minutes = Math.max(1, Math.round(words / 225));
+  return (
+    <div className="flex items-center justify-between border-t border-border-subtle bg-surface/60 px-6 py-1.5 text-[11px] text-fg-faint font-mono">
+      <div className="flex items-center gap-3">
+        <span>
+          {words.toLocaleString()} {words === 1 ? "word" : "words"}
+        </span>
+        <span className="text-fg-faint/60">·</span>
+        <span>{minutes} min read</span>
+        <span className="text-fg-faint/60">·</span>
+        <span>{body.length.toLocaleString()} chars</span>
+      </div>
+      <span className="truncate max-w-[40%]" title={notePath}>
+        {notePath}
+      </span>
+    </div>
+  );
+}
+
+function countWords(s: string): number {
+  // Strip code fences and inline code so we don't inflate the count with
+  // language tokens; markdown punctuation is fine to ignore.
+  const stripped = s
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]*`/g, " ")
+    .replace(/[#*_>~\-+|[\]()]/g, " ");
+  const m = stripped.match(/\b[\w'-]+\b/g);
+  return m ? m.length : 0;
 }
 
 function SaveIndicator({ dirty, saving }: { dirty: boolean; saving: boolean }) {

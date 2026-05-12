@@ -48,20 +48,34 @@ function HomeInner() {
     }
   }, []);
 
-  // Initial bootstrap
+  // Initial bootstrap — auto-open the user's vault (reopens last vault, or
+  // creates a default one at ~/Documents/Lattice). Falls back to the welcome
+  // chooser only if the server can't auto-open (cloud mode, permission error).
   useEffect(() => {
     let cancelled = false;
-    getClient()
-      .currentVault()
-      .then(async (v) => {
+    (async () => {
+      try {
+        const auto = await getClient().autoVault();
         if (cancelled) return;
-        setVault(v);
-        if (v) await refreshNotes();
-      })
-      .catch(() => {})
-      .finally(() => {
+        if (auto) {
+          setVault(auto.vault);
+          await refreshNotes();
+        } else {
+          // Cloud mode — there's no on-disk vault to open. Fall back to whatever
+          // the server considers "current" (if anything) and let the chooser
+          // surface the cloud-account path.
+          const v = await getClient().currentVault();
+          if (cancelled) return;
+          setVault(v);
+          if (v) await refreshNotes();
+        }
+      } catch {
+        // Server unreachable or refused — show chooser so user can recover.
+        if (!cancelled) setVault(null);
+      } finally {
         if (!cancelled) setBootstrapping(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };

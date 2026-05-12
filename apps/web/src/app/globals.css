@@ -41,8 +41,10 @@
   --warning-soft: 254 243 199;
 }
 
+/* Dark-mode tokens — applied via @media when no explicit theme class is set,
+ * OR when html.theme-dark is set explicitly via the theme picker. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  html:not(.theme-light) {
     color-scheme: dark;
 
     --bg-canvas: 14 13 11;
@@ -72,6 +74,35 @@
     --warning-soft: 62 41 8;
   }
 }
+html.theme-dark {
+  color-scheme: dark;
+
+  --bg-canvas: 14 13 11;
+  --bg-surface: 22 21 18;
+  --bg-elevated: 28 27 24;
+  --bg-sunken: 18 17 15;
+
+  --fg-default: 240 236 230;
+  --fg-muted: 168 160 152;
+  --fg-faint: 112 104 96;
+
+  --border-subtle: 32 30 28;
+  --border-default: 44 41 38;
+  --border-strong: 64 60 56;
+
+  --accent: 129 140 248;
+  --accent-soft: 49 46 92;
+  --accent-fg: 14 13 11;
+
+  --danger: 248 113 113;
+  --danger-soft: 80 30 30;
+
+  --success: 74 222 128;
+  --success-soft: 21 56 38;
+
+  --warning: 251 191 36;
+  --warning-soft: 62 41 8;
+}
 
 /* ---------------------------------------------------------------------------
  * Global base
@@ -80,14 +111,38 @@
 html,
 body {
   height: 100%;
-  font-feature-settings: "cv11", "ss01", "ss03";
+  /* Geist ships tabular figures via "tnum"; "ss01" enables the more refined
+   * letterforms. Keep optical kerning + ligatures on for headings to feel
+   * intentional rather than default-system. */
+  font-feature-settings: "ss01", "cv01", "cv11", "tnum" 0;
+  font-variant-ligatures: common-ligatures;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 body {
   font-size: 14px;
   line-height: 1.55;
+  letter-spacing: -0.005em;
+}
+
+/* Display sizes deserve tighter tracking — Geist sits a hair loose by default
+ * at large sizes, which reads "amateur". Pull it in. */
+h1,
+h2,
+h3,
+.text-display {
+  letter-spacing: -0.022em;
+  font-feature-settings: "ss01", "cv01", "cv11";
+}
+
+code,
+kbd,
+pre,
+.font-mono {
+  font-variant-ligatures: none;
+  letter-spacing: 0;
 }
 
 /* Hide native scrollbars but keep scrolling. Used on the workspace sidebars

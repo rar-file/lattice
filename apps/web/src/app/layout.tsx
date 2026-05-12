@@ -1,14 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "../lib/theme";
 import "./globals.css";
 
-const inter = Inter({
+// Geist is Vercel's typeface designed for software UI. Replaces Inter +
+// JetBrains Mono — its tighter metrics and software-native vibe give the app
+// a more professional feel without bespoke licensing.
+const sans = Geist({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
 });
 
-const mono = JetBrains_Mono({
+const mono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-mono",
@@ -33,8 +38,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
-      <body className="antialiased font-sans bg-canvas text-fg-default">{children}</body>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      <body className="antialiased font-sans bg-canvas text-fg-default">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
