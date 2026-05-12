@@ -1,0 +1,52 @@
+openapi: 3.1.0
+info:
+  title: Lattice API
+  version: 0.0.0
+  description: |
+    Lattice HTTP API. Same surface served in --mode=local (SQLite, unix socket)
+    and --mode=cloud (Postgres, TCP). M0 only ships /healthz and /version.
+
+servers:
+  - url: http://localhost:8787
+    description: Local dev
+
+paths:
+  /healthz:
+    get:
+      operationId: getHealth
+      summary: Liveness + DB ping
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /version:
+    get:
+      operationId: getVersion
+      summary: API version
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+
+components:
+  schemas:
+    Health:
+      type: object
+      required: [ok, mode, version]
+      properties:
+        ok:
+          type: boolean
+        mode:
+          type: string
+          enum: [local, cloud]
+        version:
+          type: string
