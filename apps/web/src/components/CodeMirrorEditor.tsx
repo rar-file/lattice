@@ -5,7 +5,7 @@ import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { syntaxHighlighting } from "@codemirror/language";
 import { searchKeymap } from "@codemirror/search";
 import { EditorState } from "@codemirror/state";
-import { EditorView, keymap, lineNumbers, placeholder } from "@codemirror/view";
+import { EditorView, keymap, placeholder } from "@codemirror/view";
 import type { LinkSuggestion } from "@lattice/sdk";
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
@@ -46,7 +46,6 @@ export function CodeMirrorEditor({
       state: EditorState.create({
         doc: "",
         extensions: [
-          lineNumbers(),
           history(),
           syntaxHighlighting(markdownHighlight),
           markdown({ base: markdownLanguage }),

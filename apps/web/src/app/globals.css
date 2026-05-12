@@ -205,6 +205,61 @@ body {
 .cm-editor {
   color: rgb(var(--fg-default));
 }
+
+/* Heading sizes that read like a real document — the lezer highlight gives us
+ * weight/color, but actual rendered size needs to come from CSS since the
+ * highlight style doesn't accept font-size for marks the way we'd like. */
+.cm-editor .cm-line:has(> .tok-heading1),
+.cm-editor .cm-line:has(> .cm-formatting-header-1) {
+  font-size: 1.6em;
+  line-height: 1.25;
+  margin-top: 0.6em;
+}
+.cm-editor .cm-line:has(> .tok-heading2),
+.cm-editor .cm-line:has(> .cm-formatting-header-2) {
+  font-size: 1.32em;
+  line-height: 1.3;
+  margin-top: 0.5em;
+}
+.cm-editor .cm-line:has(> .tok-heading3),
+.cm-editor .cm-line:has(> .cm-formatting-header-3) {
+  font-size: 1.12em;
+  line-height: 1.35;
+  margin-top: 0.4em;
+}
+
+/* Dark mode highlight overrides — apply only when prefers-color-scheme: dark
+ * since the highlight style itself uses light-mode RGB literals. */
+@media (prefers-color-scheme: dark) {
+  .cm-editor .tok-heading1 {
+    color: rgb(245, 240, 232) !important;
+  }
+  .cm-editor .tok-heading2 {
+    color: rgb(245, 240, 232) !important;
+  }
+  .cm-editor .tok-heading3 {
+    color: rgb(220, 214, 206) !important;
+  }
+  .cm-editor .tok-heading {
+    color: rgb(220, 214, 206) !important;
+  }
+  .cm-editor .tok-link,
+  .cm-editor .tok-url {
+    color: rgb(129, 140, 248) !important;
+  }
+  .cm-editor .tok-monospace {
+    color: rgb(220, 214, 206) !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
+  }
+  .cm-editor .tok-quote,
+  .cm-editor .tok-list {
+    color: rgb(168, 160, 152) !important;
+  }
+  .cm-editor .tok-processingInstruction,
+  .cm-editor .tok-contentSeparator {
+    color: rgb(112, 104, 96) !important;
+  }
+}
 .cm-editor .cm-selectionBackground,
 .cm-editor.cm-focused .cm-selectionBackground,
 .cm-editor ::selection {
