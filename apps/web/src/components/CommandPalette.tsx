@@ -119,13 +119,14 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-fg-default/40 backdrop-blur-sm p-4 pt-[14vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[14vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
-      <dialog
-        open
-        className="card-elevated w-full max-w-xl m-0 p-0 animate-scale-in overflow-hidden"
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="card-elevated w-full max-w-xl animate-scale-in overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
@@ -223,7 +224,7 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
             {items.length} result{items.length === 1 ? "" : "s"}
           </span>
         </div>
-      </dialog>
+      </div>
     </div>
   );
 }

@@ -41,13 +41,14 @@ export function KeyboardHelp({ open, onClose }: Props) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
-      <dialog
-        open
-        className="card-elevated w-full max-w-md m-0 p-0 animate-scale-in"
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="card-elevated w-full max-w-md animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
@@ -86,7 +87,7 @@ export function KeyboardHelp({ open, onClose }: Props) {
         <div className="px-5 py-2.5 border-t border-border-subtle text-[11.5px] text-fg-muted">
           Press <kbd className="kbd">?</kbd> any time to show this list.
         </div>
-      </dialog>
+      </div>
     </div>
   );
 }

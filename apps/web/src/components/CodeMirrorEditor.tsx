@@ -99,22 +99,34 @@ export function CodeMirrorEditor({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    getClient()
-      .getNote(notePath)
-      .then((note) => {
-        if (cancelled) return;
-        _setDoc(note.body);
-        setBody(note.body);
-        setOriginalBody(note.body);
-        setTitle(note.title);
-      })
-      .catch((e: unknown) => {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    // Defensive retry: a freshly-captured note can momentarily 404 on slow
+    // disks (the indexer commit hasn't landed by the time the redirect to
+    // the new note fires). Up to 3 quick retries before surfacing the error.
+    (async () => {
+      let lastErr: unknown = null;
+      for (let i = 0; i < 3 && !cancelled; i++) {
+        try {
+          const note = await getClient().getNote(notePath);
+          if (cancelled) return;
+          _setDoc(note.body);
+          setBody(note.body);
+          setOriginalBody(note.body);
+          setTitle(note.title);
+          setError(null);
+          return;
+        } catch (e) {
+          lastErr = e;
+          const msg = e instanceof Error ? e.message : String(e);
+          if (!/404|not found/i.test(msg)) break;
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+      if (!cancelled && lastErr) {
+        setError(lastErr instanceof Error ? lastErr.message : String(lastErr));
+      }
+    })().finally(() => {
+      if (!cancelled) setLoading(false);
+    });
     // Backlinks fetched in parallel — slow path, render when ready.
     getClient()
       .backlinks(notePath)

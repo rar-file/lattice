@@ -50,7 +50,7 @@ export function TopBar({
   }, [menuOpen]);
 
   return (
-    <header className="relative flex h-12 items-center gap-2 border-b border-border-subtle bg-surface/80 backdrop-blur px-3">
+    <header className="relative z-30 flex h-12 items-center gap-2 border-b border-border-subtle bg-surface/80 backdrop-blur px-3">
       {onToggleSidebar && (
         <button
           type="button"

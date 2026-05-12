@@ -193,7 +193,10 @@ class Indexer:
         self.embedding_provider_id = embedding_provider_id
 
     def _relpath(self, path: Path) -> str:
-        return str(path.resolve().relative_to(self.vault_root))
+        # Always emit forward-slash paths so storage keys are portable across
+        # platforms. ``str(Path)`` on Windows uses ``\`` which broke matching
+        # against URL paths (e.g. /notes/Inbox/foo.md) that always use ``/``.
+        return path.resolve().relative_to(self.vault_root).as_posix()
 
     async def index_file(self, path: Path) -> tuple[bool, int]:
         """Index a single file. Returns (changed, n_chunks)."""

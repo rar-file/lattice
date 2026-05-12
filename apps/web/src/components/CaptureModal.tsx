@@ -61,16 +61,20 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-fg-default/40 backdrop-blur-sm p-4 pt-[16vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[14vh] animate-fade-in"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
       }}
       role="presentation"
     >
-      <dialog
-        open
-        className="card-elevated w-full max-w-xl m-0 p-0 animate-scale-in"
+      {/* Plain <div role="dialog"> avoids the <dialog> UA stylesheet, which
+          in WebView2 (Windows) anchors the element via position:absolute +
+          inset-inline:0 + margin:auto and breaks flex centering. */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="card-elevated w-full max-w-xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
@@ -125,7 +129,7 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
             </div>
           </div>
         </form>
-      </dialog>
+      </div>
     </div>
   );
 }

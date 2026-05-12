@@ -71,13 +71,14 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-fg-default/40 backdrop-blur-sm p-4 pt-[18vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[16vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
-      <dialog
-        open
-        className="card-elevated w-full max-w-md m-0 p-0 animate-scale-in"
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="card-elevated w-full max-w-md animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <form onSubmit={submit}>
@@ -133,7 +134,7 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
             </div>
           </div>
         </form>
-      </dialog>
+      </div>
     </div>
   );
 }

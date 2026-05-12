@@ -300,13 +300,14 @@ function RenameDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-fg-default/40 backdrop-blur-sm p-4 pt-[20vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[18vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
-      <dialog
-        open
-        className="card-elevated w-full max-w-md m-0 p-0 animate-scale-in"
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="card-elevated w-full max-w-md animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <form onSubmit={submit}>
@@ -352,7 +353,7 @@ function RenameDialog({
             </div>
           </div>
         </form>
-      </dialog>
+      </div>
     </div>
   );
 }
@@ -395,13 +396,14 @@ function ConfirmDelete({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
-      <dialog
-        open
-        className="card-elevated w-full max-w-md m-0 p-0 animate-scale-in"
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="card-elevated w-full max-w-md animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5">
@@ -426,7 +428,7 @@ function ConfirmDelete({
             </button>
           </div>
         </div>
-      </dialog>
+      </div>
     </div>
   );
 }
