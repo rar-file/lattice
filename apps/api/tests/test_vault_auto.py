@@ -47,9 +47,7 @@ async def test_auto_creates_default_vault_on_first_launch(
             assert (expected / "Welcome.md").is_file()
 
 
-async def test_auto_reopens_last_vault(
-    settings: Settings, fake_home: Path, tmp_path: Path
-) -> None:
+async def test_auto_reopens_last_vault(settings: Settings, fake_home: Path, tmp_path: Path) -> None:
     """Once a vault is opened, /vault/auto on a fresh process should reopen it."""
     other = tmp_path / "my-other-vault"
     app = make_app(settings)

@@ -243,9 +243,7 @@ async def auto_vault(request: Request) -> OpenVaultResponse:
     if isinstance(last, str) and last:
         candidate = Path(last).expanduser()
         if candidate.is_dir():
-            return await open_vault(
-                OpenVaultRequest(root_path=str(candidate), name=None), request
-            )
+            return await open_vault(OpenVaultRequest(root_path=str(candidate), name=None), request)
 
     # (3) fall back to the platform default; create + seed if needed
     default = _default_vault_root()
