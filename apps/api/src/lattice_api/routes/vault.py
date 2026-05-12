@@ -86,8 +86,35 @@ class OpenVaultResponse(BaseModel):
 
 
 class InitVaultRequest(BaseModel):
-    root_path: str
+    # Both optional now — if neither is provided the server picks a path under
+    # ``~/Documents/Lattice`` (or with a suffix if that's taken). The user-
+    # facing "Create a vault" flow only needs to ask for a name.
+    root_path: str | None = None
     name: str | None = None
+
+
+def _slugify(s: str) -> str:
+    """Folder-safe slug derived from a vault name. Falls back to ``Vault``."""
+    cleaned = "".join(ch if ch.isalnum() or ch in "-_ " else "" for ch in s).strip()
+    slug = "-".join(cleaned.split())
+    return slug or "Vault"
+
+
+def _pick_unique_path(base: Path, slug: str) -> Path:
+    """Return ``base/slug`` unless taken, in which case ``base/slug-2`` etc.
+
+    Picks the first non-existent (or empty) candidate so we never collide with
+    a user's existing data.
+    """
+    candidate = base / slug
+    if not candidate.exists() or (candidate.is_dir() and not any(candidate.iterdir())):
+        return candidate
+    n = 2
+    while True:
+        candidate = base / f"{slug}-{n}"
+        if not candidate.exists() or (candidate.is_dir() and not any(candidate.iterdir())):
+            return candidate
+        n += 1
 
 
 _STARTER_WELCOME = """\
@@ -137,7 +164,18 @@ async def init_vault(req: InitVaultRequest, request: Request) -> OpenVaultRespon
     """
 
     _reject_in_cloud(request)
-    root = Path(req.root_path).expanduser()
+
+    # When no root_path is supplied, derive one from the name (or fall back to
+    # ``Lattice``) under the default vault parent. This is what the desktop UI
+    # uses — the user picks a name, we pick the folder.
+    if req.root_path:
+        root = Path(req.root_path).expanduser()
+    else:
+        parent = _default_vault_root().parent  # ``~/Documents`` (or ``~``)
+        parent.mkdir(parents=True, exist_ok=True)
+        slug = _slugify(req.name or "Lattice")
+        root = _pick_unique_path(parent, slug)
+
     try:
         if root.exists():
             if not root.is_dir():

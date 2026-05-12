@@ -14,19 +14,27 @@ export function isTauri(): boolean {
 
 export async function pickVaultFolder(): Promise<string | null> {
   if (!isTauri()) return null;
-  // Defer the import so a non-Tauri build doesn't try to resolve the module.
-  const dialog = await import(/* webpackIgnore: true */ "@tauri-apps/plugin-dialog").catch(
-    () => null,
-  );
-  if (!dialog) return null;
-  const result = (await dialog.open({ directory: true, multiple: false })) as string | null;
-  return result;
+  // Let Webpack bundle the plugin — the previous `webpackIgnore: true` made
+  // this a runtime URL import that the WebView can't resolve, so the picker
+  // silently no-op'd. Bundling is safe; the `isTauri()` guard keeps it from
+  // running in a plain browser anyway.
+  try {
+    const dialog = await import("@tauri-apps/plugin-dialog");
+    return (await dialog.open({ directory: true, multiple: false })) as string | null;
+  } catch (e) {
+    console.error("pickVaultFolder failed:", e);
+    return null;
+  }
 }
 
 export async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T | null> {
   if (!isTauri()) return null;
-  const core = await import(/* webpackIgnore: true */ "@tauri-apps/api/core").catch(() => null);
-  if (!core) return null;
-  const fn = core.invoke as InvokeFn;
-  return fn<T>(cmd, args);
+  try {
+    const core = await import("@tauri-apps/api/core");
+    const fn = core.invoke as InvokeFn;
+    return fn<T>(cmd, args);
+  } catch (e) {
+    console.error("tauri invoke failed:", e);
+    return null;
+  }
 }

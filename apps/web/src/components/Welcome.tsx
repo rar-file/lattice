@@ -121,43 +121,18 @@ function CreateVault({
   onCancel: () => void;
   onOpened: (resp: OpenVaultResponse) => void;
 }) {
-  const tauri = isTauri();
-  const [folder, setFolder] = useState("");
   const [name, setName] = useState("My Vault");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // In Tauri, suggest a default location. In browser, leave blank — user can
-  // type a path or paste one; we can't pick folders without OS chrome.
-  useEffect(() => {
-    if (!tauri) return;
-    // Default to ~/Documents/Lattice — created lazily on submit if missing.
-    // We only set this as a placeholder; user can change via "Choose folder".
-    setFolder("");
-  }, [tauri]);
-
-  async function pickFolder() {
-    const p = await pickVaultFolder();
-    if (p) {
-      // User picks a parent dir; append the slug for the actual vault root.
-      const slug =
-        name
-          .trim()
-          .replace(/[^a-zA-Z0-9-_ ]/g, "")
-          .replace(/\s+/g, "-") || "Vault";
-      const sep = p.includes("\\") ? "\\" : "/";
-      setFolder(`${p}${p.endsWith(sep) ? "" : sep}${slug}`);
-    }
-  }
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const root = folder.trim();
-    if (!root) return;
+    if (!name.trim()) return;
     setBusy(true);
     setError(null);
     try {
-      const resp = await getClient().initVault(root, name.trim() || undefined);
+      // Server picks a folder under ~/Documents/<slug>, auto-suffixed if taken.
+      const resp = await getClient().initVault(null, name.trim());
       onOpened(resp);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -168,13 +143,16 @@ function CreateVault({
 
   return (
     <WizardCard
-      icon={<FolderPlusIcon className="h-5 w-5 text-accent" />}
+      icon={<FolderPlusIcon className="h-4 w-4" />}
       title="Create a new vault"
-      subtitle="Lattice will create the folder, drop a starter note, and open it for you."
+      subtitle="Lattice picks the folder — you just pick the name."
       onCancel={onCancel}
     >
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Vault name" hint="Just for display — you can change this later.">
+        <Field
+          label="Vault name"
+          hint="The folder will be created inside your Documents directory."
+        >
           <input
             type="text"
             className="input"
@@ -184,29 +162,6 @@ function CreateVault({
             autoFocus
           />
         </Field>
-        <Field
-          label="Location"
-          hint={
-            tauri
-              ? "Pick a parent folder — Lattice will create a new subfolder inside."
-              : "Enter the absolute path where the vault should live. The folder must not exist or be empty."
-          }
-        >
-          <div className="flex gap-2">
-            <input
-              type="text"
-              className="input flex-1 font-mono text-[12.5px]"
-              value={folder}
-              onChange={(e) => setFolder(e.target.value)}
-              placeholder={tauri ? "/Users/you/Documents/My-Vault" : "/absolute/path/to/new-vault"}
-            />
-            {tauri && (
-              <button type="button" onClick={pickFolder} className="btn btn-secondary shrink-0">
-                Choose folder
-              </button>
-            )}
-          </div>
-        </Field>
 
         {error && (
           <div className="rounded-md bg-danger-soft text-danger px-3 py-2 text-[12.5px]">
@@ -214,11 +169,11 @@ function CreateVault({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pt-1">
           <button type="button" onClick={onCancel} className="btn btn-ghost">
             ← Back
           </button>
-          <button type="submit" disabled={!folder.trim() || busy} className="btn btn-primary">
+          <button type="submit" disabled={!name.trim() || busy} className="btn btn-primary">
             {busy ? (
               "Creating…"
             ) : (

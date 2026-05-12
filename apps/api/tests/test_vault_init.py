@@ -48,6 +48,30 @@ async def test_init_rejects_non_empty_dir(settings: Settings, tmp_path: Path) ->
             assert "not empty" in r.json()["detail"]
 
 
+async def test_init_picks_path_from_name_when_root_missing(
+    settings: Settings, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """When no root_path is sent, the server slugifies ``name`` under ``~/Documents``."""
+    from lattice_api.routes import vault as vault_routes
+
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / "Documents").mkdir()
+    monkeypatch.setattr(vault_routes.Path, "home", staticmethod(lambda: home))
+
+    app = make_app(settings)
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            r = await client.post("/vault/init", json={"name": "Field Notes"})
+            assert r.status_code == 200, r.text
+            assert r.json()["vault"]["root_path"] == str(home / "Documents" / "Field-Notes")
+
+            # Calling again with the same name should pick a -2 suffix.
+            r2 = await client.post("/vault/init", json={"name": "Field Notes"})
+            assert r2.status_code == 200, r2.text
+            assert r2.json()["vault"]["root_path"] == str(home / "Documents" / "Field-Notes-2")
+
+
 async def test_init_rejects_in_cloud_mode(tmp_path: Path) -> None:
     s = Settings(mode=Mode.CLOUD, local_data_dir=tmp_path, embedding_provider="hash")
     app = create_app(s, embedder_override=HashEmbeddingProvider())
