@@ -245,12 +245,12 @@ export function CodeMirrorEditor({
 
   return (
     <div className="flex h-full flex-col bg-canvas" onKeyDown={onKeyDown}>
-      <div className="flex items-center gap-3 border-b border-border-subtle bg-surface px-6 py-3">
+      <div className="flex items-center gap-3 px-8 pt-6 pb-4">
         <div className="flex-1 min-w-0">
-          <div className="text-[14px] font-medium tracking-tight text-fg-default truncate">
+          <div className="text-body font-medium text-fg-strong truncate leading-snug">
             {title?.trim() || stripMd(basename(notePath))}
           </div>
-          <div className="text-[12px] text-fg-faint font-mono truncate" title={notePath}>
+          <div className="mt-1 text-caption font-mono truncate" title={notePath}>
             {notePath}
           </div>
         </div>
@@ -259,28 +259,26 @@ export function CodeMirrorEditor({
           type="button"
           disabled={!dirty || saving}
           onClick={save}
-          className="btn btn-secondary btn-xs"
+          className="btn btn-ghost btn-xs"
         >
           {saving ? "Saving…" : "Save"}
-          <span className="kbd">{formatShortcut("⌘S")}</span>
+          <kbd className="kbd">{formatShortcut("⌘S")}</kbd>
         </button>
       </div>
-      {error && <div className="mx-6 mt-2 text-[12px] text-fg-muted px-1">{error}</div>}
+      {error && <div className="mx-8 -mt-2 mb-2 text-meta">{error}</div>}
       <div className="flex-1 min-h-0 relative">
         <div ref={hostRef} className="absolute inset-0 overflow-auto scrollbar-thin" />
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center text-[12px] text-fg-muted pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="lattice-skeleton h-3 w-24" />
           </div>
         )}
       </div>
       {suggestionsEnabled && suggestions.length > 0 && (
-        <div className="border-t border-border-subtle border-l-2 border-l-accent bg-surface px-6 py-3 animate-slide-up">
+        <div className="px-8 pt-3 pb-4 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
-            <span className="section-label">Linked notes</span>
-            <span className="text-[12px] text-fg-faint">
-              — click to insert <span className="font-mono">[[wikilink]]</span>
-            </span>
+            <span className="text-eyebrow">Linked notes</span>
+            <span className="text-caption">click to insert</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
@@ -290,9 +288,11 @@ export function CodeMirrorEditor({
                 onClick={() => applySuggestion(s)}
                 onDoubleClick={() => onJumpToNote?.(s.path)}
                 title={s.snippet}
-                className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface px-2 py-1 text-[12px] hover:border-accent/40 hover:bg-accent-soft/40 transition-colors focus-ring"
+                className="inline-flex items-center gap-1.5 rounded-md bg-sunken px-2 h-7 text-[12px]
+                  text-fg-muted hover:bg-neutral-200 hover:text-fg-strong
+                  transition-colors duration-fast ease-out focus-ring"
               >
-                <LinkIcon className="h-3 w-3 text-fg-faint" />
+                <LinkIcon className="h-3.5 w-3.5 text-fg-faint" />
                 <span className="font-mono">
                   [[{s.title?.trim() || stripMd(basename(s.path))}]]
                 </span>
@@ -302,10 +302,9 @@ export function CodeMirrorEditor({
         </div>
       )}
       {backlinks.length > 0 && (
-        <div className="border-t border-border-subtle bg-surface px-6 py-3 animate-slide-up">
+        <div className="px-8 pt-3 pb-4 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
-            <LinkIcon className="h-4 w-4 text-fg-muted" />
-            <span className="section-label">
+            <span className="text-eyebrow">
               Linked from {backlinks.length} {backlinks.length === 1 ? "note" : "notes"}
             </span>
           </div>
@@ -315,12 +314,13 @@ export function CodeMirrorEditor({
                 key={b.path}
                 type="button"
                 onClick={() => onJumpToNote?.(b.path)}
-                className="text-left rounded-md px-2 py-2 hover:bg-sunken transition-colors focus-ring"
+                className="text-left rounded-md px-2 py-1.5 hover:bg-sunken focus-ring
+                  transition-colors duration-fast ease-out"
               >
-                <div className="text-[13px] font-medium text-fg-default truncate">
+                <div className="text-[13px] text-fg-default truncate">
                   {b.title?.trim() || stripMd(basename(b.path))}
                 </div>
-                <div className="text-[12px] text-fg-muted truncate">{b.snippet}</div>
+                <div className="text-caption truncate">{b.snippet}</div>
               </button>
             ))}
           </div>
@@ -336,14 +336,14 @@ function EditorFooter({ body, notePath }: { body: string; notePath: string }) {
   // ~225 wpm is the median for prose reading on screen.
   const minutes = Math.max(1, Math.round(words / 225));
   return (
-    <div className="flex items-center justify-between border-t border-border-subtle bg-surface px-6 py-2 text-[12px] text-fg-faint font-mono">
+    <div className="flex items-center justify-between px-8 py-3 text-caption font-mono">
       <div className="flex items-center gap-3">
         <span>
           {words.toLocaleString()} {words === 1 ? "word" : "words"}
         </span>
-        <span className="text-fg-faint/60">·</span>
+        <span>·</span>
         <span>{minutes} min read</span>
-        <span className="text-fg-faint/60">·</span>
+        <span>·</span>
         <span>{body.length.toLocaleString()} chars</span>
       </div>
       <span className="truncate max-w-[40%]" title={notePath}>

@@ -239,9 +239,9 @@ function HomeInner() {
             md:translate-x-0
             absolute md:relative z-20 md:z-auto inset-y-0 left-0
             w-[240px] shrink-0
-            bg-surface border-r border-border-subtle
+            bg-surface
             flex flex-col min-h-0
-            transition-transform duration-200 ease-out
+            transition-transform duration-base ease-out
             md:transition-none
           `}
         >
@@ -264,7 +264,7 @@ function HomeInner() {
             type="button"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden absolute inset-0 z-10 bg-fg-default/35"
+            className="md:hidden absolute inset-0 z-10 bg-neutral-900/40"
           />
         )}
 
@@ -278,8 +278,8 @@ function HomeInner() {
             lg:translate-x-0
             absolute lg:relative z-20 lg:z-auto inset-y-0 right-0
             w-[320px] shrink-0
-            border-l border-border-subtle
-            transition-transform duration-200 ease-out
+            bg-surface
+            transition-transform duration-base ease-out
             lg:transition-none
           `}
         >
@@ -290,7 +290,7 @@ function HomeInner() {
             type="button"
             aria-label="Close panel"
             onClick={() => setRightOpen(false)}
-            className="lg:hidden absolute inset-0 z-10 bg-fg-default/35"
+            className="lg:hidden absolute inset-0 z-10 bg-neutral-900/40"
           />
         )}
       </div>

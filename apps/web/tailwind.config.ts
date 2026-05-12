@@ -22,9 +22,21 @@ export default {
         surface: "rgb(var(--bg-surface) / <alpha-value>)",
         elevated: "rgb(var(--bg-elevated) / <alpha-value>)",
         sunken: "rgb(var(--bg-sunken) / <alpha-value>)",
-        "fg-default": "rgb(var(--fg-default) / <alpha-value>)",
-        "fg-muted": "rgb(var(--fg-muted) / <alpha-value>)",
+        // Neutral ramp — exposed so utilities like `bg-neutral-100` work
+        // alongside the role-based colors below.
+        "neutral-0": "rgb(var(--neutral-0) / <alpha-value>)",
+        "neutral-50": "rgb(var(--neutral-50) / <alpha-value>)",
+        "neutral-100": "rgb(var(--neutral-100) / <alpha-value>)",
+        "neutral-200": "rgb(var(--neutral-200) / <alpha-value>)",
+        "neutral-300": "rgb(var(--neutral-300) / <alpha-value>)",
+        "neutral-400": "rgb(var(--neutral-400) / <alpha-value>)",
+        "neutral-500": "rgb(var(--neutral-500) / <alpha-value>)",
+        "neutral-700": "rgb(var(--neutral-700) / <alpha-value>)",
+        "neutral-900": "rgb(var(--neutral-900) / <alpha-value>)",
         "fg-faint": "rgb(var(--fg-faint) / <alpha-value>)",
+        "fg-muted": "rgb(var(--fg-muted) / <alpha-value>)",
+        "fg-default": "rgb(var(--fg-default) / <alpha-value>)",
+        "fg-strong": "rgb(var(--fg-strong) / <alpha-value>)",
         "border-subtle": "rgb(var(--border-subtle) / <alpha-value>)",
         "border-default": "rgb(var(--border-default) / <alpha-value>)",
         "border-strong": "rgb(var(--border-strong) / <alpha-value>)",
@@ -38,20 +50,44 @@ export default {
         warning: "rgb(var(--warning) / <alpha-value>)",
         "warning-soft": "rgb(var(--warning-soft) / <alpha-value>)",
       },
+      // Spacing extensions — exposes the rhythm scale (4 / 8 / 24 / 48) as
+      // named utilities so callsites can say `gap-rhythm-tight` instead of
+      // remembering the px.
+      spacing: {
+        "rhythm-x": "4px", // label ↔ input, icon ↔ text within a control
+        "rhythm-tight": "8px", // within a field group
+        "rhythm-base": "16px", // default
+        "rhythm-group": "24px", // between field groups
+        "rhythm-section": "48px", // between page sections
+      },
       borderRadius: {
+        // Goal: 6px default for inputs/buttons, 8px for cards. Two radii max.
+        none: "0",
         sm: "4px",
         DEFAULT: "6px",
-        md: "8px",
+        md: "6px",
         lg: "8px",
         xl: "8px",
         "2xl": "8px",
+        full: "9999px",
       },
       boxShadow: {
-        // Goal allows a single 1px solid rgba(0,0,0,0.06) hairline on elevated
-        // surfaces. Nothing heavier. The "ring" is a 1px solid accent stroke.
+        // Single elevation system: hairline only. No drop shadows.
+        none: "none",
         card: "0 0 0 1px rgb(0 0 0 / 0.06)",
         popover: "0 0 0 1px rgb(0 0 0 / 0.06)",
         ring: "0 0 0 1px rgb(var(--accent))",
+      },
+      transitionTimingFunction: {
+        // One curve, used everywhere.
+        DEFAULT: "cubic-bezier(0.16, 1, 0.3, 1)",
+        out: "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
+      transitionDuration: {
+        // Two durations — fast (hover/focus) and base (open/close).
+        DEFAULT: "120ms",
+        fast: "120ms",
+        base: "200ms",
       },
       keyframes: {
         "fade-in": {
@@ -60,10 +96,11 @@ export default {
         },
       },
       animation: {
-        // Opacity only — no slide, no scale, no bounce.
-        "fade-in": "fade-in 150ms ease-out",
-        "scale-in": "fade-in 150ms ease-out",
-        "slide-up": "fade-in 150ms ease-out",
+        // Opacity only. Aliases keep existing call-sites working without
+        // re-introducing slide/scale.
+        "fade-in": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "scale-in": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-up": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },

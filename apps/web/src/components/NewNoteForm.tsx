@@ -71,7 +71,7 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/35 p-4 pt-[16vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/40 p-4 pt-[16vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -82,20 +82,20 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <form onSubmit={submit}>
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
-            <div className="text-[14px] font-medium tracking-tight">New note</div>
+          <div className="flex items-center justify-between px-6 pt-5">
+            <div className="text-lede font-medium">New note</div>
             <button
               type="button"
               onClick={onClose}
-              className="btn btn-ghost btn-xs"
+              className="btn btn-ghost btn-icon"
               aria-label="Close"
             >
               <XIcon className="h-4 w-4" />
             </button>
           </div>
-          <div className="p-5 space-y-3">
+          <div className="px-6 pb-6 pt-4 space-y-6">
             <label className="block">
-              <span className="block text-[12px] font-medium text-fg-default mb-2">Title</span>
+              <span className="block text-meta mb-2">Title</span>
               <input
                 ref={inputRef}
                 value={title}
@@ -105,8 +105,8 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
               />
             </label>
             <label className="block">
-              <span className="block text-[12px] font-medium text-fg-default mb-2">
-                Folder <span className="text-fg-faint font-normal">(optional)</span>
+              <span className="block text-meta mb-2">
+                Folder <span className="text-fg-faint">(optional)</span>
               </span>
               <input
                 value={folder}
@@ -115,10 +115,10 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
                 className="input font-mono text-[13px]"
               />
             </label>
-            {error && <div className="text-[12px] text-fg-muted px-1">{error}</div>}
-            <div className="flex items-center justify-between">
-              <p className="text-[12px] text-fg-muted">
-                Saved as <span className="font-mono">slug.md</span> from the title.
+            {error && <div className="text-meta">{error}</div>}
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-caption">
+                Saves as <span className="font-mono text-fg-muted">slug.md</span> from the title
               </p>
               <button
                 type="submit"

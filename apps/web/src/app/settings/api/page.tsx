@@ -42,8 +42,8 @@ export default function ApiSettingsPage() {
 
       <div className="mx-auto max-w-2xl px-6 py-10 animate-fade-in">
         <header>
-          <h1 className="text-[20px] font-medium tracking-tight">API endpoint</h1>
-          <p className="mt-2 text-[13px] text-fg-muted leading-relaxed">
+          <h1 className="text-section">API endpoint</h1>
+          <p className="mt-2 text-meta">
             Point this client at a custom Lattice API host. Useful for mobile builds talking to a
             cloud deployment, or for testing against a staging API without rebuilding the app.
             Stored in your browser's local storage — only this device is affected.
@@ -82,7 +82,7 @@ export default function ApiSettingsPage() {
           </div>
         </form>
 
-        <p className="mt-6 text-[12px] text-fg-muted leading-relaxed">
+        <p className="mt-6 text-caption">
           Setting this on iOS/Android: after install, visit{" "}
           <span className="font-mono">/settings/api</span> inside the app and paste your cloud URL,
           then reload. See <span className="font-mono">docs/mobile.md</span> in the repo for the

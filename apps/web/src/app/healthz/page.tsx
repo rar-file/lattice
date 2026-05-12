@@ -36,7 +36,7 @@ export default function HealthPage() {
 
       <div className="mx-auto max-w-md px-6 py-12 animate-fade-in">
         <div className="card p-6">
-          <h1 className="text-[20px] font-medium tracking-tight">API status</h1>
+          <h1 className="text-section">API status</h1>
           <p className="mt-1 text-[13px] text-fg-muted">
             Reachability and mode of the Lattice API this UI is talking to.
           </p>

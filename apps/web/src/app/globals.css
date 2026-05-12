@@ -3,154 +3,203 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
- * Design tokens — warm neutral palette + indigo accent.
+ * DESIGN TOKENS
  *
- * Light mode is a barely-off-white (#fbfaf7) with warm grays that don't feel
- * clinical. Dark mode is true near-black with cool grays for legibility.
- * Tokens are exposed as RGB triplets so Tailwind's `<alpha-value>` syntax
- * works (`bg-surface/60`, `text-fg-muted/80`).
+ * Lattice commits to a warm-neutral ramp (a slight ochre cast across both
+ * light and dark) and one accent (desaturated blue). Tokens are RGB triplets
+ * so Tailwind's <alpha-value> syntax works (`bg-surface/60`, `text-fg/80`).
+ *
+ * Roles:
+ *   --neutral-0…900  : warm-neutral ramp (consistent hue, 9 stops)
+ *   --bg-canvas      : page background
+ *   --bg-surface     : default elevated plane (cards, sidebar)
+ *   --bg-sunken      : hover / pressed / inset wells
+ *   --border-subtle  : the ONE chrome line; one weight, one color
+ *   --fg-faint       : disabled text, metadata at lowest density
+ *   --fg-muted       : secondary text (labels, hints, paths)
+ *   --fg-default     : body
+ *   --fg-strong      : headings
+ *   --accent / --accent-soft / --accent-fg
+ *   --danger / --success                (semantic, used at point of action only)
  * --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: light;
 
-  --bg-canvas: 251 250 247; /* page background */
-  --bg-surface: 255 255 254; /* cards / sidebar */
-  --bg-elevated: 255 255 255; /* popovers, modals */
-  --bg-sunken: 244 242 238; /* input fields / hover sinks */
+  /* Warm-neutral ramp — light mode. Hue stays consistent (12° warm) across
+   * stops; only luminance changes. */
+  --neutral-0: 255 254 252;
+  --neutral-50: 250 248 244;
+  --neutral-100: 244 241 234;
+  --neutral-200: 232 226 215;
+  --neutral-300: 214 207 192;
+  --neutral-400: 154 145 132;
+  --neutral-500: 110 102 92;
+  --neutral-700: 56 51 45;
+  --neutral-900: 24 22 19;
 
-  --fg-default: 28 26 24;
-  --fg-muted: 99 92 87;
-  --fg-faint: 152 144 138;
+  --bg-canvas: var(--neutral-50);
+  --bg-surface: var(--neutral-0);
+  --bg-elevated: var(--neutral-0);
+  --bg-sunken: var(--neutral-100);
 
-  --border-subtle: 234 230 224;
-  --border-default: 222 216 208;
-  --border-strong: 198 190 180;
+  --border-subtle: var(--neutral-200);
+  --border-default: var(--neutral-300);
+  --border-strong: var(--neutral-400);
 
-  --accent: 33 100 200; /* desaturated blue — the single accent */
-  --accent-soft: 224 232 247;
-  --accent-fg: 255 255 255;
-
-  --danger: 220 38 38;
-  --danger-soft: 254 226 226;
-
-  --success: 21 128 61;
-  --success-soft: 220 252 231;
-
-  --warning: 180 83 9;
-  --warning-soft: 254 243 199;
-}
-
-/* Dark-mode tokens — applied via @media when no explicit theme class is set,
- * OR when html.theme-dark is set explicitly via the theme picker. */
-@media (prefers-color-scheme: dark) {
-  html:not(.theme-light) {
-    color-scheme: dark;
-
-    --bg-canvas: 14 13 11;
-    --bg-surface: 22 21 18;
-    --bg-elevated: 28 27 24;
-    --bg-sunken: 18 17 15;
-
-    --fg-default: 240 236 230;
-    --fg-muted: 168 160 152;
-    --fg-faint: 112 104 96;
-
-    --border-subtle: 32 30 28;
-    --border-default: 44 41 38;
-    --border-strong: 64 60 56;
-
-    --accent: 122 176 240; /* lighter blue for dark mode */
-    --accent-soft: 24 44 72;
-    --accent-fg: 14 13 11;
-
-    --danger: 248 113 113;
-    --danger-soft: 80 30 30;
-
-    --success: 74 222 128;
-    --success-soft: 21 56 38;
-
-    --warning: 251 191 36;
-    --warning-soft: 62 41 8;
-  }
-}
-/* Explicit light override — needed so users on a system that prefers dark
- * can still force light via the theme picker. Without this rule, the dark
- * media query (above) is skipped for ``html:not(.theme-light)`` but the
- * cascade keeps whatever rules came later (e.g. ``html.theme-dark`` if the
- * class was previously applied). Re-stating the light values here makes the
- * forcing predictable. */
-html.theme-light {
-  color-scheme: light;
-
-  --bg-canvas: 251 250 247;
-  --bg-surface: 255 255 254;
-  --bg-elevated: 255 255 255;
-  --bg-sunken: 245 243 238;
-
-  --fg-default: 24 22 19;
-  --fg-muted: 92 86 78;
-  --fg-faint: 152 144 134;
-
-  --border-subtle: 233 228 219;
-  --border-default: 214 207 196;
-  --border-strong: 184 174 158;
+  --fg-faint: var(--neutral-400);
+  --fg-muted: var(--neutral-500);
+  --fg-default: var(--neutral-700);
+  --fg-strong: var(--neutral-900);
 
   --accent: 33 100 200;
   --accent-soft: 224 232 247;
   --accent-fg: 255 255 255;
 
-  --danger: 220 38 38;
-  --danger-soft: 254 226 226;
+  --danger: 184 36 36;
+  --danger-soft: 250 232 232;
+  --success: 22 122 70;
+  --success-soft: 224 244 232;
+  --warning: 180 100 9;
+  --warning-soft: 250 240 220;
 
-  --success: 22 163 74;
-  --success-soft: 220 252 231;
+  /* Motion — one curve, two durations. Out-expo: quick start, soft landing. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+}
 
-  --warning: 180 83 9;
-  --warning-soft: 254 243 199;
+@media (prefers-color-scheme: dark) {
+  html:not(.theme-light) {
+    color-scheme: dark;
+
+    --neutral-0: 24 22 19;
+    --neutral-50: 19 17 15;
+    --neutral-100: 28 26 22;
+    --neutral-200: 40 37 32;
+    --neutral-300: 56 51 44;
+    --neutral-400: 112 103 92;
+    --neutral-500: 156 145 132;
+    --neutral-700: 210 200 187;
+    --neutral-900: 240 234 224;
+
+    --bg-canvas: var(--neutral-50);
+    --bg-surface: var(--neutral-0);
+    --bg-elevated: var(--neutral-100);
+    --bg-sunken: var(--neutral-100);
+
+    --border-subtle: var(--neutral-200);
+    --border-default: var(--neutral-300);
+    --border-strong: var(--neutral-400);
+
+    --fg-faint: var(--neutral-400);
+    --fg-muted: var(--neutral-500);
+    --fg-default: var(--neutral-700);
+    --fg-strong: var(--neutral-900);
+
+    --accent: 122 176 240;
+    --accent-soft: 22 38 60;
+    --accent-fg: 14 13 11;
+
+    --danger: 244 134 134;
+    --danger-soft: 70 26 26;
+    --success: 100 200 145;
+    --success-soft: 22 50 38;
+    --warning: 244 188 90;
+    --warning-soft: 60 42 18;
+  }
+}
+
+html.theme-light {
+  color-scheme: light;
+
+  --neutral-0: 255 254 252;
+  --neutral-50: 250 248 244;
+  --neutral-100: 244 241 234;
+  --neutral-200: 232 226 215;
+  --neutral-300: 214 207 192;
+  --neutral-400: 154 145 132;
+  --neutral-500: 110 102 92;
+  --neutral-700: 56 51 45;
+  --neutral-900: 24 22 19;
+
+  --bg-canvas: var(--neutral-50);
+  --bg-surface: var(--neutral-0);
+  --bg-elevated: var(--neutral-0);
+  --bg-sunken: var(--neutral-100);
+
+  --border-subtle: var(--neutral-200);
+  --border-default: var(--neutral-300);
+  --border-strong: var(--neutral-400);
+
+  --fg-faint: var(--neutral-400);
+  --fg-muted: var(--neutral-500);
+  --fg-default: var(--neutral-700);
+  --fg-strong: var(--neutral-900);
+
+  --accent: 33 100 200;
+  --accent-soft: 224 232 247;
+  --accent-fg: 255 255 255;
+
+  --danger: 184 36 36;
+  --danger-soft: 250 232 232;
+  --success: 22 122 70;
+  --success-soft: 224 244 232;
+  --warning: 180 100 9;
+  --warning-soft: 250 240 220;
 }
 
 html.theme-dark {
   color-scheme: dark;
 
-  --bg-canvas: 14 13 11;
-  --bg-surface: 22 21 18;
-  --bg-elevated: 28 27 24;
-  --bg-sunken: 18 17 15;
+  --neutral-0: 24 22 19;
+  --neutral-50: 19 17 15;
+  --neutral-100: 28 26 22;
+  --neutral-200: 40 37 32;
+  --neutral-300: 56 51 44;
+  --neutral-400: 112 103 92;
+  --neutral-500: 156 145 132;
+  --neutral-700: 210 200 187;
+  --neutral-900: 240 234 224;
 
-  --fg-default: 240 236 230;
-  --fg-muted: 168 160 152;
-  --fg-faint: 112 104 96;
+  --bg-canvas: var(--neutral-50);
+  --bg-surface: var(--neutral-0);
+  --bg-elevated: var(--neutral-100);
+  --bg-sunken: var(--neutral-100);
 
-  --border-subtle: 32 30 28;
-  --border-default: 44 41 38;
-  --border-strong: 64 60 56;
+  --border-subtle: var(--neutral-200);
+  --border-default: var(--neutral-300);
+  --border-strong: var(--neutral-400);
+
+  --fg-faint: var(--neutral-400);
+  --fg-muted: var(--neutral-500);
+  --fg-default: var(--neutral-700);
+  --fg-strong: var(--neutral-900);
 
   --accent: 122 176 240;
-  --accent-soft: 24 44 72;
+  --accent-soft: 22 38 60;
   --accent-fg: 14 13 11;
 
-  --danger: 248 113 113;
-  --danger-soft: 80 30 30;
-
-  --success: 74 222 128;
-  --success-soft: 21 56 38;
-
-  --warning: 251 191 36;
-  --warning-soft: 62 41 8;
+  --danger: 244 134 134;
+  --danger-soft: 70 26 26;
+  --success: 100 200 145;
+  --success-soft: 22 50 38;
+  --warning: 244 188 90;
+  --warning-soft: 60 42 18;
 }
 
 /* ---------------------------------------------------------------------------
- * Global base
+ * GLOBAL BASE
  * --------------------------------------------------------------------------- */
 
 html,
 body {
   height: 100%;
-  /* Geist ships tabular figures via "tnum"; "ss01" enables the more refined
-   * letterforms. Keep optical kerning + ligatures on for headings to feel
-   * intentional rather than default-system. */
-  font-feature-settings: "ss01", "cv01", "cv11", "tnum" 0;
+  /* Tabular numerals everywhere by default — UIs are mostly aligned columns
+   * of numbers; proportional figures look ragged. Editor body opts out via
+   * `.cm-content` below so prose reads naturally. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss01", "cv01", "cv11", "tnum";
   font-variant-ligatures: common-ligatures;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -161,16 +210,8 @@ body {
   font-size: 14px;
   line-height: 1.55;
   letter-spacing: -0.005em;
-}
-
-/* Display sizes deserve tighter tracking — Geist sits a hair loose by default
- * at large sizes, which reads "amateur". Pull it in. */
-h1,
-h2,
-h3,
-.text-display {
-  letter-spacing: -0.022em;
-  font-feature-settings: "ss01", "cv01", "cv11";
+  color: rgb(var(--fg-default));
+  background: rgb(var(--bg-canvas));
 }
 
 code,
@@ -178,15 +219,14 @@ kbd,
 pre,
 .font-mono {
   font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 
-/* Hide native scrollbars but keep scrolling. Used on the workspace sidebars
- * where a chunky scrollbar would visually compete with content. Keep a
- * narrow one on the main editor since that's where the user lives. */
+/* Scrollbars — neutral, thin, only visible on hover surfaces. */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
@@ -194,131 +234,301 @@ pre,
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: rgb(var(--border-default));
   border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--border-strong));
+  background-clip: padding-box;
 }
 
 /* ---------------------------------------------------------------------------
- * Buttons + inputs
- *
- * `.btn` is a base; variants compose on top. Sized so 14px text feels right
- * at 36px height; smaller buttons drop to 32px.
+ * TYPE SCALE — semantic utilities. Each role has size, line-height, tracking,
+ * and a target color set together so callers stay short.
+ * --------------------------------------------------------------------------- */
+
+@layer components {
+  .text-caption {
+    font-size: 12px;
+    line-height: 1.45;
+    letter-spacing: 0;
+    color: rgb(var(--fg-faint));
+  }
+  .text-meta {
+    font-size: 13px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+    color: rgb(var(--fg-muted));
+  }
+  .text-body {
+    font-size: 14px;
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    color: rgb(var(--fg-default));
+  }
+  .text-lede {
+    font-size: 16px;
+    line-height: 1.55;
+    letter-spacing: -0.012em;
+    color: rgb(var(--fg-default));
+  }
+  .text-section {
+    font-size: 20px;
+    line-height: 1.3;
+    letter-spacing: -0.018em;
+    color: rgb(var(--fg-strong));
+    font-weight: 500;
+  }
+  .text-page {
+    font-size: 28px;
+    line-height: 1.2;
+    letter-spacing: -0.022em;
+    color: rgb(var(--fg-strong));
+    font-weight: 500;
+  }
+
+  /* Small-caps label — used for table headers and "section name above a card". */
+  .text-eyebrow {
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgb(var(--fg-faint));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * BUTTONS — three sizes, three semantic variants. One radius, one motion
+ * voice. Hover shifts luminance via bg-sunken; active is a barely darker
+ * pressed state; focus is a 1px solid accent ring + 1px canvas offset.
  * --------------------------------------------------------------------------- */
 
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-md font-medium
-      transition-colors duration-150 ease-out select-none whitespace-nowrap
-      disabled:opacity-50 disabled:cursor-not-allowed
-      focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
+      select-none whitespace-nowrap
+      disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none
+      focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+      focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
     height: 32px;
     padding: 0 12px;
     font-size: 13px;
     letter-spacing: -0.005em;
+    /* Optical balance: cap-height of Geist/Inter sits slightly above center,
+     * so shift padding 1px upward to make text feel centered. */
+    padding-top: 0;
+    padding-bottom: 1px;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
   }
   .btn-sm {
     height: 28px;
-    padding: 0 10px;
+    padding: 0 10px 1px;
     font-size: 13px;
   }
   .btn-xs {
     height: 24px;
-    padding: 0 8px;
+    padding: 0 8px 1px;
     font-size: 12px;
-    gap: 0.375rem;
+    gap: 6px;
+  }
+  .btn-icon {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    gap: 0;
   }
 
   .btn-primary {
-    @apply bg-accent text-accent-fg hover:bg-accent/90 active:bg-accent;
-    /* Subtle 1px inner highlight on top so primary buttons read as raised
-     * without breaking the no-shadow rule. */
+    background: rgb(var(--accent));
+    color: rgb(var(--accent-fg));
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
   }
-  .btn-secondary {
-    @apply bg-surface text-fg-default border border-border-default
-      hover:bg-sunken hover:border-border-strong active:bg-sunken;
+  .btn-primary:hover {
+    background: rgb(var(--accent) / 0.92);
   }
-  .btn-ghost {
-    @apply bg-transparent text-fg-muted hover:text-fg-default hover:bg-sunken;
-  }
-  .btn-danger {
-    @apply bg-transparent text-danger hover:bg-danger-soft;
+  .btn-primary:active {
+    background: rgb(var(--accent) / 0.82);
   }
 
+  .btn-secondary {
+    background: rgb(var(--bg-surface));
+    color: rgb(var(--fg-default));
+    border: 1px solid rgb(var(--border-default));
+  }
+  .btn-secondary:hover {
+    background: rgb(var(--bg-sunken));
+  }
+  .btn-secondary:active {
+    background: rgb(var(--neutral-200));
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: rgb(var(--fg-muted));
+  }
+  .btn-ghost:hover {
+    color: rgb(var(--fg-strong));
+    background: rgb(var(--bg-sunken));
+  }
+  .btn-ghost:active {
+    background: rgb(var(--neutral-200));
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: rgb(var(--danger));
+  }
+  .btn-danger:hover {
+    background: rgb(var(--danger-soft));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * INPUTS — single radius, no glow, 1px accent border on focus. Disabled
+ * inputs lose color saturation, not just opacity.
+ * --------------------------------------------------------------------------- */
+
+@layer components {
   .input {
-    @apply w-full rounded-md bg-surface border border-border-default
-      text-fg-default placeholder:text-fg-faint
-      transition-colors duration-150 ease-out outline-none
-      focus:border-accent;
-    height: 34px;
+    width: 100%;
+    border-radius: 6px;
+    background: rgb(var(--bg-surface));
+    border: 1px solid rgb(var(--border-default));
+    color: rgb(var(--fg-default));
+    height: 32px;
     padding: 0 12px;
     font-size: 14px;
+    line-height: 1;
+    outline: none;
+    transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast)
+      var(--ease);
+  }
+  .input::placeholder {
+    color: rgb(var(--fg-faint));
+  }
+  .input:hover:not(:focus):not(:disabled) {
+    border-color: rgb(var(--border-strong));
   }
   .input:focus {
-    /* 1px accent border (already applied via `focus:border-accent`) — no
-     * outer glow, keeps the design system flat. */
+    border-color: rgb(var(--accent));
+  }
+  .input:disabled {
+    background: rgb(var(--bg-sunken));
+    color: rgb(var(--fg-faint));
+    cursor: not-allowed;
   }
   textarea.input {
     height: auto;
     padding: 10px 12px;
     line-height: 1.55;
   }
+}
 
+/* ---------------------------------------------------------------------------
+ * SURFACES — no decorative borders. Cards rely on a 1-stop background lift
+ * against canvas; popovers add a single hairline ring as the ONLY signal of
+ * elevation.
+ * --------------------------------------------------------------------------- */
+
+@layer components {
   .card {
-    @apply bg-surface border border-border-subtle rounded-md;
+    background: rgb(var(--bg-surface));
+    border-radius: 8px;
   }
   .card-elevated {
-    @apply bg-elevated border border-border-subtle rounded-md;
-    /* Single 1px hairline on top of the border so popovers and modals lift
-     * off the canvas a hair without crossing into drop-shadow territory. */
+    background: rgb(var(--bg-elevated));
+    border-radius: 8px;
     box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06);
   }
   .card-interactive {
-    @apply card transition-colors duration-150 ease-out hover:bg-sunken/40;
+    background: rgb(var(--bg-surface));
+    border-radius: 8px;
+    transition: background-color var(--dur-fast) var(--ease);
+  }
+  .card-interactive:hover {
+    background: rgb(var(--bg-sunken));
   }
 
   .chip {
-    @apply inline-flex items-center gap-2 rounded
-      border border-border-subtle bg-surface px-2
-      text-[12px] font-medium text-fg-muted leading-none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     height: 20px;
+    padding: 0 8px;
+    border-radius: 4px;
+    background: rgb(var(--bg-sunken));
+    color: rgb(var(--fg-muted));
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
   }
 
   .kbd {
-    @apply inline-flex items-center justify-center
-      rounded border border-border-subtle bg-sunken
-      px-1 font-mono text-[12px] text-fg-muted
-      min-w-[20px] h-[20px] leading-none;
-    /* Very subtle bottom edge so it reads as a keyboard cap, not a flat tile. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 4px;
+    background: rgb(var(--bg-sunken));
+    color: rgb(var(--fg-muted));
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1;
     box-shadow: inset 0 -1px 0 rgb(var(--border-default));
   }
 
-  /* Small-caps section label. */
+  /* Section label — small caps eyebrow, used for table column headers and
+   * subdued group titles. */
   .section-label {
-    @apply text-[12px] font-medium uppercase tracking-[0.08em] text-fg-faint;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgb(var(--fg-faint));
   }
 
-  /* Hairline horizontal rule — softer than border-t alone. */
+  /* Hairline divider (the ONE chrome line). Use sparingly. */
   .hr {
-    @apply h-px bg-border-subtle border-0;
+    height: 1px;
+    background: rgb(var(--border-subtle));
+    border: 0;
+  }
+
+  /* Focus ring helper for non-button interactive elements. */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+      focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
+  }
+
+  /* Selected row indicator — a 2px accent left rule + accent-soft tint. Used
+   * for file list selection and the focused command-palette row. */
+  .selected-rule {
+    box-shadow: inset 2px 0 0 rgb(var(--accent));
   }
 }
 
 /* ---------------------------------------------------------------------------
- * CodeMirror polish
+ * CODEMIRROR — keep the editor surface flat and the highlight in the same
+ * neutral family.
  * --------------------------------------------------------------------------- */
 
-.cm-editor .cm-cursor {
-  border-left-color: rgb(var(--fg-default));
-}
 .cm-editor {
-  color: rgb(var(--fg-default));
+  color: rgb(var(--fg-strong));
 }
-
-/* Heading sizes that read like a real document — the lezer highlight gives us
- * weight/color, but actual rendered size needs to come from CSS since the
- * highlight style doesn't accept font-size for marks the way we'd like. */
+.cm-editor .cm-content {
+  /* Body prose opts back to proportional figures — tabular nums look weird
+   * inside flowing paragraphs. */
+  font-variant-numeric: normal;
+  caret-color: rgb(var(--fg-strong));
+}
+.cm-editor .cm-cursor {
+  border-left-color: rgb(var(--fg-strong));
+}
 .cm-editor .cm-line:has(> .tok-heading1),
 .cm-editor .cm-line:has(> .cm-formatting-header-1) {
   font-size: 1.6em;
@@ -336,39 +546,6 @@ pre,
   font-size: 1.12em;
   line-height: 1.35;
   margin-top: 0.4em;
-}
-
-/* Dark mode highlight overrides — apply only when prefers-color-scheme: dark
- * since the highlight style itself uses light-mode RGB literals. */
-@media (prefers-color-scheme: dark) {
-  .cm-editor .tok-heading1 {
-    color: rgb(245, 240, 232) !important;
-  }
-  .cm-editor .tok-heading2 {
-    color: rgb(245, 240, 232) !important;
-  }
-  .cm-editor .tok-heading3 {
-    color: rgb(220, 214, 206) !important;
-  }
-  .cm-editor .tok-heading {
-    color: rgb(220, 214, 206) !important;
-  }
-  .cm-editor .tok-link,
-  .cm-editor .tok-url {
-    color: rgb(129, 140, 248) !important;
-  }
-  .cm-editor .tok-monospace {
-    color: rgb(220, 214, 206) !important;
-    background-color: rgba(255, 255, 255, 0.06) !important;
-  }
-  .cm-editor .tok-quote,
-  .cm-editor .tok-list {
-    color: rgb(168, 160, 152) !important;
-  }
-  .cm-editor .tok-processingInstruction,
-  .cm-editor .tok-contentSeparator {
-    color: rgb(112, 104, 96) !important;
-  }
 }
 .cm-editor .cm-selectionBackground,
 .cm-editor.cm-focused .cm-selectionBackground,
@@ -391,12 +568,9 @@ pre,
 .cm-editor .cm-activeLineGutter {
   background: transparent;
 }
-.cm-editor .cm-content {
-  caret-color: rgb(var(--fg-default));
-}
 
 /* ---------------------------------------------------------------------------
- * Loading shimmer
+ * MOTION PRIMITIVES
  * --------------------------------------------------------------------------- */
 
 @keyframes lattice-pulse {
@@ -405,23 +579,15 @@ pre,
     opacity: 1;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.5;
   }
 }
 .lattice-skeleton {
-  background: rgb(var(--border-subtle));
-  animation: lattice-pulse 1.4s ease-in-out infinite;
+  background: rgb(var(--bg-sunken));
+  animation: lattice-pulse 1.4s var(--ease) infinite;
   border-radius: 4px;
 }
 
-/* The welcome and login surfaces use the same flat canvas as the rest of the
- * app — no decorative gradients, no aurora, no glass. */
-.bg-aurora,
-.bg-mesh {
-  background: rgb(var(--bg-canvas));
-}
-
-/* Thin top progress bar (YouTube / GitHub style) for >400ms operations. */
 @keyframes lattice-progress {
   0% {
     transform: translateX(-100%);
@@ -435,18 +601,18 @@ pre,
   inset: 0 0 auto 0;
   height: 2px;
   background: rgb(var(--accent));
-  animation: lattice-progress 900ms ease-in-out infinite;
+  animation: lattice-progress 900ms var(--ease) infinite;
   z-index: 60;
 }
 
-/* Hairline divider that aligns with the design's 1px borders. */
+/* Welcome / login share the same flat canvas — no decorative gradients. */
+.bg-aurora,
+.bg-mesh {
+  background: rgb(var(--bg-canvas));
+}
+
 .hairline {
   background: rgb(var(--border-subtle));
   height: 1px;
   width: 100%;
-}
-
-/* Focus ring helper for non-button interactive elements. */
-.focus-ring {
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
 }

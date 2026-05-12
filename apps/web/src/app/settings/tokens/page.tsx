@@ -3,7 +3,7 @@
 import type { TokenInfo } from "@lattice/sdk";
 import { useCallback, useEffect, useState } from "react";
 import { Breadcrumb } from "../../../components/Breadcrumb";
-import { CheckIcon, KeyIcon, PlusIcon, XIcon } from "../../../components/icons";
+import { CheckIcon, CopyIcon, TrashIcon } from "../../../components/icons";
 import { getClient } from "../../../lib/client";
 
 const SCOPE_DESCRIPTIONS: Record<string, string> = {
@@ -82,34 +82,25 @@ export default function TokensPage() {
     <main className="min-h-screen bg-canvas">
       <Breadcrumb trail={[{ label: "Settings" }, { label: "Agent tokens" }]} />
 
-      <div className="mx-auto max-w-4xl px-6 py-10 space-y-8 animate-fade-in">
-        <header className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
-            <KeyIcon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-medium tracking-tight leading-tight">Agent tokens</h1>
-            <p className="mt-2 text-[14px] text-fg-muted leading-relaxed max-w-2xl">
-              Issue scoped tokens for MCP clients — Claude, Cursor, custom agents. Each token grants
-              only the scopes you check; the plaintext is shown once at creation, then stored as a
-              SHA-256 hash.
-            </p>
-          </div>
+      <div className="mx-auto max-w-3xl px-8 pt-12 pb-16 animate-fade-in">
+        <header>
+          <h1 className="text-page">Agent tokens</h1>
+          <p className="mt-3 text-lede text-fg-muted max-w-[58ch]">
+            Issue scoped tokens for MCP clients — Claude Desktop, Cursor, custom agents. Each token
+            grants only the scopes you check. The plaintext is shown once at creation, then stored
+            as a SHA-256 hash.
+          </p>
         </header>
 
-        {error && <div className="rounded-md text-fg-muted px-4 py-3 text-[13px]">{error}</div>}
+        {error && <p className="mt-6 text-meta">{error}</p>}
 
-        <section className="card p-5">
-          <h2 className="text-[14px] font-medium tracking-tight flex items-center gap-2">
-            <PlusIcon className="h-4 w-4 text-accent" />
-            Create a token
-          </h2>
-          <div className="mt-4 space-y-4">
+        {/* SECTION — Create a token. 48px above next section, 24px between field groups. */}
+        <section className="mt-12">
+          <h2 className="text-section">New token</h2>
+
+          <div className="mt-6 space-y-6">
             <div>
-              <label
-                htmlFor="token-name"
-                className="block text-[12px] font-medium text-fg-default mb-2"
-              >
+              <label htmlFor="token-name" className="block text-meta mb-2">
                 Name
               </label>
               <input
@@ -117,66 +108,69 @@ export default function TokensPage() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="claude-code-laptop"
-                className="input"
+                className="input max-w-md"
               />
-              <p className="mt-1 text-[12px] text-fg-muted">
-                Pick something memorable — you'll see it in the list below alongside last-used
-                timestamps.
+              <p className="mt-2 text-caption">
+                Pick something memorable — you'll see it next to last-used timestamps below.
               </p>
             </div>
 
             <div>
-              <div className="block text-[12px] font-medium text-fg-default mb-2">Scopes</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="block text-meta mb-2">Scopes</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl">
                 {Object.entries(SCOPE_DESCRIPTIONS).map(([scope, desc]) => (
                   <label
                     key={scope}
-                    className={`flex items-start gap-3 rounded-md border px-3 py-2 cursor-pointer transition-colors
+                    className={`flex items-start gap-3 rounded-md px-3 py-3 cursor-pointer
+                      transition-colors duration-fast ease-out
                       ${
                         newScopes.includes(scope)
-                          ? "border-accent/40 bg-accent-soft/30"
-                          : "border-border-subtle hover:border-border-default"
+                          ? "bg-accent-soft"
+                          : "bg-sunken/40 hover:bg-sunken"
                       }`}
                   >
                     <input
                       type="checkbox"
                       checked={newScopes.includes(scope)}
                       onChange={() => toggleScope(scope)}
-                      className="mt-1 accent-[rgb(var(--accent))]"
+                      className="mt-0.5 accent-[rgb(var(--accent))]"
                     />
                     <div className="min-w-0">
-                      <div className="font-mono text-[12px] text-fg-default">{scope}</div>
-                      <div className="text-[12px] text-fg-muted">{desc}</div>
+                      <div className="font-mono text-[12px] text-fg-strong">{scope}</div>
+                      <div className="mt-1 text-caption">{desc}</div>
                     </div>
                   </label>
                 ))}
               </div>
             </div>
 
-            <button
-              type="button"
-              disabled={!newName || newScopes.length === 0}
-              onClick={create}
-              className="btn btn-primary"
-            >
-              Create token
-            </button>
+            <div className="pt-2">
+              <button
+                type="button"
+                disabled={!newName || newScopes.length === 0}
+                onClick={create}
+                className="btn btn-primary"
+              >
+                Create token
+              </button>
+            </div>
 
             {created && (
-              <div className="rounded-md border border-warning/30 bg-warning-soft/40 p-3 animate-fade-in">
-                <div className="flex items-center gap-2 text-warning">
-                  <CheckIcon className="h-4 w-4" />
-                  <span className="text-[13px] font-medium">
+              <div className="mt-2 p-4 rounded-md bg-sunken animate-fade-in">
+                <div className="flex items-center gap-2">
+                  <CheckIcon className="h-4 w-4 text-success" />
+                  <span className="text-meta text-fg-strong">
                     Copy now — this token won't be shown again
                   </span>
                 </div>
-                <pre className="mt-2 font-mono text-[12px] break-all whitespace-pre-wrap select-all text-fg-default bg-surface rounded p-2 border border-border-subtle">
+                <pre className="mt-3 font-mono text-[12px] break-all whitespace-pre-wrap select-all text-fg-strong bg-canvas rounded p-3">
                   {created.token}
                 </pre>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-[12px] text-fg-muted">For {created.name}</span>
-                  <button type="button" onClick={copyToken} className="btn btn-secondary btn-xs">
-                    {copied ? "Copied ✓" : "Copy to clipboard"}
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-caption">For {created.name}</span>
+                  <button type="button" onClick={copyToken} className="btn btn-ghost btn-xs">
+                    <CopyIcon className="h-3.5 w-3.5" />
+                    {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
               </div>
@@ -184,54 +178,62 @@ export default function TokensPage() {
           </div>
         </section>
 
-        <section>
-          <h2 className="text-[14px] font-medium tracking-tight mb-3">Existing tokens</h2>
-          {loading ? (
-            <div className="text-[12px] text-fg-muted">Loading…</div>
-          ) : tokens.length === 0 ? (
-            <div className="card text-center py-10 px-4">
-              <p className="text-[13px] text-fg-muted">
-                No tokens yet — create one above to give an agent access.
-              </p>
-            </div>
-          ) : (
-            <ul className="card divide-y divide-border-subtle">
-              {tokens.map((t) => (
-                <li key={t.id} className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[14px] font-medium text-fg-default">{t.name}</span>
-                      <span className="chip uppercase">{t.kind}</span>
-                      {t.revoked_at && (
-                        <span className="chip text-danger border-danger/30">Revoked</span>
-                      )}
+        {/* SECTION — Existing tokens. */}
+        <section className="mt-12">
+          <h2 className="text-section">Existing tokens</h2>
+
+          <div className="mt-6">
+            {loading ? (
+              <span className="lattice-skeleton block h-3 w-24" />
+            ) : tokens.length === 0 ? (
+              <p className="text-meta">No tokens yet — create one above to give an agent access.</p>
+            ) : (
+              <ul>
+                {tokens.map((t, i) => (
+                  <li
+                    key={t.id}
+                    className={`flex items-start gap-4 py-4 ${
+                      i === 0 ? "" : "border-t border-border-subtle"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-body font-medium text-fg-strong">{t.name}</span>
+                        {t.kind !== "agent" && <span className="chip uppercase">{t.kind}</span>}
+                        {t.revoked_at && (
+                          <span className="chip" style={{ color: "rgb(var(--danger))" }}>
+                            Revoked
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {t.scopes.map((s) => (
+                          <span key={s} className="chip font-mono">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-2 text-caption">
+                        {t.last_used_at ? `Last used ${formatDate(t.last_used_at)}` : "Never used"}
+                        {" · "}Created {formatDate(t.created_at)}
+                      </div>
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {t.scopes.map((s) => (
-                        <span key={s} className="chip font-mono">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-1 text-[12px] text-fg-muted">
-                      {t.last_used_at ? `Last used ${formatDate(t.last_used_at)}` : "Never used"} ·
-                      Created {formatDate(t.created_at)}
-                    </div>
-                  </div>
-                  {!t.revoked_at && (
-                    <button
-                      type="button"
-                      onClick={() => revoke(t.id)}
-                      className="btn btn-danger btn-xs"
-                    >
-                      <XIcon className="h-3 w-3" />
-                      Revoke
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+                    {!t.revoked_at && (
+                      <button
+                        type="button"
+                        onClick={() => revoke(t.id)}
+                        className="btn btn-danger btn-xs"
+                        aria-label={`Revoke ${t.name}`}
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                        Revoke
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
       </div>
     </main>

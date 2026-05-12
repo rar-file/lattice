@@ -61,7 +61,7 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/35 p-4 pt-[14vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/40 p-4 pt-[14vh] animate-fade-in"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
@@ -81,47 +81,47 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
         }}
       >
         <form onSubmit={submit}>
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border-subtle">
+          <div className="flex items-center gap-2 px-6 pt-5">
             <InboxIcon className="h-4 w-4 text-fg-muted" />
-            <div className="text-[14px] font-medium tracking-tight">Capture a thought</div>
-            <div className="ml-auto text-[12px] text-fg-muted flex items-center gap-2">
-              <kbd className="kbd">{IS_MAC ? "⌘" : "Ctrl"}</kbd>
-              <kbd className="kbd">{IS_MAC ? "↵" : "Enter"}</kbd>
-              <span>to save</span>
-            </div>
+            <div className="text-lede font-medium">Capture a thought</div>
             <button
               type="button"
               onClick={onClose}
-              className="btn btn-ghost btn-xs"
+              className="ml-auto btn btn-ghost btn-icon"
               aria-label="Close"
             >
               <XIcon className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="p-5 space-y-3">
+          <div className="px-6 pb-6 pt-4">
             <textarea
               ref={inputRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKeyDown}
-              rows={5}
+              rows={6}
               placeholder="Drop a thought — it lands as a clean atomic note in your Inbox."
               className="input resize-none text-[14px] leading-relaxed"
             />
-            {error && <div className="text-[12px] text-fg-muted px-1">{error}</div>}
-            <div className="flex items-center justify-between">
-              <p className="text-[12px] text-fg-muted">
-                Gets a frontmatter title, tags, and lives at{" "}
-                <span className="font-mono">Inbox/YYYY-MM-DD-slug.md</span>.
+            {error && <div className="mt-2 text-meta">{error}</div>}
+            <div className="mt-6 flex items-center justify-between gap-4">
+              <p className="text-caption">
+                Saves to <span className="font-mono text-fg-muted">Inbox/YYYY-MM-DD-slug.md</span>
               </p>
-              <button
-                type="submit"
-                disabled={!text.trim() || busy}
-                className="btn btn-primary btn-sm"
-              >
-                {busy ? "Drafting…" : "Capture"}
-              </button>
+              <div className="flex items-center gap-3">
+                <span className="hidden sm:inline-flex items-center gap-1 text-caption">
+                  <kbd className="kbd">{IS_MAC ? "⌘" : "Ctrl"}</kbd>
+                  <kbd className="kbd">{IS_MAC ? "↵" : "Enter"}</kbd>
+                </span>
+                <button
+                  type="submit"
+                  disabled={!text.trim() || busy}
+                  className="btn btn-primary btn-sm"
+                >
+                  {busy ? "Saving…" : "Capture"}
+                </button>
+              </div>
             </div>
           </div>
         </form>

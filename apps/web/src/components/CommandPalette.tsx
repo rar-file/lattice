@@ -111,23 +111,23 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/35 p-4 pt-[14vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/40 p-4 pt-[14vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="card-elevated w-full max-w-xl animate-scale-in overflow-hidden"
+        className="card-elevated w-full max-w-xl animate-fade-in overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
+        <div className="flex items-center gap-2 px-4 h-12">
           <SearchIcon className="h-4 w-4 text-fg-faint" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Jump to a note or run a command…"
+            placeholder="Jump to a note or run a command"
             className="flex-1 bg-transparent outline-none text-[14px] text-fg-default placeholder:text-fg-faint"
           />
           <kbd className="kbd">esc</kbd>
@@ -135,12 +135,15 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
 
         <div ref={listRef} className="max-h-[50vh] overflow-y-auto scrollbar-thin py-1">
           {items.length === 0 ? (
-            <div className="px-4 py-8 text-center text-[13px] text-fg-muted">
+            <div className="px-4 py-10 text-center text-meta">
               No matches. Try a different query.
             </div>
           ) : (
             items.map((it, i) => {
               const active = i === cursor;
+              const rowClass = `w-full flex items-center gap-3 px-4 h-9 text-left
+                transition-colors duration-fast ease-out
+                ${active ? "bg-sunken text-fg-strong" : "text-fg-default"}`;
               if (it.kind === "action") {
                 const a = it.action;
                 return (
@@ -153,18 +156,14 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
                       a.run();
                       onClose();
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
-                      active ? "bg-sunken" : ""
-                    }`}
+                    className={rowClass}
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
+                    <span className="flex h-5 w-5 items-center justify-center text-fg-muted shrink-0">
                       {a.icon ?? <ArrowRightIcon className="h-4 w-4" />}
                     </span>
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-[13px] text-fg-default truncate">{a.label}</span>
-                      {a.hint && (
-                        <span className="block text-[12px] text-fg-muted truncate">{a.hint}</span>
-                      )}
+                    <span className="flex-1 min-w-0 flex items-baseline gap-2">
+                      <span className="text-[13px] truncate">{a.label}</span>
+                      {a.hint && <span className="text-caption truncate">{a.hint}</span>}
                     </span>
                     {a.shortcut && <kbd className="kbd shrink-0">{a.shortcut}</kbd>}
                   </button>
@@ -181,30 +180,25 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
                     onJumpToNote(n.path);
                     onClose();
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
-                    active ? "bg-sunken" : ""
-                  }`}
+                  className={rowClass}
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
+                  <span className="flex h-5 w-5 items-center justify-center text-fg-muted shrink-0">
                     <FileIcon className="h-4 w-4" />
                   </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[13px] text-fg-default truncate">
+                  <span className="flex-1 min-w-0 flex items-baseline gap-2">
+                    <span className="text-[13px] truncate">
                       {n.title?.trim() || stripMd(basename(n.path))}
                     </span>
-                    <span className="block text-[12px] font-mono text-fg-faint truncate">
-                      {n.path}
-                    </span>
+                    <span className="text-caption font-mono truncate">{n.path}</span>
                   </span>
-                  <ArrowRightIcon className="h-4 w-4 text-fg-faint shrink-0" />
                 </button>
               );
             })
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border-subtle px-4 py-2 text-[12px] text-fg-muted">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-4 h-9 bg-sunken/60">
+          <div className="flex items-center gap-3 text-caption">
             <span className="inline-flex items-center gap-2">
               <kbd className="kbd">↑↓</kbd> navigate
             </span>
@@ -212,7 +206,7 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
               <kbd className="kbd">↵</kbd> select
             </span>
           </div>
-          <span>
+          <span className="text-caption">
             {items.length} result{items.length === 1 ? "" : "s"}
           </span>
         </div>

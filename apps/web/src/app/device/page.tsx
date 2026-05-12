@@ -34,8 +34,8 @@ export default function DevicePage() {
 
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full card-elevated p-7 animate-scale-in">
-            <h1 className="text-[20px] font-medium tracking-tight">Approve a device</h1>
-            <p className="mt-2 text-[13px] text-fg-muted leading-relaxed">
+            <h1 className="text-section">Approve a device</h1>
+            <p className="mt-2 text-meta">
               Enter the 4-by-4 code shown by your Lattice CLI, desktop, or mobile app. The device
               will pick up its token within a few seconds of approval.
             </p>

@@ -42,8 +42,8 @@ export default function LoginPage() {
 
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full card-elevated p-7 animate-scale-in">
-            <h1 className="text-[20px] font-medium tracking-tight">Sign in to Lattice</h1>
-            <p className="mt-2 text-[13px] text-fg-muted leading-relaxed">
+            <h1 className="text-section">Sign in to Lattice</h1>
+            <p className="mt-2 text-meta">
               We'll email you a one-time sign-in link. No password to remember, no tracking pixels.
             </p>
 
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
             {error && <div className="mt-4 text-[12px] text-fg-muted px-1">{error}</div>}
 
-            <div className="mt-6 pt-6 border-t border-border-subtle text-[12px] text-fg-muted leading-relaxed">
+            <div className="mt-6 pt-6 border-t border-border-subtle text-caption">
               <p>
                 Signing in connects your local Lattice to the cloud, enabling sync across devices
                 and hosted MCP for AI agents. Your notes remain on your disk; only what you choose

@@ -59,17 +59,15 @@ export function Welcome({ onOpened }: Props) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="flex flex-col items-center text-center mb-8">
+        <div className="flex flex-col items-center text-center mb-10">
           <LatticeMark withWordmark={false} size={36} />
-          <h1 className="mt-4 text-[20px] font-medium tracking-[-0.02em] text-fg-default">
-            Where should your vault live?
-          </h1>
-          <p className="mt-1 text-[13px] leading-relaxed text-fg-muted max-w-xs">
+          <h1 className="mt-6 text-section">Where should your vault live?</h1>
+          <p className="mt-2 text-meta max-w-xs">
             Any folder of Markdown files. Existing Obsidian vaults work as-is.
           </p>
         </div>
 
-        <form onSubmit={submit} className="space-y-3">
+        <form onSubmit={submit} className="space-y-4">
           <div className="flex gap-2">
             <input
               type="text"
@@ -88,13 +86,13 @@ export function Welcome({ onOpened }: Props) {
               </button>
             )}
           </div>
-          {error && <p className="text-[12px] text-fg-muted">{error}</p>}
-          <div className="flex items-center justify-between gap-3 pt-1">
+          {error && <p className="text-meta">{error}</p>}
+          <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={createDefault}
               disabled={busy}
-              className="text-[12px] text-fg-muted hover:text-fg-default focus-ring rounded px-1"
+              className="text-caption hover:text-fg-default focus-ring rounded px-1"
             >
               or create one in ~/Documents/Lattice
             </button>

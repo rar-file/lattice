@@ -9,7 +9,6 @@ import {
   ChevronDownIcon,
   FolderIcon,
   InboxIcon,
-  KeyIcon,
   LatticeMark,
   MenuIcon,
   SearchIcon,
@@ -27,8 +26,10 @@ interface Props {
 }
 
 /**
- * Workspace top bar. Vault name as a quiet dropdown on the left; command
- * palette in the centre; theme toggle / settings / capture on the right.
+ * Workspace top bar. Vault name on the left, command palette in the centre,
+ * Settings + theme + Capture on the right. Subtracted chrome: no border on
+ * the bar (the editor surface lifts away through its own bg shift), no
+ * dividers between right-side actions.
  */
 export function TopBar({
   vault,
@@ -58,12 +59,12 @@ export function TopBar({
   }, [menuOpen]);
 
   return (
-    <header className="relative z-30 flex h-12 items-center gap-2 border-b border-border-subtle bg-surface px-3">
+    <header className="relative z-30 flex h-12 items-center gap-2 bg-canvas px-3">
       {onToggleSidebar && (
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="btn btn-ghost btn-xs md:hidden"
+          className="btn btn-ghost btn-icon md:hidden"
           aria-label="Toggle sidebar"
         >
           <MenuIcon className="h-4 w-4" />
@@ -72,7 +73,7 @@ export function TopBar({
 
       <Link
         href="/"
-        className="hidden md:flex items-center pr-3 mr-1 border-r border-border-subtle h-7 focus-ring rounded"
+        className="hidden md:flex items-center h-7 px-1 focus-ring rounded mr-2"
         aria-label="Lattice home"
       >
         <LatticeMark withWordmark={false} size={20} />
@@ -82,22 +83,23 @@ export function TopBar({
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-[13px]
-            text-fg-default hover:bg-sunken transition-colors focus-ring max-w-[280px]"
+          className="inline-flex items-center gap-2 h-7 pl-2 pr-1.5 rounded-md
+            text-[13px] text-fg-default
+            hover:bg-sunken focus-ring max-w-[280px]
+            transition-colors duration-fast ease-out"
           title={vault.root_path}
         >
           <FolderIcon className="h-4 w-4 text-fg-muted shrink-0" />
-          <span className="truncate font-medium leading-none">{vault.name}</span>
-          <ChevronDownIcon className="h-4 w-4 text-fg-faint shrink-0" />
+          <span className="truncate leading-none">{vault.name}</span>
+          <ChevronDownIcon className="h-3.5 w-3.5 text-fg-faint shrink-0" />
         </button>
         {menuOpen && (
           <div className="absolute left-0 top-full mt-1 w-[320px] card-elevated p-1 z-30 animate-fade-in">
-            <div className="px-3 py-2 border-b border-border-subtle">
-              <div className="section-label">Vault path</div>
-              <div className="text-[12px] font-mono mt-1 break-all text-fg-muted leading-snug">
-                {vault.root_path}
-              </div>
+            <div className="px-3 pt-2 pb-3">
+              <div className="text-eyebrow">Vault path</div>
+              <div className="mt-2 break-all text-meta font-mono">{vault.root_path}</div>
             </div>
+            <div className="hr mx-1" />
             <div className="p-1">
               <MenuItem
                 onClick={() => {
@@ -117,9 +119,11 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenPalette}
-          className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-[13px]
-            text-fg-muted hover:text-fg-default hover:bg-sunken transition-colors focus-ring
-            ml-auto max-w-[320px] flex-1 min-w-0 border border-transparent hover:border-border-subtle"
+          className="inline-flex items-center gap-2 h-7 pl-2 pr-2 rounded-md
+            text-[13px] text-fg-muted
+            hover:bg-sunken hover:text-fg-default focus-ring
+            ml-auto max-w-[320px] flex-1 min-w-0
+            transition-colors duration-fast ease-out"
           title={`Command palette (${formatShortcut("⌘P")})`}
         >
           <SearchIcon className="h-4 w-4 shrink-0" />
@@ -130,19 +134,9 @@ export function TopBar({
         </button>
       )}
 
-      <button
-        type="button"
-        onClick={onFocusSearch}
-        className={`btn btn-ghost btn-sm ${onOpenPalette ? "" : "ml-auto"}`}
-        title={`Search (${formatShortcut("⌘K")})`}
-        aria-label="Search vault"
-      >
-        <SearchIcon className="h-4 w-4" />
-      </button>
-
       <Link
         href="/settings/tokens"
-        className="btn btn-ghost btn-sm"
+        className="btn btn-ghost btn-icon"
         title="Settings — agent tokens"
         aria-label="Settings"
       >
@@ -177,36 +171,12 @@ function MenuItem({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 px-3 py-2 rounded-md text-[13px]
-        text-fg-default hover:bg-sunken focus-ring text-left"
+      className="flex w-full items-center gap-2 px-3 h-8 rounded-md text-[13px]
+        text-fg-default hover:bg-sunken focus-ring text-left
+        transition-colors duration-fast ease-out"
     >
       {icon}
       <span className="flex-1">{children}</span>
     </button>
   );
 }
-
-// MenuLink kept for future submenus.
-export function _MenuLink({
-  href,
-  icon,
-  children,
-}: {
-  href: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2 px-3 py-2 rounded-md text-[13px]
-        text-fg-default hover:bg-sunken focus-ring"
-    >
-      {icon}
-      <span className="flex-1">{children}</span>
-    </Link>
-  );
-}
-
-// Re-export so siblings can build out their menus without importing twice.
-export const _Icons = { KeyIcon };

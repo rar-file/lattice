@@ -64,11 +64,11 @@ function SearchPane({ vaultOpen, onJumpToNote, inputRef }: SearchPaneProps) {
           e.preventDefault();
           void run();
         }}
-        className="p-3 border-b border-border-subtle"
+        className="px-3 pt-3 pb-2"
       >
         <div className="relative">
           <SearchIcon
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-faint"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-faint pointer-events-none"
             aria-hidden
           />
           <input
@@ -76,28 +76,26 @@ function SearchPane({ vaultOpen, onJumpToNote, inputRef }: SearchPaneProps) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             disabled={!vaultOpen || busy}
-            placeholder={vaultOpen ? "Search your vault…" : "Open a vault to search"}
-            className="input pl-9"
+            placeholder={vaultOpen ? "Search your vault" : "Open a vault to search"}
+            className="input pl-8"
           />
         </div>
       </form>
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {error && <div className="m-3 text-[12px] text-fg-muted px-1">{error}</div>}
+        {error && <div className="mx-4 mt-2 text-meta">{error}</div>}
         {hits === null ? (
           <EmptyState
-            icon={<SearchIcon className="h-5 w-5 text-fg-muted" />}
             title="Find by meaning, not keywords"
             body={
               <>
-                Hybrid search blends semantic similarity with keyword matching. Try a phrase like{" "}
-                <em className="text-fg-default not-italic">"writing about decision trees"</em>.
+                Hybrid search blends semantic similarity with keyword matching. Try{" "}
+                <em className="text-fg-default not-italic">writing about decision trees</em>.
               </>
             }
           />
         ) : hits.length === 0 ? (
           <EmptyState
-            icon={<SearchIcon className="h-5 w-5 text-fg-muted" />}
-            title="No matches"
+            title={`No matches for "${q}"`}
             body={
               <>
                 Try a broader phrase, or describe what the note is{" "}
@@ -106,37 +104,35 @@ function SearchPane({ vaultOpen, onJumpToNote, inputRef }: SearchPaneProps) {
             }
           />
         ) : (
-          <ul className="px-1 py-1">
+          <ul className="px-1 pb-2">
             {hits.map((h) => (
               <li key={h.chunk_id}>
                 <button
                   type="button"
                   onClick={() => onJumpToNote(h.note_path)}
-                  className="group block w-full text-left px-3 py-3 rounded-md hover:bg-sunken transition-colors focus-ring"
+                  className="group block w-full text-left px-3 py-3 rounded-md
+                    hover:bg-sunken focus-ring
+                    transition-colors duration-fast ease-out"
                 >
                   <div className="flex items-baseline gap-2">
-                    <div className="text-[13px] font-medium text-fg-default truncate flex-1">
+                    <div className="text-[13px] font-medium text-fg-strong truncate flex-1">
                       {h.note_title ?? stripMd(basename(h.note_path))}
                     </div>
-                    <div className="text-[12px] font-mono text-fg-faint shrink-0">
-                      {h.score.toFixed(2)}
-                    </div>
+                    <div className="text-caption font-mono shrink-0">{h.score.toFixed(2)}</div>
                   </div>
                   {h.heading_path && (
-                    <div className="text-[12px] text-fg-muted font-mono mt-1 truncate">
-                      ↳ {h.heading_path}
+                    <div className="mt-1 text-caption font-mono truncate">↳ {h.heading_path}</div>
+                  )}
+                  <p className="mt-2 text-meta line-clamp-3">{h.content}</p>
+                  {h.sources.length > 0 && (
+                    <div className="mt-2 flex gap-1">
+                      {h.sources.map((s) => (
+                        <span key={s} className="chip">
+                          {s}
+                        </span>
+                      ))}
                     </div>
                   )}
-                  <p className="mt-2 text-[12px] text-fg-muted line-clamp-3 leading-relaxed">
-                    {h.content}
-                  </p>
-                  <div className="mt-2 flex gap-1">
-                    {h.sources.map((s) => (
-                      <span key={s} className="chip">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
                 </button>
               </li>
             ))}
@@ -147,20 +143,11 @@ function SearchPane({ vaultOpen, onJumpToNote, inputRef }: SearchPaneProps) {
   );
 }
 
-function EmptyState({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: React.ReactNode;
-}) {
+function EmptyState({ title, body }: { title: string; body: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center text-center px-6 py-10 gap-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sunken">{icon}</div>
-      <div className="text-[14px] font-medium text-fg-default">{title}</div>
-      <p className="text-[12px] text-fg-muted leading-relaxed max-w-[240px]">{body}</p>
+    <div className="flex flex-col items-start text-left px-4 pt-6 pb-12">
+      <div className="text-body font-medium text-fg-strong">{title}</div>
+      <p className="mt-2 text-meta max-w-[240px]">{body}</p>
     </div>
   );
 }

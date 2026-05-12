@@ -41,35 +41,35 @@ export function KeyboardHelp({ open, onClose }: Props) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/35 p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-neutral-900/40 p-4 animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="card-elevated w-full max-w-md animate-scale-in"
+        className="card-elevated w-full max-w-md animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
-          <div className="text-[14px] font-medium tracking-tight">Keyboard shortcuts</div>
+        <div className="flex items-center justify-between px-6 pt-5">
+          <div className="text-lede font-medium">Keyboard shortcuts</div>
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-ghost btn-xs"
+            className="btn btn-ghost btn-icon"
             aria-label="Close"
           >
             <XIcon className="h-4 w-4" />
           </button>
         </div>
-        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
+        <div className="px-6 pb-5 pt-6 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-thin">
           {SHORTCUTS.map((sec) => (
             <section key={sec.section}>
-              <div className="section-label mb-2">{sec.section}</div>
-              <ul className="space-y-1.5">
+              <div className="text-eyebrow mb-3">{sec.section}</div>
+              <ul className="space-y-2">
                 {sec.rows.map((r) => (
                   <li key={r.label} className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 min-w-[88px]">
+                    <div className="flex items-center gap-1 min-w-[96px]">
                       {r.keys.map((k, i) => (
                         // biome-ignore lint/suspicious/noArrayIndexKey: shortcut keys aren't reordered
                         <kbd key={i} className="kbd">
@@ -77,14 +77,14 @@ export function KeyboardHelp({ open, onClose }: Props) {
                         </kbd>
                       ))}
                     </div>
-                    <span className="text-[13px] text-fg-muted">{r.label}</span>
+                    <span className="text-meta">{r.label}</span>
                   </li>
                 ))}
               </ul>
             </section>
           ))}
         </div>
-        <div className="px-5 py-3 border-t border-border-subtle text-[12px] text-fg-muted">
+        <div className="px-6 py-3 bg-sunken/60 text-caption">
           Press <kbd className="kbd">?</kbd> any time to show this list.
         </div>
       </div>
