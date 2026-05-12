@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .config import Mode, Settings
 from .email import build_default_mailer
@@ -62,6 +63,25 @@ def create_app(
             await storage.close()
 
     app = FastAPI(title="Lattice API", version="0.0.0", lifespan=lifespan)
+
+    # CORS — the Tauri WebView serves the bundled UI from ``tauri://localhost``
+    # (macOS/Linux) or ``https://tauri.localhost`` (Windows), so every API
+    # call is technically cross-origin even though the API is local. Without
+    # this middleware the browser blocks the request with a generic "Failed
+    # to fetch". We also allow the dev URLs so `pnpm dev` keeps working.
+    app.add_middleware(
+        CORSMiddleware,
+        # Covers:
+        #   tauri://localhost              (macOS/Linux WebKit)
+        #   http(s)://tauri.localhost      (Windows WebView2)
+        #   http(s)://localhost:<port>     (dev: Next.js, Vite, etc.)
+        #   http(s)://127.0.0.1:<port>
+        allow_origin_regex=r"^(tauri://localhost|https?://(tauri\.localhost|localhost|127\.0\.0\.1)(:\d+)?)$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     app.state.settings = settings
     app.state.storage = storage
     app.state.embedder = embedder
