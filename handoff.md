@@ -4,7 +4,21 @@ Picking this up? Read this, then `docs/architecture.md`, then `/root/.claude/pla
 
 ## Where we are
 
-M0 shipped (commit `227b7cc`). Monorepo bootstrapped, FastAPI boots in `--mode=local` (SQLite) and `--mode=cloud` (Postgres+pgvector) from one codebase. CLI, Next.js, and Tauri shells exist. Full Postgres schema is in `infra/migrations/0001_initial.sql`. 4 pytest tests green; pyright + ruff clean. Repo public at https://github.com/rar-file/lattice.
+**M1 shipped 2026-05-12.** Local-everything is functional end-to-end:
+- SqliteStorage with sqlite-vec + FTS5; hybrid search via reciprocal-rank fusion.
+- Indexer (heading-aware chunking, xxhash dedup) + watchdog-based reindexer.
+- Pluggable providers: `fastembed` (BAAI/bge-small-en-v1.5, 384d) + Anthropic (Claude with prompt caching) + stub for tests.
+- HTTP routes: `/vault/{open,close,}`, `/notes`, `/search`, `/chat` (with parsed `[n]` citations).
+- Local stdio MCP server (`lattice mcp serve`) exposing `search_notes` / `read_note` / `list_notes`.
+- CLI subcommands: `lattice open|search|chat|mcp serve` — talk to lattice_api modules in-process.
+- Web app: 3-pane UI (file list / textarea editor / search+chat panel) hitting the API.
+- Tauri shell: spawns PyInstaller-packed `lattice-api-<triple>` as a sidecar; vault picker via tauri-plugin-dialog.
+- PyInstaller build script: `uv run python apps/desktop/src-tauri/build_sidecar.py`.
+- GitHub Actions release workflow: tag `v*` → builds `.dmg` (macOS arm64+intel) and `.msi` (Windows x86_64) and uploads to a draft GitHub release.
+
+21 pytest tests green; pyright + ruff clean; pnpm typecheck clean. Repo public at https://github.com/rar-file/lattice.
+
+M0 baseline reminder: monorepo bootstrapped, FastAPI in two modes, full Postgres schema in `infra/migrations/0001_initial.sql`.
 
 ## Locked decisions (don't re-litigate)
 

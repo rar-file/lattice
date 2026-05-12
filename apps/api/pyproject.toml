@@ -20,10 +20,14 @@ dependencies = [
     "asyncpg>=0.30",
     "alembic>=1.14",
     "pgvector>=0.3",
+    "sqlite-vec>=0.1.9",
+    "mcp[cli]>=1.27.1",
+    "fastembed>=0.8.0",
 ]
 
 [project.scripts]
 lattice-api = "lattice_api.main:cli"
+lattice-mcp = "lattice_api.mcp_server:cli"
 
 [build-system]
 requires = ["hatchling"]

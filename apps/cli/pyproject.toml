@@ -9,6 +9,7 @@ dependencies = [
     "rich>=13.9",
     "keyring>=25.5",
     "lattice-sdk",
+    "lattice-api",
 ]
 
 [project.scripts]
@@ -16,6 +17,7 @@ lattice = "lattice_cli.main:cli"
 
 [tool.uv.sources]
 lattice-sdk = { workspace = true }
+lattice-api = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

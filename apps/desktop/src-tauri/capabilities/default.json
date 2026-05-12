@@ -1,0 +1,21 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capability for the Lattice desktop shell.",
+  "windows": ["main", "*"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "lattice-api",
+          "sidecar": true,
+          "args": ["--mode=local", "--port", { "validator": "^\\d+$" }]
+        }
+      ]
+    }
+  ]
+}

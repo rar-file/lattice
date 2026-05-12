@@ -12,11 +12,17 @@ node_modules/
 .next/
 .turbo/
 *.tsbuildinfo
+# Next.js static export output
+apps/web/out/
 
 # Rust / Tauri
 target/
 apps/desktop/src-tauri/binaries/*
 !apps/desktop/src-tauri/binaries/.gitkeep
+apps/desktop/src-tauri/gen/
+
+# PyInstaller scratch
+.pyinstaller/
 
 # Env / secrets
 .env

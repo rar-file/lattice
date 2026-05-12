@@ -14,6 +14,7 @@ dev = [
     "ruff>=0.7",
     "pyright>=1.1.385",
     "httpx>=0.27",
+    "pyinstaller>=6.20.0",
 ]
 
 [tool.ruff]
@@ -22,7 +23,11 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "ASYNC", "RUF"]
-ignore = ["E501"]
+# ASYNC240 flags every Path call inside async funcs. In practice our storage
+# already wraps blocking work in asyncio.to_thread, and resolving paths
+# is microseconds — switching to anyio.path would add a heavy dep for no
+# real win. Re-enable if/when we move off blocking sqlite3.
+ignore = ["E501", "ASYNC240"]
 
 [tool.pyright]
 pythonVersion = "3.12"

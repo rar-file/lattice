@@ -2,7 +2,7 @@ import click
 from rich.console import Console
 
 from . import __version__
-from .commands import serve
+from .commands import chat_cmd, mcp_cmd, open_cmd, search_cmd, serve
 
 console = Console()
 
@@ -14,6 +14,10 @@ def cli() -> None:
 
 
 cli.add_command(serve.serve)
+cli.add_command(open_cmd.open_cmd)
+cli.add_command(search_cmd.search_cmd)
+cli.add_command(chat_cmd.chat_cmd)
+cli.add_command(mcp_cmd.mcp_cmd)
 
 
 @cli.command()

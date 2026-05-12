@@ -8,30 +8,55 @@ from fastapi import FastAPI
 
 from .config import Mode, Settings
 from .modes import build_storage
-from .routes import health
+from .providers.registry import get_embedding_provider, get_llm_provider
+from .routes import chat, health, notes, search, vault
 
 log = logging.getLogger("lattice")
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    *,
+    storage_override=None,
+    embedder_override=None,
+    llm_override=None,
+) -> FastAPI:
     settings = settings or Settings()
-    storage = build_storage(settings)
+    storage = storage_override or build_storage(settings)
+    embedder = embedder_override or get_embedding_provider(settings)
+    llm = llm_override or get_llm_provider(settings)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await storage.init()
         app.state.settings = settings
         app.state.storage = storage
+        app.state.embedder = embedder
+        app.state.llm = llm
+        app.state.vault_session = None
         log.info("lattice-api ready in mode=%s", settings.mode.value)
         try:
             yield
         finally:
+            session = getattr(app.state, "vault_session", None)
+            if session is not None:
+                from .session import close_vault_session
+
+                await close_vault_session(session)
+                app.state.vault_session = None
             await storage.close()
 
     app = FastAPI(title="Lattice API", version="0.0.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.storage = storage
+    app.state.embedder = embedder
+    app.state.llm = llm
+    app.state.vault_session = None
     app.include_router(health.router)
+    app.include_router(vault.router)
+    app.include_router(notes.router)
+    app.include_router(search.router)
+    app.include_router(chat.router)
     return app
 
 

@@ -7,7 +7,7 @@
     "beforeDevCommand": "pnpm --filter @lattice/web dev",
     "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "pnpm --filter @lattice/web build",
-    "frontendDist": "../../web/.next"
+    "frontendDist": "../../web/out"
   },
   "app": {
     "windows": [
@@ -30,6 +30,7 @@
       "icons/128x128.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "externalBin": ["binaries/lattice-api"]
   }
 }
