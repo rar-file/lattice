@@ -30,10 +30,20 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
-          - os: macos-13
+            python_arch: arm64
+          # Intel macOS: GitHub retired the macos-13 runner pool in late 2025,
+          # so jobs pinned to `macos-13` queue forever without ever being
+          # assigned. We build on the macos-14 (Apple Silicon) runner instead:
+          # Rust cross-compiles to x86_64 trivially, and `setup-python` ships
+          # an x64 darwin build that runs under Rosetta — so PyInstaller,
+          # which can only emit binaries for the interpreter it's running
+          # under, produces a genuine x86_64 sidecar.
+          - os: macos-14
             target: x86_64-apple-darwin
+            python_arch: x64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            python_arch: x64
     runs-on: ${{ matrix.os }}
     name: build (${{ matrix.target }})
     steps:
@@ -48,6 +58,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          architecture: ${{ matrix.python_arch }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
