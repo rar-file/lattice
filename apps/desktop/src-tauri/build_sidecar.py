@@ -15,7 +15,6 @@ matches Tauri's expectations for `bundle.externalBin`.
 
 from __future__ import annotations
 
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -74,15 +73,14 @@ def main() -> None:
     print("running:", " ".join(map(str, cmd)))
     subprocess.run(cmd, check=True)
 
-    out_path = distdir / out_name
-    if not out_path.exists():
-        # PyInstaller adds .exe on Windows. Normalise to no-extension naming
-        # that Tauri's externalBin expects (the platform-specific suffix is
-        # added by Tauri's bundler when packing the .deb/.dmg/.msi).
-        with_ext = out_path.with_suffix(".exe")
-        if with_ext.exists():
-            shutil.move(with_ext, out_path)
-    print(f"built: {out_path}")
+    # Tauri's `externalBin` looks for `<name>-<triple>` on macOS/Linux and
+    # `<name>-<triple>.exe` on Windows. PyInstaller already produces the
+    # right name on each platform, so we don't need to move anything —
+    # just verify the expected file exists.
+    expected = distdir / (f"{out_name}.exe" if sys.platform == "win32" else out_name)
+    if not expected.exists():
+        raise SystemExit(f"expected sidecar binary at {expected}, but PyInstaller didn't produce it")
+    print(f"built: {expected}")
 
 
 if __name__ == "__main__":
