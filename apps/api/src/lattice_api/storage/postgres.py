@@ -16,7 +16,9 @@ from .models import ChunkInput, Note, SearchHit, Vault
 
 
 def _not_yet() -> NoReturn:
-    raise NotImplementedError("PostgresStorage M1 surface only supports ping; full impl lands in M2")
+    raise NotImplementedError(
+        "PostgresStorage M1 surface only supports ping; full impl lands in M2"
+    )
 
 
 class PostgresStorage:
@@ -104,9 +106,7 @@ class PostgresStorage:
     ) -> list[SearchHit]:
         _not_yet()
 
-    async def fts_search(
-        self, *, vault_id: str, query: str, limit: int = 20
-    ) -> list[SearchHit]:
+    async def fts_search(self, *, vault_id: str, query: str, limit: int = 20) -> list[SearchHit]:
         _not_yet()
 
     async def hybrid_search(

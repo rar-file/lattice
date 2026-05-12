@@ -50,8 +50,7 @@ export default function HomePage() {
             <div className="text-xs uppercase tracking-wide text-neutral-500">notes</div>
             {lastIndex && (
               <div className="text-[10px] text-neutral-500" title="last index">
-                {lastIndex.notes_indexed}+{lastIndex.notes_skipped} ·{" "}
-                {lastIndex.chunks_indexed}c
+                {lastIndex.notes_indexed}+{lastIndex.notes_skipped} · {lastIndex.chunks_indexed}c
               </div>
             )}
           </div>

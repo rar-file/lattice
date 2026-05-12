@@ -31,6 +31,8 @@ def mcp_serve(vault: Path | None) -> None:
     vault_path = vault or recall_vault(settings)
     if vault_path is None:
         # Errors to stderr — stdout is reserved for MCP protocol traffic.
-        click.echo("error: no vault open. Run `lattice open <path>` first or pass --vault.", err=True)
+        click.echo(
+            "error: no vault open. Run `lattice open <path>` first or pass --vault.", err=True
+        )
         raise SystemExit(2)
     run_stdio(vault_path.expanduser().resolve())

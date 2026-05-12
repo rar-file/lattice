@@ -14,7 +14,9 @@ console = Console()
 
 
 @click.command("open")
-@click.argument("vault_path", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path))
+@click.argument(
+    "vault_path", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path)
+)
 def open_cmd(vault_path: Path) -> None:
     """Open and index a vault. Subsequent search/chat use this vault by default."""
     asyncio.run(_run(vault_path))

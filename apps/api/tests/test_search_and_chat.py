@@ -139,9 +139,7 @@ async def test_chat_returns_answer_with_parsed_citations(
             assert any(b.cache for b in stub_llm.last_system)
 
 
-async def test_chat_rejects_without_vault(
-    settings: Settings, stub_llm: StubLLMProvider
-) -> None:
+async def test_chat_rejects_without_vault(settings: Settings, stub_llm: StubLLMProvider) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

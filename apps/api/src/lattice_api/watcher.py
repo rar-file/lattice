@@ -70,7 +70,9 @@ class VaultWatcher:
         loop = asyncio.get_running_loop()
         self._queue = asyncio.Queue()
         observer = Observer()
-        observer.schedule(_Handler(self._queue, loop), str(self._indexer.vault_root), recursive=True)
+        observer.schedule(
+            _Handler(self._queue, loop), str(self._indexer.vault_root), recursive=True
+        )
         observer.start()
         self._observer = observer
         self._task = asyncio.create_task(self._run(), name="lattice-watcher")

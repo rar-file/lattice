@@ -10,9 +10,7 @@ interface Props {
 
 export function FileList({ notes, selected, onSelect }: Props) {
   if (!notes.length) {
-    return (
-      <div className="p-4 text-sm text-neutral-500">No notes indexed yet.</div>
-    );
+    return <div className="p-4 text-sm text-neutral-500">No notes indexed yet.</div>;
   }
   return (
     <ul className="overflow-y-auto h-full">

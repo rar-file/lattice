@@ -28,9 +28,7 @@ SIDECAR_DIR = REPO_ROOT / "apps" / "desktop" / "src-tauri" / "binaries"
 
 def detect_triple() -> str:
     try:
-        out = subprocess.run(
-            ["rustc", "-vV"], check=True, capture_output=True, text=True
-        ).stdout
+        out = subprocess.run(["rustc", "-vV"], check=True, capture_output=True, text=True).stdout
     except (FileNotFoundError, subprocess.CalledProcessError) as e:
         raise SystemExit(
             "rustc is required to detect the target triple. Install Rust or pass --triple."

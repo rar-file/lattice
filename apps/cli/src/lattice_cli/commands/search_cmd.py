@@ -18,7 +18,9 @@ console = Console()
 @click.argument("query")
 @click.option("--limit", "-n", type=int, default=10)
 @click.option("--mode", type=click.Choice(["hybrid", "vec", "fts"]), default="hybrid")
-@click.option("--vault", type=click.Path(exists=True, file_okay=False, path_type=Path), default=None)
+@click.option(
+    "--vault", type=click.Path(exists=True, file_okay=False, path_type=Path), default=None
+)
 def search_cmd(query: str, limit: int, mode: str, vault: Path | None) -> None:
     """Search the current vault. `lattice open` sets the current vault."""
     asyncio.run(_run(query, limit, mode, vault))

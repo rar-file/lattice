@@ -20,9 +20,7 @@ from .llm import ChatResponse, Message, StreamChunk, SystemBlock
 class AnthropicProvider:
     name = "anthropic"
 
-    def __init__(
-        self, api_key: str, *, default_model: str = "claude-sonnet-4-6"
-    ) -> None:
+    def __init__(self, api_key: str, *, default_model: str = "claude-sonnet-4-6") -> None:
         self._client = AsyncAnthropic(api_key=api_key)
         self._default_model = default_model
 

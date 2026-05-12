@@ -3,10 +3,21 @@
   "files": {
     "ignore": [
       "**/.next",
+      "**/.turbo",
       "**/node_modules",
       "**/dist",
+      "**/build",
       "**/target",
-      "**/src-tauri/gen"
+      "**/out",
+      "**/src-tauri/gen",
+      "**/.venv",
+      "**/__pycache__",
+      "**/.pyinstaller",
+      "**/.claude",
+      "**/.pytest_cache",
+      "**/.ruff_cache",
+      "**/pnpm-lock.yaml",
+      "**/uv.lock"
     ]
   },
   "formatter": {

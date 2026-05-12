@@ -51,11 +51,11 @@ def _safe_resolve(session, rel_path: str) -> Path:
 
 
 @router.get("", response_model=list[NoteSummary])
-async def list_notes_route(request: Request, prefix: str | None = None, limit: int = 1000) -> list[NoteSummary]:
+async def list_notes_route(
+    request: Request, prefix: str | None = None, limit: int = 1000
+) -> list[NoteSummary]:
     session = _require_session(request)
-    notes = await request.app.state.storage.list_notes(
-        session.vault.id, prefix=prefix, limit=limit
-    )
+    notes = await request.app.state.storage.list_notes(session.vault.id, prefix=prefix, limit=limit)
     return [NoteSummary(path=n.path, title=n.title, size=n.size) for n in notes]
 
 

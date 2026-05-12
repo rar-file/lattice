@@ -53,7 +53,9 @@ async def open_vault(req: OpenVaultRequest, request: Request) -> OpenVaultRespon
     request.app.state.vault_session = session
     report = await session.indexer.index_vault()
     return OpenVaultResponse(
-        vault=VaultInfo(id=session.vault.id, name=session.vault.name, root_path=session.vault.root_path),
+        vault=VaultInfo(
+            id=session.vault.id, name=session.vault.name, root_path=session.vault.root_path
+        ),
         indexed=IndexSummary(
             notes_indexed=report.notes_indexed,
             notes_skipped=report.notes_skipped,
@@ -79,4 +81,6 @@ async def current_vault(request: Request) -> VaultInfo | None:
     session = getattr(request.app.state, "vault_session", None)
     if session is None:
         return None
-    return VaultInfo(id=session.vault.id, name=session.vault.name, root_path=session.vault.root_path)
+    return VaultInfo(
+        id=session.vault.id, name=session.vault.name, root_path=session.vault.root_path
+    )

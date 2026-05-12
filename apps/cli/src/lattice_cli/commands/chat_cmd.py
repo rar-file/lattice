@@ -17,7 +17,9 @@ console = Console()
 @click.command("chat")
 @click.argument("query")
 @click.option("--top-k", "-k", type=int, default=8)
-@click.option("--vault", type=click.Path(exists=True, file_okay=False, path_type=Path), default=None)
+@click.option(
+    "--vault", type=click.Path(exists=True, file_okay=False, path_type=Path), default=None
+)
 @click.option("--model", default=None)
 def chat_cmd(query: str, top_k: int, vault: Path | None, model: str | None) -> None:
     """Chat with the vault. Falls back to a stub reply if LATTICE_ANTHROPIC_API_KEY is unset."""

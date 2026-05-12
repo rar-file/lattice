@@ -32,8 +32,7 @@ def fixture_vault(tmp_path: Path) -> Path:
         "A replica set has a primary and secondaries that elect a new primary on failure.\n"
     )
     (root / "kafka.md").write_text(
-        "# Kafka basics\n\n"
-        "Topics are partitioned logs. Consumers read at their own offset.\n"
+        "# Kafka basics\n\nTopics are partitioned logs. Consumers read at their own offset.\n"
     )
     # Hidden directory — indexer should skip it.
     (root / ".obsidian").mkdir()

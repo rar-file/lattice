@@ -140,9 +140,7 @@ class SqliteStorage:
         root = str(root_path.resolve())
 
         def go() -> Vault:
-            row = self._c.execute(
-                "SELECT * FROM vaults WHERE root_path=?", (root,)
-            ).fetchone()
+            row = self._c.execute("SELECT * FROM vaults WHERE root_path=?", (root,)).fetchone()
             if row is not None:
                 if row["name"] != name:
                     self._c.execute("UPDATE vaults SET name=? WHERE id=?", (name, row["id"]))
@@ -236,8 +234,16 @@ class SqliteStorage:
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
-                        new_id, vault_id, path, title, content_hash, mtime_iso, size,
-                        fm_json, body, now,
+                        new_id,
+                        vault_id,
+                        path,
+                        title,
+                        content_hash,
+                        mtime_iso,
+                        size,
+                        fm_json,
+                        body,
+                        now,
                     ),
                 )
                 note_id = new_id
@@ -337,7 +343,9 @@ class SqliteStorage:
         # only works once at a time on this connection, so we coordinate via
         # `self._lock`.
         async with self._lock:
-            await asyncio.to_thread(self._sync_replace_chunks, note_id, chunks, embeddings, embedding_provider_id)
+            await asyncio.to_thread(
+                self._sync_replace_chunks, note_id, chunks, embeddings, embedding_provider_id
+            )
 
     def _sync_replace_chunks(
         self,
@@ -360,8 +368,13 @@ class SqliteStorage:
                         ) VALUES (?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
-                            new_id, note_id, chunk.ord, chunk.heading_path, chunk.content,
-                            chunk.token_count, embedding_provider_id,
+                            new_id,
+                            note_id,
+                            chunk.ord,
+                            chunk.heading_path,
+                            chunk.content,
+                            chunk.token_count,
+                            embedding_provider_id,
                         ),
                     )
                     rid = cur.lastrowid
@@ -445,9 +458,7 @@ class SqliteStorage:
 
         return await asyncio.to_thread(go)
 
-    async def fts_search(
-        self, *, vault_id: str, query: str, limit: int = 20
-    ) -> list[SearchHit]:
+    async def fts_search(self, *, vault_id: str, query: str, limit: int = 20) -> list[SearchHit]:
         clean = _fts_sanitize(query)
         if not clean:
             return []

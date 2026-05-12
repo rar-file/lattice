@@ -150,7 +150,10 @@ export class LatticeClient {
     return this.req<SearchHit[]>(`/search?${params}`);
   }
 
-  chat(query: string, opts: { topK?: number; model?: string; maxTokens?: number } = {}): Promise<ChatResponseBody> {
+  chat(
+    query: string,
+    opts: { topK?: number; model?: string; maxTokens?: number } = {},
+  ): Promise<ChatResponseBody> {
     return this.req<ChatResponseBody>("/chat", {
       method: "POST",
       body: JSON.stringify({
