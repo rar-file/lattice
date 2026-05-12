@@ -92,3 +92,25 @@ async def test_capture_rejects_empty(settings: Settings, fixture_vault: Path) ->
             await _open(client, fixture_vault)
             r = await client.post("/capture", json={"text": "  "})
             assert r.status_code == 400
+
+
+async def test_suggest_finds_anchor_in_paragraph(
+    settings: Settings, fixture_vault: Path
+) -> None:
+    """The anchor field should match a substring that maps to an existing note's title."""
+
+    app = make_app(settings)
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            await _open(client, fixture_vault)
+            r = await client.post(
+                "/suggest/links",
+                json={"paragraph": "Today I was thinking about Postgres replication and Kafka."},
+            )
+            assert r.status_code == 200
+            suggestions = r.json()["suggestions"]
+            assert suggestions
+            top = next(s for s in suggestions if s["path"] == "postgres.md")
+            assert top["anchor"] is not None
+            # Anchor must be a substring of the paragraph.
+            assert top["anchor"] in "Today I was thinking about Postgres replication and Kafka."
