@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     embedding_provider: str = "fastembed"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
 
+    # M2 — cloud + auth
+    public_base_url: str = "http://localhost:8787"
+    resend_api_key: str | None = None
+    sync_push_chunk_size: int = 200
+
     @property
     def sqlite_path(self) -> Path:
         return self.local_data_dir / "lattice.db"

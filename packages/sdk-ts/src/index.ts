@@ -164,6 +164,109 @@ export class LatticeClient {
       }),
     });
   }
+
+  // ---- Auth (M2) -----------------------------------------------------
+
+  magicStart(email: string): Promise<{ sent: boolean }> {
+    return this.req("/auth/magic/start", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  magicConsume(token: string): Promise<{ user_id: string; session_token: string }> {
+    return this.req(`/auth/magic/consume?token=${encodeURIComponent(token)}`);
+  }
+
+  whoami(): Promise<{ user_id: string; email: string; scopes: string[]; mode: string }> {
+    return this.req("/auth/whoami");
+  }
+
+  deviceApprove(userCode: string): Promise<{ approved: boolean }> {
+    return this.req("/auth/device/approve", {
+      method: "POST",
+      body: JSON.stringify({ user_code: userCode }),
+    });
+  }
+
+  listTokens(): Promise<TokenInfo[]> {
+    return this.req<TokenInfo[]>("/auth/tokens");
+  }
+
+  createAgentToken(
+    name: string,
+    scopes: string[] = ["vault:read", "search"],
+  ): Promise<{ info: TokenInfo; token: string }> {
+    return this.req("/auth/tokens", {
+      method: "POST",
+      body: JSON.stringify({ name, scopes }),
+    });
+  }
+
+  revokeToken(id: string): Promise<{ revoked: boolean }> {
+    return this.req(`/auth/tokens/${encodeURIComponent(id)}`, { method: "DELETE" });
+  }
+
+  // ---- Suggest / capture / synthesize -------------------------------
+
+  suggestLinks(
+    paragraph: string,
+    opts: { cursorOffset?: number; limit?: number } = {},
+  ): Promise<{ suggestions: LinkSuggestion[] }> {
+    return this.req("/suggest/links", {
+      method: "POST",
+      body: JSON.stringify({
+        paragraph,
+        cursor_offset: opts.cursorOffset ?? null,
+        limit: opts.limit ?? 5,
+      }),
+    });
+  }
+
+  capture(
+    text: string,
+    opts: { source?: string; inboxDir?: string } = {},
+  ): Promise<{ path: string; title: string; body: string }> {
+    return this.req("/capture", {
+      method: "POST",
+      body: JSON.stringify({
+        text,
+        source: opts.source ?? null,
+        inbox_dir: opts.inboxDir ?? "Inbox",
+      }),
+    });
+  }
+
+  synthesize(
+    opts: { week?: string; inboxDir?: string } = {},
+  ): Promise<{ path: string; week: string; n_notes: number; body: string }> {
+    return this.req("/synthesize", {
+      method: "POST",
+      body: JSON.stringify({ week: opts.week ?? null, inbox_dir: opts.inboxDir ?? "Synthesis" }),
+    });
+  }
+
+  setToken(token: string | null): void {
+    (this.opts as { token?: string }).token = token ?? undefined;
+  }
+}
+
+export interface TokenInfo {
+  id: string;
+  kind: string;
+  name: string;
+  scopes: string[];
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+}
+
+export interface LinkSuggestion {
+  path: string;
+  title: string | null;
+  score: number;
+  snippet: string;
+  anchor: string | null;
 }
 
 // Encode each segment of a path so slashes stay as path separators but

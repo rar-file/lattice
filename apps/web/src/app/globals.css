@@ -5,3 +5,74 @@
 :root {
   color-scheme: light dark;
 }
+
+/* CodeMirror dark-mode polish ----------------------------------------- */
+
+.dark .cm-editor .cm-cursor {
+  border-left-color: #f5f5f5;
+}
+
+.dark .cm-editor {
+  color: #f5f5f5;
+}
+
+.dark .cm-editor .cm-selectionBackground,
+.dark .cm-editor.cm-focused .cm-selectionBackground,
+.dark .cm-editor ::selection {
+  background: rgba(99, 102, 241, 0.25) !important;
+}
+
+.cm-editor .cm-gutters {
+  user-select: none;
+}
+
+.cm-editor .cm-line {
+  padding: 0 2px;
+}
+
+/* Headings get a hair more breathing room than body lines. */
+.cm-editor .cm-line:has(> .cm-formatting-header) {
+  margin-top: 0.25rem;
+}
+
+/* Buttons + inputs — slight bump to interactive feel.  */
+button {
+  transition: background-color 80ms ease-out, opacity 80ms ease-out, border-color 80ms ease-out;
+}
+
+input,
+textarea {
+  transition: border-color 80ms ease-out;
+}
+
+/* Skeleton shimmer used while notes load. */
+@keyframes lattice-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.lattice-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: lattice-shimmer 1.4s linear infinite;
+  border-radius: 4px;
+}
+
+.dark .lattice-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+}

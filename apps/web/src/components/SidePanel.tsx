@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChatResponseBody, SearchHit } from "@lattice/sdk";
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 
 interface Props {
@@ -11,8 +11,24 @@ interface Props {
 
 type Tab = "search" | "chat";
 
-export function SidePanel({ vaultOpen, onJumpToNote }: Props) {
+export interface SidePanelHandle {
+  focusSearch(): void;
+}
+
+export const SidePanel = forwardRef<SidePanelHandle, Props>(function SidePanel(
+  { vaultOpen, onJumpToNote },
+  ref,
+) {
   const [tab, setTab] = useState<Tab>("search");
+  const searchInput = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focusSearch() {
+      setTab("search");
+      requestAnimationFrame(() => searchInput.current?.focus());
+    },
+  }));
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex border-b border-neutral-200 dark:border-neutral-800">
@@ -24,25 +40,32 @@ export function SidePanel({ vaultOpen, onJumpToNote }: Props) {
             className={`flex-1 py-2 text-xs uppercase tracking-wide ${
               tab === t
                 ? "border-b-2 border-neutral-900 dark:border-neutral-100 font-semibold"
-                : "text-neutral-500"
+                : "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
             }`}
           >
             {t}
+            {t === "search" && tab === "search" && (
+              <span className="ml-1 text-[10px] text-neutral-400 font-mono">⌘K</span>
+            )}
           </button>
         ))}
       </div>
       <div className="flex-1 overflow-y-auto">
         {tab === "search" ? (
-          <SearchTab vaultOpen={vaultOpen} onJumpToNote={onJumpToNote} />
+          <SearchTab inputRef={searchInput} vaultOpen={vaultOpen} onJumpToNote={onJumpToNote} />
         ) : (
           <ChatTab vaultOpen={vaultOpen} onJumpToNote={onJumpToNote} />
         )}
       </div>
     </div>
   );
+});
+
+interface SearchTabProps extends Props {
+  inputRef?: React.Ref<HTMLInputElement>;
 }
 
-function SearchTab({ vaultOpen, onJumpToNote }: Props) {
+function SearchTab({ vaultOpen, onJumpToNote, inputRef }: SearchTabProps) {
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
@@ -72,17 +95,20 @@ function SearchTab({ vaultOpen, onJumpToNote }: Props) {
         className="p-3 border-b border-neutral-200 dark:border-neutral-800"
       >
         <input
+          ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           disabled={!vaultOpen || busy}
           placeholder={vaultOpen ? "search the vault…" : "open a vault first"}
-          className="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1 text-sm"
+          className="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1 text-sm outline-none focus:border-neutral-500"
         />
       </form>
       <div className="flex-1 overflow-y-auto">
         {error && <div className="p-3 text-xs text-red-500">{error}</div>}
         {hits === null ? (
-          <div className="p-4 text-xs text-neutral-500">No search run yet.</div>
+          <div className="p-4 text-xs text-neutral-500">
+            Type a query and press enter. Hybrid (semantic + keyword) by default.
+          </div>
         ) : hits.length === 0 ? (
           <div className="p-4 text-xs text-neutral-500">No matches.</div>
         ) : (
@@ -151,7 +177,7 @@ function ChatTab({ vaultOpen, onJumpToNote }: Props) {
           onChange={(e) => setQ(e.target.value)}
           disabled={!vaultOpen || busy}
           placeholder={vaultOpen ? "ask the vault…" : "open a vault first"}
-          className="flex-1 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1 text-sm"
+          className="flex-1 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1 text-sm outline-none focus:border-neutral-500"
         />
         <button
           type="submit"

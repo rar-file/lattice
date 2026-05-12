@@ -7,9 +7,21 @@ import uvicorn
 from fastapi import FastAPI
 
 from .config import Mode, Settings
+from .email import build_default_mailer
 from .modes import build_storage
 from .providers.registry import get_embedding_provider, get_llm_provider
-from .routes import chat, health, notes, search, vault
+from .routes import (
+    auth,
+    chat,
+    health,
+    mcp_sse,
+    notes,
+    search,
+    suggest,
+    sync,
+    synthesis,
+    vault,
+)
 
 log = logging.getLogger("lattice")
 
@@ -20,11 +32,13 @@ def create_app(
     storage_override=None,
     embedder_override=None,
     llm_override=None,
+    mailer_override=None,
 ) -> FastAPI:
     settings = settings or Settings()
     storage = storage_override or build_storage(settings)
     embedder = embedder_override or get_embedding_provider(settings)
     llm = llm_override or get_llm_provider(settings)
+    mailer = mailer_override or build_default_mailer()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -33,6 +47,7 @@ def create_app(
         app.state.storage = storage
         app.state.embedder = embedder
         app.state.llm = llm
+        app.state.mailer = mailer
         app.state.vault_session = None
         log.info("lattice-api ready in mode=%s", settings.mode.value)
         try:
@@ -51,12 +66,18 @@ def create_app(
     app.state.storage = storage
     app.state.embedder = embedder
     app.state.llm = llm
+    app.state.mailer = mailer
     app.state.vault_session = None
     app.include_router(health.router)
+    app.include_router(auth.router)
     app.include_router(vault.router)
     app.include_router(notes.router)
     app.include_router(search.router)
     app.include_router(chat.router)
+    app.include_router(sync.router)
+    app.include_router(suggest.router)
+    app.include_router(synthesis.router)
+    app.include_router(mcp_sse.router)
     return app
 
 

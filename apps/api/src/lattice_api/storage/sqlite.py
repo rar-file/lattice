@@ -25,7 +25,16 @@ from pathlib import Path
 
 import sqlite_vec
 
-from .models import ChunkInput, Note, SearchHit, Vault
+from .models import (
+    ChunkInput,
+    DeviceCodeRecord,
+    Note,
+    SearchHit,
+    SyncLogEntry,
+    Token,
+    User,
+    Vault,
+)
 
 
 def _migrations_dir() -> Path:
@@ -51,7 +60,10 @@ def _migrations_dir() -> Path:
 
 
 def _migrations() -> list[Path]:
-    return [_migrations_dir() / "0002_sqlite_local.sql"]
+    return [
+        _migrations_dir() / "0002_sqlite_local.sql",
+        _migrations_dir() / "0003_sqlite_auth_sync.sql",
+    ]
 
 
 def _now_iso() -> str:
@@ -66,11 +78,58 @@ def _parse_iso(value: str) -> datetime:
 
 
 def _row_to_vault(row: sqlite3.Row) -> Vault:
+    user_id: str | None
+    try:
+        user_id = row["user_id"]
+    except (IndexError, KeyError):
+        user_id = None
     return Vault(
         id=row["id"],
         name=row["name"],
         root_path=row["root_path"],
         created_at=_parse_iso(row["created_at"]),
+        user_id=user_id,
+    )
+
+
+def _row_to_user(row: sqlite3.Row) -> User:
+    return User(id=row["id"], email=row["email"], created_at=_parse_iso(row["created_at"]))
+
+
+def _row_to_token(row: sqlite3.Row) -> Token:
+    return Token(
+        id=row["id"],
+        user_id=row["user_id"],
+        kind=row["kind"],
+        name=row["name"],
+        scopes=json.loads(row["scopes"]) if row["scopes"] else [],
+        created_at=_parse_iso(row["created_at"]),
+        last_used_at=_parse_iso(row["last_used_at"]) if row["last_used_at"] else None,
+        revoked_at=_parse_iso(row["revoked_at"]) if row["revoked_at"] else None,
+    )
+
+
+def _row_to_device_code(row: sqlite3.Row) -> DeviceCodeRecord:
+    return DeviceCodeRecord(
+        user_code=row["user_code"],
+        name=row["name"],
+        scopes=json.loads(row["scopes"]) if row["scopes"] else [],
+        expires_at=_parse_iso(row["expires_at"]),
+        approved_user_id=row["approved_user_id"],
+        issued_token_id=row["issued_token_id"],
+    )
+
+
+def _row_to_sync_log(row: sqlite3.Row) -> SyncLogEntry:
+    return SyncLogEntry(
+        id=row["id"],
+        vault_id=row["vault_id"],
+        op=row["op"],
+        path=row["path"],
+        new_path=row["new_path"],
+        content_hash=row["content_hash"],
+        body=row["body"],
+        ts=_parse_iso(row["ts"]),
     )
 
 
@@ -113,6 +172,11 @@ class SqliteStorage:
         for migration in _migrations():
             sql = migration.read_text()
             conn.executescript(sql)
+        # Conditionally add vaults.user_id (M2). SQLite has no ADD COLUMN IF NOT EXISTS
+        # until 3.35, and our migrations file can't conditionalise easily.
+        cols = {r["name"] for r in conn.execute("PRAGMA table_info(vaults)").fetchall()}
+        if "user_id" not in cols:
+            conn.execute("ALTER TABLE vaults ADD COLUMN user_id TEXT")
         self._conn = conn
 
     async def close(self) -> None:
@@ -136,7 +200,9 @@ class SqliteStorage:
 
     # Vaults -------------------------------------------------------------
 
-    async def upsert_vault(self, name: str, root_path: Path) -> Vault:
+    async def upsert_vault(
+        self, name: str, root_path: Path, *, user_id: str | None = None
+    ) -> Vault:
         root = str(root_path.resolve())
 
         def go() -> Vault:
@@ -144,14 +210,15 @@ class SqliteStorage:
             if row is not None:
                 if row["name"] != name:
                     self._c.execute("UPDATE vaults SET name=? WHERE id=?", (name, row["id"]))
-                    row = self._c.execute(
-                        "SELECT * FROM vaults WHERE id=?", (row["id"],)
-                    ).fetchone()
+                if user_id and row["user_id"] is None:
+                    self._c.execute("UPDATE vaults SET user_id=? WHERE id=?", (user_id, row["id"]))
+                row = self._c.execute("SELECT * FROM vaults WHERE id=?", (row["id"],)).fetchone()
                 return _row_to_vault(row)
             new_id = uuid.uuid4().hex
             self._c.execute(
-                "INSERT INTO vaults (id, name, root_path, created_at) VALUES (?, ?, ?, ?)",
-                (new_id, name, root, _now_iso()),
+                "INSERT INTO vaults (id, name, root_path, created_at, user_id)"
+                " VALUES (?, ?, ?, ?, ?)",
+                (new_id, name, root, _now_iso(), user_id),
             )
             row = self._c.execute("SELECT * FROM vaults WHERE id=?", (new_id,)).fetchone()
             return _row_to_vault(row)
@@ -174,9 +241,14 @@ class SqliteStorage:
 
         return await asyncio.to_thread(go)
 
-    async def list_vaults(self) -> list[Vault]:
+    async def list_vaults(self, *, user_id: str | None = None) -> list[Vault]:
         def go() -> list[Vault]:
-            rows = self._c.execute("SELECT * FROM vaults ORDER BY created_at").fetchall()
+            if user_id:
+                rows = self._c.execute(
+                    "SELECT * FROM vaults WHERE user_id=? ORDER BY created_at", (user_id,)
+                ).fetchall()
+            else:
+                rows = self._c.execute("SELECT * FROM vaults ORDER BY created_at").fetchall()
             return [_row_to_vault(r) for r in rows]
 
         return await asyncio.to_thread(go)
@@ -543,6 +615,238 @@ class SqliteStorage:
                     existing.sources = [*existing.sources, "fts"]
         ranked = sorted(merged.values(), key=lambda h: h.score, reverse=True)
         return ranked[:limit]
+
+    # Auth ---------------------------------------------------------------
+
+    async def upsert_user(self, email: str) -> User:
+        def go() -> User:
+            row = self._c.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+            if row is not None:
+                return _row_to_user(row)
+            new_id = uuid.uuid4().hex
+            self._c.execute(
+                "INSERT INTO users (id, email, created_at) VALUES (?, ?, ?)",
+                (new_id, email, _now_iso()),
+            )
+            row = self._c.execute("SELECT * FROM users WHERE id=?", (new_id,)).fetchone()
+            return _row_to_user(row)
+
+        return await asyncio.to_thread(go)
+
+    async def get_user(self, user_id: str) -> User | None:
+        def go() -> User | None:
+            row = self._c.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+            return _row_to_user(row) if row else None
+
+        return await asyncio.to_thread(go)
+
+    async def get_user_by_email(self, email: str) -> User | None:
+        def go() -> User | None:
+            row = self._c.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+            return _row_to_user(row) if row else None
+
+        return await asyncio.to_thread(go)
+
+    async def create_magic_link(self, *, token_hash: str, email: str, expires_at_iso: str) -> None:
+        def go() -> None:
+            self._c.execute(
+                "INSERT INTO magic_links (token_hash, email, expires_at) VALUES (?, ?, ?)",
+                (token_hash, email, expires_at_iso),
+            )
+
+        await asyncio.to_thread(go)
+
+    async def consume_magic_link(self, *, token_hash: str, now_iso: str) -> str | None:
+        def go() -> str | None:
+            row = self._c.execute(
+                "SELECT email, expires_at, consumed_at FROM magic_links WHERE token_hash=?",
+                (token_hash,),
+            ).fetchone()
+            if row is None:
+                return None
+            if row["consumed_at"] is not None:
+                return None
+            if row["expires_at"] < now_iso:
+                return None
+            self._c.execute(
+                "UPDATE magic_links SET consumed_at=? WHERE token_hash=?", (now_iso, token_hash)
+            )
+            return row["email"]
+
+        return await asyncio.to_thread(go)
+
+    async def create_device_code(
+        self,
+        *,
+        user_code: str,
+        device_code_hash: str,
+        expires_at_iso: str,
+        name: str,
+        scopes: list[str],
+    ) -> None:
+        def go() -> None:
+            self._c.execute(
+                """
+                INSERT INTO device_codes
+                  (user_code, device_code_hash, expires_at, name, scopes)
+                  VALUES (?, ?, ?, ?, ?)
+                """,
+                (user_code, device_code_hash, expires_at_iso, name, json.dumps(scopes)),
+            )
+
+        await asyncio.to_thread(go)
+
+    async def get_device_code(self, user_code: str) -> DeviceCodeRecord | None:
+        def go() -> DeviceCodeRecord | None:
+            row = self._c.execute(
+                "SELECT * FROM device_codes WHERE user_code=?", (user_code,)
+            ).fetchone()
+            return _row_to_device_code(row) if row else None
+
+        return await asyncio.to_thread(go)
+
+    async def approve_device_code(self, *, user_code: str, user_id: str) -> bool:
+        def go() -> bool:
+            cur = self._c.execute(
+                """
+                UPDATE device_codes SET approved_user_id=?
+                  WHERE user_code=? AND approved_user_id IS NULL
+                """,
+                (user_id, user_code),
+            )
+            return cur.rowcount > 0
+
+        return await asyncio.to_thread(go)
+
+    async def poll_device_code(
+        self, *, device_code_hash: str, now_iso: str
+    ) -> tuple[str, DeviceCodeRecord | None]:
+        def go() -> tuple[str, DeviceCodeRecord | None]:
+            row = self._c.execute(
+                "SELECT * FROM device_codes WHERE device_code_hash=?", (device_code_hash,)
+            ).fetchone()
+            if row is None:
+                return "invalid", None
+            rec = _row_to_device_code(row)
+            if rec.issued_token_id is not None:
+                return "consumed", rec
+            if row["expires_at"] < now_iso:
+                return "expired", rec
+            if rec.approved_user_id is None:
+                return "pending", rec
+            return "ready", rec
+
+        return await asyncio.to_thread(go)
+
+    async def mark_device_code_consumed(self, *, device_code_hash: str, token_id: str) -> None:
+        def go() -> None:
+            self._c.execute(
+                "UPDATE device_codes SET issued_token_id=? WHERE device_code_hash=?",
+                (token_id, device_code_hash),
+            )
+
+        await asyncio.to_thread(go)
+
+    async def create_token(
+        self,
+        *,
+        user_id: str,
+        kind: str,
+        name: str,
+        scopes: list[str],
+        token_hash: str,
+    ) -> Token:
+        def go() -> Token:
+            new_id = uuid.uuid4().hex
+            self._c.execute(
+                """
+                INSERT INTO tokens (id, user_id, kind, name, scopes, hash, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (new_id, user_id, kind, name, json.dumps(scopes), token_hash, _now_iso()),
+            )
+            row = self._c.execute("SELECT * FROM tokens WHERE id=?", (new_id,)).fetchone()
+            return _row_to_token(row)
+
+        return await asyncio.to_thread(go)
+
+    async def get_token_by_hash(self, token_hash: str) -> Token | None:
+        def go() -> Token | None:
+            row = self._c.execute("SELECT * FROM tokens WHERE hash=?", (token_hash,)).fetchone()
+            return _row_to_token(row) if row else None
+
+        return await asyncio.to_thread(go)
+
+    async def list_tokens(self, user_id: str, *, kind: str | None = None) -> list[Token]:
+        def go() -> list[Token]:
+            if kind:
+                rows = self._c.execute(
+                    "SELECT * FROM tokens WHERE user_id=? AND kind=? ORDER BY created_at DESC",
+                    (user_id, kind),
+                ).fetchall()
+            else:
+                rows = self._c.execute(
+                    "SELECT * FROM tokens WHERE user_id=? ORDER BY created_at DESC", (user_id,)
+                ).fetchall()
+            return [_row_to_token(r) for r in rows]
+
+        return await asyncio.to_thread(go)
+
+    async def revoke_token(self, token_id: str, now_iso: str) -> bool:
+        def go() -> bool:
+            cur = self._c.execute(
+                "UPDATE tokens SET revoked_at=? WHERE id=? AND revoked_at IS NULL",
+                (now_iso, token_id),
+            )
+            return cur.rowcount > 0
+
+        return await asyncio.to_thread(go)
+
+    async def touch_token(self, token_id: str, now_iso: str) -> None:
+        def go() -> None:
+            self._c.execute("UPDATE tokens SET last_used_at=? WHERE id=?", (now_iso, token_id))
+
+        await asyncio.to_thread(go)
+
+    # Sync ---------------------------------------------------------------
+
+    async def append_sync_log(
+        self,
+        *,
+        vault_id: str,
+        op: str,
+        path: str,
+        new_path: str | None = None,
+        content_hash: str | None = None,
+        body: str | None = None,
+    ) -> SyncLogEntry:
+        def go() -> SyncLogEntry:
+            cur = self._c.execute(
+                """
+                INSERT INTO sync_log (vault_id, op, path, new_path, content_hash, body, ts)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (vault_id, op, path, new_path, content_hash, body, _now_iso()),
+            )
+            row = self._c.execute("SELECT * FROM sync_log WHERE id=?", (cur.lastrowid,)).fetchone()
+            return _row_to_sync_log(row)
+
+        return await asyncio.to_thread(go)
+
+    async def sync_log_since(
+        self, *, vault_id: str, since_id: int = 0, limit: int = 500
+    ) -> list[SyncLogEntry]:
+        def go() -> list[SyncLogEntry]:
+            rows = self._c.execute(
+                """
+                SELECT * FROM sync_log WHERE vault_id=? AND id > ?
+                ORDER BY id ASC LIMIT ?
+                """,
+                (vault_id, since_id, limit),
+            ).fetchall()
+            return [_row_to_sync_log(r) for r in rows]
+
+        return await asyncio.to_thread(go)
 
 
 # FTS5 has its own query mini-language; user input that contains operators or
