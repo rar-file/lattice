@@ -41,5 +41,8 @@ jobs:
         run: pnpm exec biome check .
       - name: Typecheck
         run: pnpm -r typecheck
-      - name: Build
-        run: pnpm -r build
+      - name: Build (web + sdk)
+        # Skip @lattice/desktop — tauri build needs GTK system libs +
+        # the PyInstaller sidecar binary, both of which only exist
+        # inside the dedicated release workflow.
+        run: pnpm --filter '!@lattice/desktop' -r build
