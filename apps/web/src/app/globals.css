@@ -2,50 +2,238 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * Design tokens — warm neutral palette + indigo accent.
+ *
+ * Light mode is a barely-off-white (#fbfaf7) with warm grays that don't feel
+ * clinical. Dark mode is true near-black with cool grays for legibility.
+ * Tokens are exposed as RGB triplets so Tailwind's `<alpha-value>` syntax
+ * works (`bg-surface/60`, `text-fg-muted/80`).
+ * --------------------------------------------------------------------------- */
+
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+
+  --bg-canvas: 251 250 247; /* page background */
+  --bg-surface: 255 255 254; /* cards / sidebar */
+  --bg-elevated: 255 255 255; /* popovers, modals */
+  --bg-sunken: 244 242 238; /* input fields / hover sinks */
+
+  --fg-default: 28 26 24;
+  --fg-muted: 99 92 87;
+  --fg-faint: 152 144 138;
+
+  --border-subtle: 234 230 224;
+  --border-default: 222 216 208;
+  --border-strong: 198 190 180;
+
+  --accent: 79 70 229; /* indigo-600 */
+  --accent-soft: 226 224 254;
+  --accent-fg: 255 255 255;
+
+  --danger: 220 38 38;
+  --danger-soft: 254 226 226;
+
+  --success: 21 128 61;
+  --success-soft: 220 252 231;
+
+  --warning: 180 83 9;
+  --warning-soft: 254 243 199;
 }
 
-/* CodeMirror dark-mode polish ----------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
 
-.dark .cm-editor .cm-cursor {
-  border-left-color: #f5f5f5;
+    --bg-canvas: 14 13 11;
+    --bg-surface: 22 21 18;
+    --bg-elevated: 28 27 24;
+    --bg-sunken: 18 17 15;
+
+    --fg-default: 240 236 230;
+    --fg-muted: 168 160 152;
+    --fg-faint: 112 104 96;
+
+    --border-subtle: 32 30 28;
+    --border-default: 44 41 38;
+    --border-strong: 64 60 56;
+
+    --accent: 129 140 248; /* indigo-400 — softer on dark */
+    --accent-soft: 49 46 92;
+    --accent-fg: 14 13 11;
+
+    --danger: 248 113 113;
+    --danger-soft: 80 30 30;
+
+    --success: 74 222 128;
+    --success-soft: 21 56 38;
+
+    --warning: 251 191 36;
+    --warning-soft: 62 41 8;
+  }
 }
 
-.dark .cm-editor {
-  color: #f5f5f5;
+/* ---------------------------------------------------------------------------
+ * Global base
+ * --------------------------------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-.dark .cm-editor .cm-selectionBackground,
-.dark .cm-editor.cm-focused .cm-selectionBackground,
-.dark .cm-editor ::selection {
-  background: rgba(99, 102, 241, 0.25) !important;
+body {
+  font-size: 14px;
+  line-height: 1.55;
 }
 
+/* Hide native scrollbars but keep scrolling. Used on the workspace sidebars
+ * where a chunky scrollbar would visually compete with content. Keep a
+ * narrow one on the main editor since that's where the user lives. */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-default));
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--border-strong));
+}
+
+/* ---------------------------------------------------------------------------
+ * Buttons + inputs
+ *
+ * `.btn` is a base; variants compose on top. Sized so 14px text feels right
+ * at 36px height; smaller buttons drop to 32px.
+ * --------------------------------------------------------------------------- */
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium
+      transition-all duration-150 ease-out select-none
+      disabled:opacity-50 disabled:cursor-not-allowed
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+    letter-spacing: -0.005em;
+  }
+  .btn-sm {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12.5px;
+  }
+  .btn-xs {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    gap: 0.375rem;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-accent-fg hover:opacity-90 active:opacity-80
+      shadow-card;
+  }
+  .btn-secondary {
+    @apply bg-surface text-fg-default border border-border-default
+      hover:bg-sunken hover:border-border-strong active:bg-sunken;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-fg-muted hover:text-fg-default hover:bg-sunken;
+  }
+  .btn-danger {
+    @apply bg-transparent text-danger hover:bg-danger-soft;
+  }
+
+  .input {
+    @apply w-full rounded-md bg-surface border border-border-default
+      text-fg-default placeholder:text-fg-faint
+      transition-colors duration-150 ease-out outline-none
+      focus:border-accent focus:shadow-ring;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13.5px;
+  }
+  textarea.input {
+    height: auto;
+    padding: 10px 12px;
+    line-height: 1.55;
+  }
+
+  .card {
+    @apply bg-surface border border-border-subtle rounded-lg shadow-card;
+  }
+  .card-elevated {
+    @apply bg-elevated border border-border-subtle rounded-xl shadow-popover;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full
+      border border-border-subtle bg-surface px-2.5 py-0.5
+      text-[11px] font-medium text-fg-muted;
+  }
+
+  .kbd {
+    @apply inline-flex items-center justify-center
+      rounded border border-border-subtle bg-sunken
+      px-1.5 font-mono text-[11px] text-fg-muted
+      min-w-[20px] h-[20px];
+    box-shadow: 0 1px 0 rgb(var(--border-default));
+  }
+
+  /* Section labels — small caps with letter-spacing for a typographic feel.  */
+  .section-label {
+    @apply text-[10.5px] font-semibold uppercase tracking-[0.08em] text-fg-faint;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * CodeMirror polish
+ * --------------------------------------------------------------------------- */
+
+.cm-editor .cm-cursor {
+  border-left-color: rgb(var(--fg-default));
+}
+.cm-editor {
+  color: rgb(var(--fg-default));
+}
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused .cm-selectionBackground,
+.cm-editor ::selection {
+  background: rgb(var(--accent) / 0.18) !important;
+}
 .cm-editor .cm-gutters {
   user-select: none;
+  background: transparent;
+  border-right: none;
+  color: rgb(var(--fg-faint));
 }
-
 .cm-editor .cm-line {
-  padding: 0 2px;
+  padding: 0 4px;
 }
-
-/* Headings get a hair more breathing room than body lines. */
 .cm-editor .cm-line:has(> .cm-formatting-header) {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
+}
+.cm-editor .cm-activeLine,
+.cm-editor .cm-activeLineGutter {
+  background: transparent;
+}
+.cm-editor .cm-content {
+  caret-color: rgb(var(--fg-default));
 }
 
-/* Buttons + inputs — slight bump to interactive feel.  */
-button {
-  transition: background-color 80ms ease-out, opacity 80ms ease-out, border-color 80ms ease-out;
-}
+/* ---------------------------------------------------------------------------
+ * Loading shimmer
+ * --------------------------------------------------------------------------- */
 
-input,
-textarea {
-  transition: border-color 80ms ease-out;
-}
-
-/* Skeleton shimmer used while notes load. */
 @keyframes lattice-shimmer {
   0% {
     background-position: -200% 0;
@@ -54,25 +242,43 @@ textarea {
     background-position: 200% 0;
   }
 }
-
 .lattice-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.04) 0%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.04) 100%
+    rgb(var(--border-subtle)) 0%,
+    rgb(var(--border-default)) 50%,
+    rgb(var(--border-subtle)) 100%
   );
   background-size: 200% 100%;
   animation: lattice-shimmer 1.4s linear infinite;
   border-radius: 4px;
 }
 
-.dark .lattice-skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.12) 50%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  background-size: 200% 100%;
+/* ---------------------------------------------------------------------------
+ * Decorative gradient used on the welcome hero
+ * --------------------------------------------------------------------------- */
+
+.bg-aurora {
+  background: radial-gradient(60% 40% at 50% 0%, rgb(var(--accent) / 0.1) 0%, transparent 60%),
+    radial-gradient(40% 30% at 20% 80%, rgb(var(--accent) / 0.06) 0%, transparent 60%),
+    radial-gradient(40% 30% at 80% 70%, rgb(var(--accent) / 0.05) 0%, transparent 60%);
+}
+
+/* Soft gradient mesh used as background of welcome / login cards. */
+.bg-mesh {
+  background: linear-gradient(to bottom right, rgb(var(--bg-surface)), rgb(var(--bg-canvas))),
+    radial-gradient(80% 50% at 50% 0%, rgb(var(--accent) / 0.06), transparent);
+  background-blend-mode: normal;
+}
+
+/* Hairline divider that aligns with the design's 1px borders. */
+.hairline {
+  background: rgb(var(--border-subtle));
+  height: 1px;
+  width: 100%;
+}
+
+/* Focus ring helper for non-button interactive elements. */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
 }

@@ -113,6 +113,13 @@ export class LatticeClient {
     });
   }
 
+  initVault(rootPath: string, name?: string): Promise<OpenVaultResponse> {
+    return this.req<OpenVaultResponse>("/vault/init", {
+      method: "POST",
+      body: JSON.stringify({ root_path: rootPath, name: name ?? null }),
+    });
+  }
+
   closeVault(): Promise<{ closed: boolean }> {
     return this.req<{ closed: boolean }>("/vault/close", { method: "POST" });
   }

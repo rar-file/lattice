@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { CheckIcon, LatticeMark } from "../../components/icons";
 import { getClient } from "../../lib/client";
 
 export default function DevicePage() {
@@ -22,37 +24,65 @@ export default function DevicePage() {
   }
 
   return (
-    <main className="flex h-screen items-center justify-center bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
-      <div className="w-full max-w-sm rounded-lg border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
-        <h1 className="text-lg font-medium">Approve device</h1>
-        <p className="text-sm text-neutral-500">Enter the code shown by your CLI or desktop app.</p>
-        {status === "ok" ? (
-          <div className="rounded bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-200 px-3 py-2 text-sm">
-            Approved — the device will pick up its token within a few seconds.
+    <main className="relative min-h-screen overflow-hidden bg-canvas">
+      <div className="absolute inset-0 bg-aurora pointer-events-none" aria-hidden />
+      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+        <header className="flex items-center justify-between animate-fade-in">
+          <Link href="/" className="focus-ring rounded px-1">
+            <LatticeMark />
+          </Link>
+        </header>
+
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full card-elevated p-7 animate-scale-in">
+            <h1 className="text-[22px] font-semibold tracking-tight">Approve a device</h1>
+            <p className="mt-1.5 text-[13px] text-fg-muted leading-relaxed">
+              Enter the 4-by-4 code shown by your Lattice CLI, desktop, or mobile app. The device
+              will pick up its token within a few seconds of approval.
+            </p>
+
+            {status === "ok" ? (
+              <div className="mt-6 rounded-md border border-success/30 bg-success-soft/40 px-4 py-3 animate-fade-in">
+                <div className="flex items-center gap-2 text-success">
+                  <CheckIcon className="h-4 w-4" />
+                  <span className="text-[13px] font-medium">Device approved</span>
+                </div>
+                <p className="mt-1 text-[12.5px] text-fg-muted">
+                  You can close this window and return to the device that was waiting.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={submit} className="mt-6 space-y-3">
+                <div>
+                  <label
+                    htmlFor="device-code"
+                    className="block text-[12px] font-medium text-fg-default mb-1.5"
+                  >
+                    Device code
+                  </label>
+                  <input
+                    id="device-code"
+                    required
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="ABCD-1234"
+                    className="input font-mono uppercase text-center tracking-[0.3em] text-[16px]"
+                    autoFocus
+                  />
+                </div>
+                <button type="submit" disabled={!code} className="btn btn-primary w-full">
+                  Approve device
+                </button>
+              </form>
+            )}
+
+            {error && status === "error" && (
+              <div className="mt-4 rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
+                {error}
+              </div>
+            )}
           </div>
-        ) : (
-          <form onSubmit={submit} className="space-y-3">
-            <input
-              required
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="ABCD-1234"
-              className="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-sm font-mono tracking-widest text-center outline-none focus:border-neutral-500 uppercase"
-            />
-            <button
-              type="submit"
-              disabled={!code}
-              className="w-full rounded bg-neutral-900 dark:bg-neutral-100 text-neutral-100 dark:text-neutral-900 px-3 py-2 text-sm disabled:opacity-50"
-            >
-              Approve
-            </button>
-          </form>
-        )}
-        {error && (
-          <div className="rounded bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 text-xs px-3 py-2">
-            {error}
-          </div>
-        )}
+        </div>
       </div>
     </main>
   );

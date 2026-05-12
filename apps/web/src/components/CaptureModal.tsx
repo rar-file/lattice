@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
+import { SparkleIcon, XIcon } from "./icons";
 
 interface Props {
   open: boolean;
@@ -19,7 +20,6 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
     if (open) {
       setText("");
       setError(null);
-      // Focus on next tick so animations / layout settle first.
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
@@ -59,49 +59,69 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-fg-default/40 backdrop-blur-sm p-4 pt-[16vh] animate-fade-in"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+      role="presentation"
+    >
       <dialog
         open
-        className="w-full max-w-xl rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xl m-0 p-0"
+        className="card-elevated w-full max-w-xl m-0 p-0 animate-scale-in"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
         }}
       >
-        <form onSubmit={submit} className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">Capture</div>
-            <div className="text-[11px] text-neutral-500">⌘↵ to save · esc to cancel</div>
-          </div>
-          <textarea
-            ref={inputRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={4}
-            placeholder="dump your thought — Claude will reshape it into a clean note"
-            className="w-full resize-none rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-sm outline-none focus:border-neutral-500"
-          />
-          {error && (
-            <div className="rounded bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 text-xs px-3 py-2">
-              {error}
+        <form onSubmit={submit}>
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border-subtle">
+            <SparkleIcon className="h-4 w-4 text-accent" />
+            <div className="text-[13.5px] font-semibold tracking-tight">Capture a thought</div>
+            <div className="ml-auto text-[11px] text-fg-muted flex items-center gap-1.5">
+              <kbd className="kbd">⌘</kbd>
+              <kbd className="kbd">↵</kbd>
+              <span>to save</span>
             </div>
-          )}
-          <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="text-xs px-3 py-1.5 rounded border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="btn btn-ghost btn-xs"
+              aria-label="Close"
             >
-              cancel
+              <XIcon className="h-3.5 w-3.5" />
             </button>
-            <button
-              type="submit"
-              disabled={!text.trim() || busy}
-              className="text-xs px-3 py-1.5 rounded bg-neutral-900 dark:bg-neutral-100 text-neutral-100 dark:text-neutral-900 disabled:opacity-50"
-            >
-              {busy ? "drafting…" : "capture"}
-            </button>
+          </div>
+
+          <div className="p-5 space-y-3">
+            <textarea
+              ref={inputRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={onKeyDown}
+              rows={5}
+              placeholder="Dump your thought — Claude will reshape it into a clean atomic note in your Inbox."
+              className="input resize-none text-[14px] leading-relaxed"
+            />
+            {error && (
+              <div className="rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
+                {error}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <p className="text-[11.5px] text-fg-muted">
+                Gets a frontmatter title, tags, and lives at{" "}
+                <span className="font-mono">Inbox/YYYY-MM-DD-slug.md</span>.
+              </p>
+              <button
+                type="submit"
+                disabled={!text.trim() || busy}
+                className="btn btn-primary btn-sm"
+              >
+                {busy ? "Drafting…" : "Capture"}
+              </button>
+            </div>
           </div>
         </form>
       </dialog>

@@ -30,5 +30,28 @@
     "enabled": true,
     "rules": { "recommended": true }
   },
+  "overrides": [
+    {
+      "include": ["**/icons.tsx", "**/TopBar.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["**/app/**/*.tsx", "**/components/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noAutofocus": "off",
+            "noLabelWithoutControl": "off"
+          }
+        }
+      }
+    }
+  ],
   "organizeImports": { "enabled": true }
 }

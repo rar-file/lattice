@@ -10,6 +10,7 @@ import type { LinkSuggestion } from "@lattice/sdk";
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 import { markdownHighlight } from "../lib/cm-highlight";
+import { CheckIcon, FileIcon, LinkIcon, SparkleIcon } from "./icons";
 
 interface Props {
   notePath: string | null;
@@ -55,18 +56,16 @@ export function CodeMirrorEditor({
           EditorView.theme({
             "&": { height: "100%", backgroundColor: "transparent" },
             ".cm-scroller": {
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              fontSize: "13px",
+              fontFamily: "var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif",
+              fontSize: "15px",
+              lineHeight: "1.65",
+              maxWidth: "780px",
+              margin: "0 auto",
+              padding: "0 24px",
             },
-            ".cm-content": { padding: "16px 12px" },
-            ".cm-gutters": {
-              backgroundColor: "transparent",
-              borderRight: "none",
-              color: "var(--cm-gutter-color, #9ca3af)",
-            },
-            ".cm-cursor": { borderLeftColor: "currentColor" },
-            ".cm-activeLine": { backgroundColor: "transparent" },
-            ".cm-activeLineGutter": { backgroundColor: "transparent" },
+            ".cm-content": { padding: "32px 0 200px" },
+            ".cm-line": { padding: "0" },
+            ".cm-cursor": { borderLeftColor: "currentColor", borderLeftWidth: "1.5px" },
           }),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
@@ -200,45 +199,69 @@ export function CodeMirrorEditor({
 
   if (!notePath) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-neutral-500">
-        Select a note on the left.
+      <div className="flex h-full flex-col items-center justify-center px-6 text-center bg-canvas">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sunken mb-4">
+          <FileIcon className="h-5 w-5 text-fg-muted" />
+        </div>
+        <h2 className="text-[16px] font-semibold tracking-tight text-fg-default">
+          Pick a note to start
+        </h2>
+        <p className="mt-2 max-w-sm text-[13px] text-fg-muted leading-relaxed">
+          Choose any note from the sidebar to begin writing, or press <kbd className="kbd">⇧⌘C</kbd>{" "}
+          to capture a new thought into your Inbox.
+        </p>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-md w-full">
+          <ShortcutHint k="⌘K" label="Search" />
+          <ShortcutHint k="⌘S" label="Save" />
+          <ShortcutHint k="⇧⌘C" label="Capture" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col" onKeyDown={onKeyDown}>
-      <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 px-4 py-2">
-        <div className="text-sm font-medium truncate flex-1" title={notePath}>
-          {title ?? notePath}
+    <div className="flex h-full flex-col bg-canvas" onKeyDown={onKeyDown}>
+      <div className="flex items-center gap-3 border-b border-border-subtle bg-surface/60 backdrop-blur px-6 py-2.5">
+        <div className="flex-1 min-w-0">
+          <div className="text-[14px] font-semibold tracking-tight text-fg-default truncate">
+            {title?.trim() || stripMd(basename(notePath))}
+          </div>
+          <div className="text-[11px] text-fg-faint font-mono truncate" title={notePath}>
+            {notePath}
+          </div>
         </div>
-        {dirty && <span className="text-xs text-amber-600 dark:text-amber-400">unsaved</span>}
+        <SaveIndicator dirty={dirty} saving={saving} />
         <button
           type="button"
           disabled={!dirty || saving}
           onClick={save}
-          className="text-xs rounded bg-neutral-900 dark:bg-neutral-100 text-neutral-100 dark:text-neutral-900 px-3 py-1 disabled:opacity-50"
+          className="btn btn-secondary btn-xs"
         >
-          {saving ? "saving…" : "save"}
+          {saving ? "Saving…" : "Save"}
+          <span className="kbd">⌘S</span>
         </button>
       </div>
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 text-xs px-4 py-2">
+        <div className="mx-6 mt-2 rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
           {error}
         </div>
       )}
       <div className="flex-1 min-h-0 relative">
-        <div ref={hostRef} className="absolute inset-0 overflow-auto" />
+        <div ref={hostRef} className="absolute inset-0 overflow-auto scrollbar-thin" />
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-neutral-500 pointer-events-none">
-            loading…
+          <div className="absolute inset-0 flex items-center justify-center text-[12px] text-fg-muted pointer-events-none">
+            <span className="lattice-skeleton h-3 w-24" />
           </div>
         )}
       </div>
       {suggestionsEnabled && suggestions.length > 0 && (
-        <div className="border-t border-neutral-200 dark:border-neutral-800 px-3 py-2 bg-neutral-50/60 dark:bg-neutral-900/60">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500 mb-1">
-            link suggestions
+        <div className="border-t border-border-subtle bg-surface/60 backdrop-blur px-6 py-2.5 animate-slide-up">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <SparkleIcon className="h-3.5 w-3.5 text-accent" />
+            <span className="section-label">Linked notes</span>
+            <span className="text-[10.5px] text-fg-faint">
+              — click to insert <span className="font-mono">[[wikilink]]</span>
+            </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {suggestions.map((s) => (
@@ -248,9 +271,12 @@ export function CodeMirrorEditor({
                 onClick={() => applySuggestion(s)}
                 onDoubleClick={() => onJumpToNote?.(s.path)}
                 title={s.snippet}
-                className="text-xs rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2 py-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface px-2 py-1 text-[12px] hover:border-accent/40 hover:bg-accent-soft/40 transition-colors focus-ring"
               >
-                [[{s.title ?? s.path.replace(/\.md$/, "")}]]
+                <LinkIcon className="h-3 w-3 text-fg-faint" />
+                <span className="font-mono">
+                  [[{s.title?.trim() || stripMd(basename(s.path))}]]
+                </span>
               </button>
             ))}
           </div>
@@ -258,6 +284,41 @@ export function CodeMirrorEditor({
       )}
     </div>
   );
+}
+
+function SaveIndicator({ dirty, saving }: { dirty: boolean; saving: boolean }) {
+  if (saving) {
+    return <span className="text-[11.5px] text-fg-muted animate-fade-in">Saving…</span>;
+  }
+  if (dirty) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11.5px] text-warning">
+        <span className="h-1.5 w-1.5 rounded-full bg-warning" /> Unsaved
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[11.5px] text-fg-faint">
+      <CheckIcon className="h-3 w-3" /> Saved
+    </span>
+  );
+}
+
+function ShortcutHint({ k, label }: { k: string; label: string }) {
+  return (
+    <div className="flex items-center justify-center gap-2 rounded-md border border-border-subtle bg-surface px-2 py-1.5 text-[11.5px] text-fg-muted">
+      <kbd className="kbd">{k}</kbd>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function basename(p: string): string {
+  const i = p.lastIndexOf("/");
+  return i >= 0 ? p.slice(i + 1) : p;
+}
+function stripMd(s: string): string {
+  return s.replace(/\.md$/i, "");
 }
 
 function currentParagraph(view: EditorView): string {
