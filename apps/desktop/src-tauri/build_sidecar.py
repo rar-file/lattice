@@ -79,7 +79,9 @@ def main() -> None:
     # just verify the expected file exists.
     expected = distdir / (f"{out_name}.exe" if sys.platform == "win32" else out_name)
     if not expected.exists():
-        raise SystemExit(f"expected sidecar binary at {expected}, but PyInstaller didn't produce it")
+        raise SystemExit(
+            f"expected sidecar binary at {expected}, but PyInstaller didn't produce it"
+        )
     print(f"built: {expected}")
 
 
