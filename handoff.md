@@ -214,3 +214,33 @@ M1 is done; M2 is the next milestone (cloud + sync + web + auth + CodeMirror). S
 3. Once auth + token issuance work, expand `PostgresStorage` to full surface so cloud-mode parity with `SqliteStorage`.
 4. Then sync (`apps/api/src/lattice_api/routes/sync.py` + `apps/cli/src/lattice_cli/commands/sync.py`).
 5. Web auth pages + CodeMirror editor land last in M2 — they're the user-visible cherry.
+
+## M2-M4 shipped 2026-05-12
+
+Everything in the milestone tables above is now live. Highlights:
+
+- **Auth**: `routes/auth.py` does magic-link issuance + consumption, device flow
+  (CLI/desktop), per-agent token mint/list/revoke. Token format
+  `latt_<kind>_<base62>`; only SHA-256 hash stored. Sessions land in
+  `lattice_session` HttpOnly cookie or `Authorization: Bearer …`. `auth.py`
+  exposes a `current_user` FastAPI dep that 401s in cloud mode and returns a
+  sentinel in local mode.
+- **Storage**: `PostgresStorage` now mirrors `SqliteStorage` shape-for-shape
+  (notes, chunks, search via pgvector + tsvector + RRF, auth, sync). SQLite
+  gained `vaults.user_id` via an in-Python ALTER for forward compat.
+- **Sync**: `routes/sync.py` plus `cli/commands/sync_cmd.py` ship full
+  push/pull with conflict-file policy on the client. Each push triggers
+  chunk + embed so the cloud copy stays searchable.
+- **Hosted MCP**: `/mcp/sse` (heartbeat stream) + `/mcp/call` (tool surface,
+  scoped). Same four tools as stdio. Doesn't depend on the upstream MCP
+  HTTP transport.
+- **Ambient links + capture**: `/suggest/links` (vector-side ranking with
+  anchor inference) and `/capture` (Claude reshapes raw → atomic note in
+  Inbox/YYYY-MM-DD-slug.md).
+- **Weekly synthesis**: `/synthesize` writes Synthesis/YYYY-Www.md with
+  wikilinks to source notes; CLI exposes it as `lattice synthesize`.
+- **Web**: CodeMirror 6 editor replaces the textarea (markdown highlight,
+  ambient-link suggestion bar, paragraph extraction). Login + device +
+  /settings/tokens pages. ⌘K focuses search; ⇧⌘C opens capture modal.
+
+39 pytest tests green; pyright + ruff + biome clean; web typecheck + build clean.
