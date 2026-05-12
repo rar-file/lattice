@@ -70,6 +70,13 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await storage.init()
+        if settings.mode is Mode.LOCAL:
+            # Token-issuance routes insert rows referencing users.id; in
+            # local mode the sentinel "local" user must exist for those
+            # inserts to succeed (FK or just-as-well a stable identity).
+            ensure = getattr(storage, "ensure_local_user", None)
+            if ensure is not None:
+                await ensure()
         app.state.settings = settings
         app.state.storage = storage
         app.state.embedder = embedder
@@ -90,32 +97,21 @@ def create_app(
 
     app = FastAPI(title="Lattice API", version="0.0.0", lifespan=lifespan)
 
-    # CORS — the Tauri WebView serves the bundled UI from ``tauri://localhost``
-    # (macOS/Linux) or ``https://tauri.localhost`` (Windows), so every API
-    # call is technically cross-origin even though the API is local. Without
-    # this middleware the browser blocks the request with a generic "Failed
-    # to fetch". We also allow the dev URLs so `pnpm dev` keeps working.
-    app.add_middleware(
-        CORSMiddleware,
-        # Covers:
-        #   tauri://localhost              (macOS/Linux WebKit)
-        #   http(s)://tauri.localhost      (Windows WebView2)
-        #   http(s)://localhost:<port>     (dev: Next.js, Vite, etc.)
-        #   http(s)://127.0.0.1:<port>
-        allow_origin_regex=r"^(tauri://localhost|https?://(tauri\.localhost|localhost|127\.0\.0\.1)(:\d+)?)$",
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    # ORDER MATTERS. Starlette wraps middleware in reverse-registration order
+    # — the LAST one registered is the OUTERMOST. We register the local-token
+    # gate FIRST so CORS sits outside it; otherwise the gate's 401
+    # JSONResponse short-circuits before CORS can add Access-Control-Allow-
+    # Origin, and the browser surfaces it as a generic "Failed to fetch"
+    # instead of a clean 401 the client can render.
 
     if settings.mode is Mode.LOCAL:
 
         @app.middleware("http")
         async def _gate_local_sidecar(request: Request, call_next):
             # Goal: local sidecars must require auth. Hard requirement, not a
-            # v2 thing. CORS preflights are accepted unconditionally; /healthz
-            # and /version stay public so a launcher can probe readiness before
-            # it knows the token.
+            # v2 thing. CORS preflights are accepted unconditionally;
+            # /healthz + /version stay public so a launcher can probe
+            # readiness before it knows the token.
             if request.method == "OPTIONS":
                 return await call_next(request)
             if request.url.path in _LOCAL_TOKEN_PUBLIC_PATHS:
@@ -134,6 +130,18 @@ def create_app(
             if not supplied or not secrets.compare_digest(supplied, expected):
                 return JSONResponse({"detail": "missing or invalid local token"}, status_code=401)
             return await call_next(request)
+
+    # CORS — added LAST so it wraps the gate and tags every response (incl.
+    # 401s) with Access-Control-Allow-Origin. Covers Tauri's WebView origins
+    # (tauri://localhost on macOS/Linux, https://tauri.localhost on Windows)
+    # plus dev origins (localhost:<port>, 127.0.0.1:<port>).
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"^(tauri://localhost|https?://(tauri\.localhost|localhost|127\.0\.0\.1)(:\d+)?)$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     app.state.settings = settings
     app.state.storage = storage

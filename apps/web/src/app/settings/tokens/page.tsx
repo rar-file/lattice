@@ -1,9 +1,9 @@
 "use client";
 
 import type { TokenInfo } from "@lattice/sdk";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { CheckIcon, LatticeMark, PlusIcon, XIcon } from "../../../components/icons";
+import { Breadcrumb } from "../../../components/Breadcrumb";
+import { CheckIcon, KeyIcon, PlusIcon, XIcon } from "../../../components/icons";
 import { getClient } from "../../../lib/client";
 
 const SCOPE_DESCRIPTIONS: Record<string, string> = {
@@ -80,26 +80,21 @@ export default function TokensPage() {
 
   return (
     <main className="min-h-screen bg-canvas">
-      <nav className="border-b border-border-subtle bg-surface">
-        <div className="mx-auto flex h-12 max-w-4xl items-center gap-3 px-6">
-          <Link href="/" className="focus-ring rounded px-1">
-            <LatticeMark />
-          </Link>
-          <span className="text-fg-faint">/</span>
-          <span className="text-[13px] text-fg-default">Settings</span>
-          <span className="text-fg-faint">/</span>
-          <span className="text-[13px] text-fg-muted">Agent tokens</span>
-        </div>
-      </nav>
+      <Breadcrumb trail={[{ label: "Settings" }, { label: "Agent tokens" }]} />
 
       <div className="mx-auto max-w-4xl px-6 py-10 space-y-8 animate-fade-in">
-        <header>
-          <h1 className="text-[28px] font-medium tracking-tight">Agent tokens</h1>
-          <p className="mt-2 text-[14px] text-fg-muted leading-relaxed max-w-2xl">
-            Issue scoped tokens for MCP clients — Claude, Cursor, custom agents, mobile devices.
-            Each token grants only the scopes you check; tokens are shown once at creation, then
-            stored as a SHA-256 hash on the server.
-          </p>
+        <header className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
+            <KeyIcon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-[28px] font-medium tracking-tight leading-tight">Agent tokens</h1>
+            <p className="mt-2 text-[14px] text-fg-muted leading-relaxed max-w-2xl">
+              Issue scoped tokens for MCP clients — Claude, Cursor, custom agents. Each token grants
+              only the scopes you check; the plaintext is shown once at creation, then stored as a
+              SHA-256 hash.
+            </p>
+          </div>
         </header>
 
         {error && <div className="rounded-md text-fg-muted px-4 py-3 text-[13px]">{error}</div>}

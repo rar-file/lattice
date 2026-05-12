@@ -156,19 +156,30 @@ async def capture(
     from ..providers.llm import Message, SystemBlock
 
     settings = request.app.state.settings
-    model = settings.cheap_llm_model
-    user_msg = (
-        f"Source: {req.source or 'manual'}\n\nRaw thought:\n{text}\n\nDraft the atomic note now."
-    )
-    resp = await llm.chat(
-        [Message(role="user", content=user_msg)],
-        system=[SystemBlock(text=_CAPTURE_SYSTEM, cache=True)],
-        model=model,
-        max_tokens=512,
-    )
-    drafted = resp.content.strip()
 
-    title, _ = _split_title_and_body(drafted)
+    # When no real LLM is wired (no Anthropic key → fallback stub), don't run
+    # the user's thought through something that just returns "Stub reply [1]".
+    # Write the raw text verbatim with a friendly frontmatter shell. Users
+    # who configure Anthropic still get the reshape behavior.
+    if getattr(llm, "is_fallback", False):
+        title = _title_from_raw(text)
+        drafted = _raw_capture_note(text, title, source=req.source)
+    else:
+        model = settings.cheap_llm_model
+        user_msg = (
+            f"Source: {req.source or 'manual'}\n\n"
+            f"Raw thought:\n{text}\n\nDraft the atomic note now."
+        )
+        resp = await llm.chat(
+            [Message(role="user", content=user_msg)],
+            system=[SystemBlock(text=_CAPTURE_SYSTEM, cache=True)],
+            model=model,
+            max_tokens=512,
+        )
+        drafted = resp.content.strip() or _raw_capture_note(
+            text, _title_from_raw(text), source=req.source
+        )
+        title, _ = _split_title_and_body(drafted)
     slug = _slugify(title)
     date_prefix = datetime.now(UTC).strftime("%Y-%m-%d")
     rel = f"{req.inbox_dir.rstrip('/')}/{date_prefix}-{slug}.md"
@@ -233,3 +244,33 @@ def _slugify(s: str) -> str:
     s = s.lower()
     s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
     return s[:60] or "note"
+
+
+def _title_from_raw(text: str) -> str:
+    """Best-effort title from raw capture text: first non-empty line, stripped
+    of markdown markers, capped at ~64 chars. Falls back to first 8 words."""
+    for line in text.splitlines():
+        line = line.strip().lstrip("#").strip()
+        if line:
+            return (line[:64] + "…") if len(line) > 64 else line
+    words = text.split()[:8]
+    return " ".join(words) or "Captured note"
+
+
+def _raw_capture_note(text: str, title: str, *, source: str | None) -> str:
+    """Build a verbatim atomic note when no real LLM is wired."""
+    ts = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    src = source or "manual"
+    safe_title = title.replace('"', "'")
+    # Quote the timestamp so PyYAML doesn't materialise it as a `datetime`
+    # object — the indexer JSON-encodes frontmatter and would explode.
+    return (
+        "---\n"
+        f'title: "{safe_title}"\n'
+        f"source: {src}\n"
+        f'captured: "{ts}"\n'
+        "tags: [inbox]\n"
+        "---\n\n"
+        f"# {title}\n\n"
+        f"{text}\n"
+    )

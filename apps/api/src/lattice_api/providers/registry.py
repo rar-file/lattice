@@ -38,6 +38,6 @@ def get_llm_provider(settings: Settings) -> LLMProvider:
             api_key=settings.anthropic_api_key,
             default_model=settings.default_llm_model,
         )
-    # No key configured → tests/offline get the stub; production startup should
-    # log a warning before depending on this fallback.
-    return StubLLMProvider()
+    # No key configured. Routes that don't tolerate a fake LLM (capture)
+    # check `is_fallback` and write the user's input verbatim instead.
+    return StubLLMProvider(is_fallback=True)

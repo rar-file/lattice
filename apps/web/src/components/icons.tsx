@@ -1,16 +1,16 @@
 /**
- * Inline SVG icon set.
+ * Lattice icon set — outline-only, currentColor stroke, 1.5px on a 24px grid.
  *
- * Keep stroke-only icons at 1.6px, 24x24 viewport. Color via currentColor so
- * Tailwind text-* classes drive them. Avoid any external icon library — these
- * are stable, tiny, and design-system-consistent.
+ * Goal.md: "A single outline icon set (Lucide or Tabler outline). 16px or
+ * 20px only. Icons inherit text colour. No filled variants."
+ *
+ * Paths are hand-tuned from Lucide / Tabler for visual consistency. Keep all
+ * additions stylistically aligned: rounded line caps + joins, no fills, no
+ * accent decoration.
  */
 
 type IconProps = { className?: string; "aria-hidden"?: boolean } & React.SVGProps<SVGSVGElement>;
 
-// Icons are decorative by default — they always accompany text labels.
-// Setting `aria-hidden` and `role="img"` keeps Biome's a11y rule happy and
-// is the correct semantic for decorative glyphs.
 const base = {
   width: 16,
   height: 16,
@@ -28,34 +28,37 @@ const base = {
 export function FolderIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.379a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 12.121 8H19.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
+      <path d="M4 7a2 2 0 0 1 2-2h3.586a2 2 0 0 1 1.414.586L12.414 7H18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" />
     </svg>
   );
 }
+
 export function FolderPlusIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.379a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 12.121 8H19.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
-      <path d="M12 12v4M10 14h4" />
+      <path d="M4 7a2 2 0 0 1 2-2h3.586a2 2 0 0 1 1.414.586L12.414 7H18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" />
+      <path d="M12 11v5M9.5 13.5h5" />
     </svg>
   );
 }
+
 export function CloudIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <path d="M7 18a4 4 0 0 1-.6-7.957A6 6 0 0 1 18 10a4 4 0 0 1-1 7.874" />
-      <path d="M7 18h11" />
+      <path d="M7.5 18a4.5 4.5 0 0 1-.6-8.962 6 6 0 0 1 11.566 1.486A3.75 3.75 0 0 1 17.25 18Z" />
     </svg>
   );
 }
+
 export function SearchIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="m20 20-4.35-4.35" />
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m20 20-4.6-4.6" />
     </svg>
   );
 }
+
 export function PlusIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
@@ -63,28 +66,45 @@ export function PlusIcon(p: IconProps) {
     </svg>
   );
 }
+
 export function CommandIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6Z" />
+      <path d="M15 9V6a3 3 0 1 1 3 3h-3Zm0 0v6h-6V9h6Zm-6 0H6a3 3 0 1 1 3-3v3Zm0 6v3a3 3 0 1 1-3-3h3Zm6 0h3a3 3 0 1 1-3 3v-3Z" />
     </svg>
   );
 }
+
 export function SettingsIcon(p: IconProps) {
+  // Sliders — three horizontal tracks with offset knobs. Reads cleaner at
+  // 16px than a gear cogwheel.
   return (
     <svg {...base} {...p}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 4.27 16.96l.06-.06A1.65 1.65 0 0 0 4.66 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 7.04 4.27l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+      <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0" />
+      <circle cx="16" cy="6" r="2" />
+      <circle cx="8" cy="12" r="2" />
+      <circle cx="18" cy="18" r="2" />
     </svg>
   );
 }
+
+export function KeyIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="7.5" cy="14.5" r="3.5" />
+      <path d="m10 12 8-8M16 6l2 2M14 8l2 2" />
+    </svg>
+  );
+}
+
 export function MenuIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <path d="M4 6h16M4 12h16M4 18h16" />
+      <path d="M4 7h16M4 12h16M4 17h16" />
     </svg>
   );
 }
+
 export function XIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
@@ -92,62 +112,152 @@ export function XIcon(p: IconProps) {
     </svg>
   );
 }
+
 export function CheckIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
-      <path d="m5 12 5 5L20 7" />
-    </svg>
-  );
-}
-export function ArrowRightIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="M5 12h14M13 5l7 7-7 7" />
-    </svg>
-  );
-}
-export function FileIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
-    </svg>
-  );
-}
-export function InboxIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="M22 12h-6l-2 3h-4l-2-3H2" />
-      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z" />
-    </svg>
-  );
-}
-export function LayersIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="m12 2 9 4.5L12 11 3 6.5 12 2Z" />
-      <path d="m3 12 9 4.5L21 12" />
-      <path d="m3 17.5 9 4.5 9-4.5" />
-    </svg>
-  );
-}
-export function LinkIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" />
-      <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" />
+      <path d="m5 12.5 4.5 4.5L20 7" />
     </svg>
   );
 }
 
-/** Brand mark — mirrors the bundled app icon (icon.png). Bold L letterform on
- *  a near-black rounded tile. Stays identical across light/dark themes so the
- *  in-app logo and the OS icon are visually the same object.
+export function ArrowRightIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function ChevronRightIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+export function ChevronDownIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+export function FileIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
+      <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+    </svg>
+  );
+}
+
+export function InboxIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M4 12h4l2 3h4l2-3h4" />
+      <path d="M6.4 5h11.2a2 2 0 0 1 1.8 1.106L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6L4.6 6.106A2 2 0 0 1 6.4 5Z" />
+    </svg>
+  );
+}
+
+export function LayersIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="m12 3 9 4.5L12 12 3 7.5 12 3Z" />
+      <path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5" />
+    </svg>
+  );
+}
+
+export function LinkIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M10.5 13.5a4 4 0 0 0 5.657 0l2.829-2.829a4 4 0 0 0-5.657-5.657L11.5 6.853" />
+      <path d="M13.5 10.5a4 4 0 0 0-5.657 0L5.014 13.328a4 4 0 0 0 5.657 5.657L12.5 17.147" />
+    </svg>
+  );
+}
+
+export function HashIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M10 3 8 21M16 3l-2 18M4 9h17M3 15h17" />
+    </svg>
+  );
+}
+
+export function SunIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 3v2M12 19v2M5 12H3M21 12h-2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
+    </svg>
+  );
+}
+
+export function MoonIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
+    </svg>
+  );
+}
+
+export function MonitorIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <rect x="3" y="4" width="18" height="13" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+    </svg>
+  );
+}
+
+export function CopyIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15H4a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h9a1 1 0 0 1 1 1v1" />
+    </svg>
+  );
+}
+
+export function TrashIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+export function PencilIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M14 4 4 14v6h6L20 10Z" />
+      <path d="M13 5l6 6" />
+    </svg>
+  );
+}
+
+/**
+ * Brand mark — bold L letterform on a near-black rounded tile, mirrors the
+ * bundled app icon (icon.png). Width × height stay identical across light
+ * and dark themes so the in-app logo and the OS icon read as the same object.
+ *
+ * Two display modes:
+ *   • bare      — icon only, sits cleanly next to body text at its `size`.
+ *   • wordmark  — icon + the word "Lattice", baseline-aligned with the icon.
+ *
+ * Default size = 20px. The wordmark font-size derives from `size` so the
+ * icon and wordmark stay visually balanced at any scale.
  */
 export function LatticeMark({
   className = "",
   withWordmark = true,
-  size = 22,
+  size = 20,
 }: {
   className?: string;
   withWordmark?: boolean;
@@ -165,12 +275,16 @@ export function LatticeMark({
         focusable="false"
       >
         <title>Lattice</title>
-        <rect x="0" y="0" width="24" height="24" rx="5.5" fill="#0e0d0b" />
-        {/* L letterform — proportions calibrated to icon.png */}
+        <rect x="0" y="0" width="24" height="24" rx="5" fill="#0e0d0b" />
         <path d="M7.6 5.2h2.4v11.2H17v2.4H7.6V5.2Z" fill="#e8e6e1" />
       </svg>
       {withWordmark && (
-        <span className="text-[14px] font-medium tracking-[-0.01em] text-fg-default">Lattice</span>
+        <span
+          className="font-medium tracking-[-0.01em] text-fg-default leading-none"
+          style={{ fontSize: Math.max(13, Math.round(size * 0.7)) }}
+        >
+          Lattice
+        </span>
       )}
     </span>
   );

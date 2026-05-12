@@ -11,7 +11,7 @@ import { NewNoteForm } from "../components/NewNoteForm";
 import { SidePanel, type SidePanelHandle } from "../components/SidePanel";
 import { TopBar } from "../components/TopBar";
 import { Welcome } from "../components/Welcome";
-import { FolderIcon, InboxIcon, PlusIcon, SearchIcon } from "../components/icons";
+import { FolderIcon, InboxIcon, KeyIcon, PlusIcon, SearchIcon } from "../components/icons";
 import { getClient, tokenReady } from "../lib/client";
 import { formatShortcut } from "../lib/platform";
 import { useShortcuts } from "../lib/shortcuts";
@@ -142,6 +142,15 @@ function HomeInner() {
         run: () => {
           setRightOpen(true);
           sidePanelRef.current?.focusSearch();
+        },
+      },
+      {
+        id: "agent-tokens",
+        label: "Agent tokens",
+        hint: "Manage MCP / agent access",
+        icon: <KeyIcon className="h-4 w-4" />,
+        run: () => {
+          window.location.href = "/settings/tokens";
         },
       },
       {

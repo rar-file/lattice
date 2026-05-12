@@ -633,6 +633,19 @@ class SqliteStorage:
 
         return await asyncio.to_thread(go)
 
+    async def ensure_local_user(self) -> None:
+        """Seed the local-mode sentinel user (id='local'). Called at startup
+        in local mode so token issuance (which inserts rows referencing
+        users.id) has a stable parent row."""
+
+        def go() -> None:
+            self._c.execute(
+                "INSERT OR IGNORE INTO users (id, email, created_at) VALUES (?, ?, ?)",
+                ("local", "local@lattice", _now_iso()),
+            )
+
+        await asyncio.to_thread(go)
+
     async def get_user(self, user_id: str) -> User | None:
         def go() -> User | None:
             row = self._c.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()

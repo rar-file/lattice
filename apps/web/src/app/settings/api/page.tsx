@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckIcon, LatticeMark } from "../../../components/icons";
+import { Breadcrumb } from "../../../components/Breadcrumb";
+import { CheckIcon } from "../../../components/icons";
 import { getApiUrl, setApiUrl } from "../../../lib/client";
 
 /**
@@ -38,17 +38,7 @@ export default function ApiSettingsPage() {
 
   return (
     <main className="min-h-screen bg-canvas">
-      <nav className="border-b border-border-subtle bg-surface">
-        <div className="mx-auto flex h-12 max-w-3xl items-center gap-3 px-6">
-          <Link href="/" className="focus-ring rounded px-1">
-            <LatticeMark />
-          </Link>
-          <span className="text-fg-faint">/</span>
-          <span className="text-[13px] text-fg-default">Settings</span>
-          <span className="text-fg-faint">/</span>
-          <span className="text-[13px] text-fg-muted">API endpoint</span>
-        </div>
-      </nav>
+      <Breadcrumb trail={[{ label: "Settings" }, { label: "API endpoint" }]} />
 
       <div className="mx-auto max-w-2xl px-6 py-10 animate-fade-in">
         <header>

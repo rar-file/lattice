@@ -12,11 +12,23 @@ from .llm import ChatResponse, Message, StreamChunk, SystemBlock
 
 
 class StubLLMProvider:
+    """Echoes a fixed reply. Tests inject a meaningful `reply`; the production
+    registry only falls back to this when no Anthropic key is configured, in
+    which case `is_fallback=True` so caller routes can choose to bypass the
+    stub and write the user's input verbatim (capture especially)."""
+
     name = "stub"
 
-    def __init__(self, reply: str = "stub reply [1]", model: str = "stub-model") -> None:
+    def __init__(
+        self,
+        reply: str = "stub reply [1]",
+        model: str = "stub-model",
+        *,
+        is_fallback: bool = False,
+    ) -> None:
         self._reply = reply
         self._model = model
+        self.is_fallback = is_fallback
         self.last_messages: list[Message] = []
         self.last_system: list[SystemBlock] | None = None
 

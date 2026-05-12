@@ -5,7 +5,17 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatShortcut } from "../lib/platform";
 import { ThemeToggle } from "./ThemeToggle";
-import { FolderIcon, InboxIcon, LatticeMark, MenuIcon, SearchIcon } from "./icons";
+import {
+  ChevronDownIcon,
+  FolderIcon,
+  InboxIcon,
+  KeyIcon,
+  LatticeMark,
+  MenuIcon,
+  SearchIcon,
+  SettingsIcon,
+  XIcon,
+} from "./icons";
 
 interface Props {
   vault: VaultInfo;
@@ -17,9 +27,8 @@ interface Props {
 }
 
 /**
- * Workspace top bar. Replaces the original VaultBar (which was a path input).
- * After a vault is open the path is plumbing detail — we surface the vault
- * NAME prominently and tuck details into a dropdown menu.
+ * Workspace top bar. Vault name as a quiet dropdown on the left; command
+ * palette in the centre; theme toggle / settings / capture on the right.
  */
 export function TopBar({
   vault,
@@ -32,7 +41,6 @@ export function TopBar({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click / escape.
   useEffect(() => {
     if (!menuOpen) return;
     function onDoc(e: MouseEvent) {
@@ -62,57 +70,45 @@ export function TopBar({
         </button>
       )}
 
-      <div className="hidden md:flex items-center pr-2 mr-1 border-r border-border-subtle">
-        <LatticeMark />
-      </div>
+      <Link
+        href="/"
+        className="hidden md:flex items-center pr-3 mr-1 border-r border-border-subtle h-7 focus-ring rounded"
+        aria-label="Lattice home"
+      >
+        <LatticeMark withWordmark={false} size={20} />
+      </Link>
 
       <div className="relative" ref={menuRef}>
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className="btn btn-secondary btn-sm gap-2 max-w-[280px]"
+          className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-[13px]
+            text-fg-default hover:bg-sunken transition-colors focus-ring max-w-[280px]"
           title={vault.root_path}
         >
           <FolderIcon className="h-4 w-4 text-fg-muted shrink-0" />
-          <span className="truncate font-medium">{vault.name}</span>
-          <svg
-            width="10"
-            height="10"
-            viewBox="0 0 10 10"
-            className="text-fg-faint shrink-0"
-            aria-hidden
-          >
-            <path
-              d="M2 4l3 3 3-3"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
+          <span className="truncate font-medium leading-none">{vault.name}</span>
+          <ChevronDownIcon className="h-4 w-4 text-fg-faint shrink-0" />
         </button>
         {menuOpen && (
-          <div className="absolute left-0 top-full mt-2 w-[320px] card-elevated p-2 z-30 animate-scale-in">
+          <div className="absolute left-0 top-full mt-1 w-[320px] card-elevated p-1 z-30 animate-fade-in">
             <div className="px-3 py-2 border-b border-border-subtle">
-              <div className="text-[12px] section-label">Vault path</div>
-              <div className="text-[12px] font-mono mt-1 break-all text-fg-muted">
+              <div className="section-label">Vault path</div>
+              <div className="text-[12px] font-mono mt-1 break-all text-fg-muted leading-snug">
                 {vault.root_path}
               </div>
             </div>
-            <MenuItem
-              onClick={() => {
-                setMenuOpen(false);
-                onClose();
-              }}
-            >
-              Close vault…
-            </MenuItem>
-            <Link
-              href="/settings/tokens"
-              className="block px-3 py-2 rounded text-[13px] hover:bg-sunken focus-ring"
-            >
-              Agent tokens
-            </Link>
+            <div className="p-1">
+              <MenuItem
+                onClick={() => {
+                  setMenuOpen(false);
+                  onClose();
+                }}
+                icon={<XIcon className="h-4 w-4 text-fg-muted" />}
+              >
+                Close vault
+              </MenuItem>
+            </div>
           </div>
         )}
       </div>
@@ -121,12 +117,16 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenPalette}
-          className="btn btn-secondary btn-sm ml-auto max-w-[280px] flex-1 justify-start text-fg-muted"
+          className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-[13px]
+            text-fg-muted hover:text-fg-default hover:bg-sunken transition-colors focus-ring
+            ml-auto max-w-[320px] flex-1 min-w-0 border border-transparent hover:border-border-subtle"
           title={`Command palette (${formatShortcut("⌘P")})`}
         >
           <SearchIcon className="h-4 w-4 shrink-0" />
-          <span className="hidden md:inline truncate">Jump to a note or run a command…</span>
-          <span className="hidden md:inline kbd ml-auto shrink-0">{formatShortcut("⌘P")}</span>
+          <span className="hidden md:inline truncate flex-1 text-left leading-none">
+            Jump to a note or run a command…
+          </span>
+          <kbd className="hidden md:inline-flex kbd shrink-0">{formatShortcut("⌘P")}</kbd>
         </button>
       )}
 
@@ -138,8 +138,16 @@ export function TopBar({
         aria-label="Search vault"
       >
         <SearchIcon className="h-4 w-4" />
-        <span className="hidden sm:inline kbd">{formatShortcut("⌘K")}</span>
       </button>
+
+      <Link
+        href="/settings/tokens"
+        className="btn btn-ghost btn-sm"
+        title="Settings — agent tokens"
+        aria-label="Settings"
+      >
+        <SettingsIcon className="h-4 w-4" />
+      </Link>
 
       <ThemeToggle />
 
@@ -156,14 +164,49 @@ export function TopBar({
   );
 }
 
-function MenuItem({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function MenuItem({
+  onClick,
+  icon,
+  children,
+}: {
+  onClick: () => void;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="block w-full text-left px-3 py-2 rounded text-[13px] hover:bg-sunken focus-ring"
+      className="flex w-full items-center gap-2 px-3 py-2 rounded-md text-[13px]
+        text-fg-default hover:bg-sunken focus-ring text-left"
     >
-      {children}
+      {icon}
+      <span className="flex-1">{children}</span>
     </button>
   );
 }
+
+// MenuLink kept for future submenus.
+export function _MenuLink({
+  href,
+  icon,
+  children,
+}: {
+  href: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2 px-3 py-2 rounded-md text-[13px]
+        text-fg-default hover:bg-sunken focus-ring"
+    >
+      {icon}
+      <span className="flex-1">{children}</span>
+    </Link>
+  );
+}
+
+// Re-export so siblings can build out their menus without importing twice.
+export const _Icons = { KeyIcon };

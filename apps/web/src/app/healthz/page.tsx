@@ -1,9 +1,9 @@
 "use client";
 
 import { LatticeClient } from "@lattice/sdk";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckIcon, LatticeMark, XIcon } from "../../components/icons";
+import { Breadcrumb } from "../../components/Breadcrumb";
+import { CheckIcon, XIcon } from "../../components/icons";
 
 type State =
   | { kind: "loading" }
@@ -32,15 +32,7 @@ export default function HealthPage() {
 
   return (
     <main className="min-h-screen bg-canvas">
-      <nav className="border-b border-border-subtle bg-surface">
-        <div className="mx-auto flex h-12 max-w-2xl items-center gap-3 px-6">
-          <Link href="/" className="focus-ring rounded px-1">
-            <LatticeMark />
-          </Link>
-          <span className="text-fg-faint">/</span>
-          <span className="text-[13px] text-fg-muted">Health</span>
-        </div>
-      </nav>
+      <Breadcrumb trail={[{ label: "Health" }]} />
 
       <div className="mx-auto max-w-md px-6 py-12 animate-fade-in">
         <div className="card p-6">
