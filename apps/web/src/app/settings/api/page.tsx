@@ -38,7 +38,7 @@ export default function ApiSettingsPage() {
 
   return (
     <main className="min-h-screen bg-canvas">
-      <nav className="border-b border-border-subtle bg-surface/60 backdrop-blur">
+      <nav className="border-b border-border-subtle bg-surface">
         <div className="mx-auto flex h-12 max-w-3xl items-center gap-3 px-6">
           <Link href="/" className="focus-ring rounded px-1">
             <LatticeMark />
@@ -52,8 +52,8 @@ export default function ApiSettingsPage() {
 
       <div className="mx-auto max-w-2xl px-6 py-10 animate-fade-in">
         <header>
-          <h1 className="text-[22px] font-semibold tracking-tight">API endpoint</h1>
-          <p className="mt-1.5 text-[13px] text-fg-muted leading-relaxed">
+          <h1 className="text-[20px] font-medium tracking-tight">API endpoint</h1>
+          <p className="mt-2 text-[13px] text-fg-muted leading-relaxed">
             Point this client at a custom Lattice API host. Useful for mobile builds talking to a
             cloud deployment, or for testing against a staging API without rebuilding the app.
             Stored in your browser's local storage — only this device is affected.
@@ -62,15 +62,15 @@ export default function ApiSettingsPage() {
 
         <form onSubmit={save} className="card mt-6 p-5 space-y-4">
           <label className="block">
-            <span className="block text-[12px] font-medium text-fg-default mb-1.5">URL</span>
+            <span className="block text-[12px] font-medium text-fg-default mb-2">URL</span>
             <input
               type="url"
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="https://cloud.lattice.example"
-              className="input font-mono text-[12.5px]"
+              className="input font-mono text-[13px]"
             />
-            <p className="mt-1.5 text-[11.5px] text-fg-muted">
+            <p className="mt-2 text-[12px] text-fg-muted">
               Currently: <span className="font-mono">{current}</span>
             </p>
           </label>
@@ -82,7 +82,7 @@ export default function ApiSettingsPage() {
             <div className="flex items-center gap-3">
               {saved && (
                 <span className="inline-flex items-center gap-1 text-[12px] text-success animate-fade-in">
-                  <CheckIcon className="h-3.5 w-3.5" /> Saved
+                  <CheckIcon className="h-4 w-4" /> Saved
                 </span>
               )}
               <button type="submit" className="btn btn-primary btn-sm">
@@ -92,7 +92,7 @@ export default function ApiSettingsPage() {
           </div>
         </form>
 
-        <p className="mt-6 text-[11.5px] text-fg-muted leading-relaxed">
+        <p className="mt-6 text-[12px] text-fg-muted leading-relaxed">
           Setting this on iOS/Android: after install, visit{" "}
           <span className="font-mono">/settings/api</span> inside the app and paste your cloud URL,
           then reload. See <span className="font-mono">docs/mobile.md</span> in the repo for the

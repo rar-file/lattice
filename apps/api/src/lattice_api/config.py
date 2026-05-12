@@ -28,6 +28,12 @@ class Settings(BaseSettings):
     embedding_provider: str = "fastembed"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
 
+    # Per-launch local-mode auth token. Required by the local sidecar to gate
+    # every non-public endpoint. If unset on startup the API generates one and
+    # writes it to ``~/.lattice/local_token`` (mode 0600) so the launcher can
+    # forward it to the UI.
+    local_token: str | None = None
+
     # M2 — cloud + auth
     public_base_url: str = "http://localhost:8787"
     resend_api_key: str | None = None

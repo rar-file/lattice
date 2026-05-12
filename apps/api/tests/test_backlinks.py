@@ -11,7 +11,12 @@ from lattice_api.providers.embed.hash_provider import HashEmbeddingProvider
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(mode=Mode.LOCAL, local_data_dir=tmp_path / "data", embedding_provider="hash")
+    return Settings(
+        mode=Mode.LOCAL,
+        local_data_dir=tmp_path / "data",
+        embedding_provider="hash",
+        local_token="test",
+    )
 
 
 def make_app(settings: Settings):
@@ -37,7 +42,11 @@ async def test_backlinks_finds_wikilink_references(settings: Settings, tmp_path:
 
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, root)
             r = await client.get("/notes-backlinks/target.md")
             assert r.status_code == 200, r.text
@@ -57,7 +66,11 @@ async def test_backlinks_ignores_self(settings: Settings, tmp_path: Path) -> Non
 
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, root)
             r = await client.get("/notes-backlinks/narcissist.md")
             assert r.status_code == 200
@@ -71,7 +84,11 @@ async def test_backlinks_404_for_missing(settings: Settings, tmp_path: Path) -> 
 
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, root)
             r = await client.get("/notes-backlinks/nope.md")
             assert r.status_code == 404

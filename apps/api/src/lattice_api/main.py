@@ -1,11 +1,13 @@
 import argparse
 import asyncio
 import logging
+import secrets
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import Mode, Settings
 from .email import build_default_mailer
@@ -27,6 +29,28 @@ from .routes import (
 log = logging.getLogger("lattice")
 
 
+_LOCAL_TOKEN_PUBLIC_PATHS: frozenset[str] = frozenset({"/healthz", "/version"})
+
+
+def _ensure_local_token(settings: Settings) -> str:
+    """In local mode the sidecar must require a per-launch bearer token. If
+    one wasn't supplied via ``LATTICE_LOCAL_TOKEN``, generate one and persist
+    it to ``~/.lattice/local_token`` (mode 0600) so the launcher can forward
+    it to the UI. Returns the resolved token."""
+    if settings.local_token:
+        return settings.local_token
+    token = secrets.token_urlsafe(32)
+    settings.local_token = token
+    token_path = settings.local_data_dir / "local_token"
+    token_path.parent.mkdir(parents=True, exist_ok=True)
+    token_path.write_text(token)
+    try:
+        token_path.chmod(0o600)
+    except OSError:
+        pass
+    return token
+
+
 def create_app(
     settings: Settings | None = None,
     *,
@@ -36,6 +60,8 @@ def create_app(
     mailer_override=None,
 ) -> FastAPI:
     settings = settings or Settings()
+    if settings.mode is Mode.LOCAL:
+        _ensure_local_token(settings)
     storage = storage_override or build_storage(settings)
     embedder = embedder_override or get_embedding_provider(settings)
     llm = llm_override or get_llm_provider(settings)
@@ -82,6 +108,33 @@ def create_app(
         allow_headers=["*"],
     )
 
+    if settings.mode is Mode.LOCAL:
+
+        @app.middleware("http")
+        async def _gate_local_sidecar(request: Request, call_next):
+            # Goal: local sidecars must require auth. Hard requirement, not a
+            # v2 thing. CORS preflights are accepted unconditionally; /healthz
+            # and /version stay public so a launcher can probe readiness before
+            # it knows the token.
+            if request.method == "OPTIONS":
+                return await call_next(request)
+            if request.url.path in _LOCAL_TOKEN_PUBLIC_PATHS:
+                return await call_next(request)
+            expected = settings.local_token
+            if not expected:
+                return JSONResponse({"detail": "sidecar token unset"}, status_code=503)
+            header = request.headers.get("authorization") or request.headers.get("Authorization")
+            supplied: str | None = None
+            if header and header.lower().startswith("bearer "):
+                supplied = header[7:].strip()
+            if not supplied:
+                cookie = request.cookies.get("lattice_local_token")
+                if cookie:
+                    supplied = cookie
+            if not supplied or not secrets.compare_digest(supplied, expected):
+                return JSONResponse({"detail": "missing or invalid local token"}, status_code=401)
+            return await call_next(request)
+
     app.state.settings = settings
     app.state.storage = storage
     app.state.embedder = embedder
@@ -121,6 +174,12 @@ def cli() -> None:
         settings = Settings(mode=Mode(args.mode))
 
     app = create_app(settings)
+
+    if settings.mode is Mode.LOCAL and settings.local_token:
+        # Tauri (or any launcher) reads this single tagged line from stderr to
+        # learn the per-launch token. The token is also persisted to
+        # ~/.lattice/local_token for the dev / Next.js path.
+        print(f"LATTICE_LOCAL_TOKEN={settings.local_token}", flush=True)
 
     if args.socket:
         # Bind to unix socket — local mode wired by Tauri/CLI.

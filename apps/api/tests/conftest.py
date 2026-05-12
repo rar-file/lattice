@@ -10,6 +10,7 @@ def settings(tmp_path: Path) -> Settings:
         mode=Mode.LOCAL,
         local_data_dir=tmp_path,
         embedding_provider="hash",
+        local_token="test",
     )
 
 

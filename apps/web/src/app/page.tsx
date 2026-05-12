@@ -11,8 +11,8 @@ import { NewNoteForm } from "../components/NewNoteForm";
 import { SidePanel, type SidePanelHandle } from "../components/SidePanel";
 import { TopBar } from "../components/TopBar";
 import { Welcome } from "../components/Welcome";
-import { ChatIcon, FolderIcon, PlusIcon, SearchIcon, SparkleIcon } from "../components/icons";
-import { getClient } from "../lib/client";
+import { FolderIcon, InboxIcon, PlusIcon, SearchIcon } from "../components/icons";
+import { getClient, tokenReady } from "../lib/client";
 import { formatShortcut } from "../lib/platform";
 import { useShortcuts } from "../lib/shortcuts";
 import { ToastProvider, useToast } from "../lib/toast";
@@ -56,6 +56,7 @@ function HomeInner() {
     let cancelled = false;
     (async () => {
       try {
+        await tokenReady();
         const auto = await getClient().autoVault();
         if (cancelled) return;
         if (auto) {
@@ -121,15 +122,15 @@ function HomeInner() {
         label: "New note",
         hint: "Create a fresh note in the vault",
         shortcut: formatShortcut("⌘N"),
-        icon: <PlusIcon className="h-3.5 w-3.5" />,
+        icon: <PlusIcon className="h-4 w-4" />,
         run: () => setNewNoteOpen(true),
       },
       {
         id: "capture",
         label: "Capture a thought",
-        hint: "Drop a thought into Inbox — Claude shapes it",
+        hint: "Drop a thought into Inbox",
         shortcut: formatShortcut("⇧⌘C"),
-        icon: <SparkleIcon className="h-3.5 w-3.5" />,
+        icon: <InboxIcon className="h-4 w-4" />,
         run: () => setCaptureOpen(true),
       },
       {
@@ -137,44 +138,10 @@ function HomeInner() {
         label: "Search the vault",
         hint: "Hybrid (semantic + keyword)",
         shortcut: formatShortcut("⌘K"),
-        icon: <SearchIcon className="h-3.5 w-3.5" />,
+        icon: <SearchIcon className="h-4 w-4" />,
         run: () => {
           setRightOpen(true);
           sidePanelRef.current?.focusSearch();
-        },
-      },
-      {
-        id: "chat",
-        label: "Ask your vault",
-        hint: "Grounded chat with citations",
-        icon: <ChatIcon className="h-3.5 w-3.5" />,
-        run: () => {
-          setRightOpen(true);
-          sidePanelRef.current?.focusSearch();
-        },
-      },
-      {
-        id: "synthesize",
-        label: "Synthesize this week",
-        hint: "Roll recent notes into Synthesis/YYYY-Www.md",
-        icon: <SparkleIcon className="h-3.5 w-3.5" />,
-        run: async () => {
-          try {
-            const r = await getClient().synthesize({});
-            await refreshNotes();
-            setSelected(r.path);
-            toast.success(`Synthesis saved to ${r.path}`);
-          } catch (e) {
-            toast.error(e instanceof Error ? e.message : String(e));
-          }
-        },
-      },
-      {
-        id: "tokens",
-        label: "Agent tokens",
-        hint: "Manage MCP / agent access",
-        run: () => {
-          window.location.href = "/settings/tokens";
         },
       },
       {
@@ -188,7 +155,7 @@ function HomeInner() {
         id: "close-vault",
         label: "Close vault",
         hint: vault?.name ?? "",
-        icon: <FolderIcon className="h-3.5 w-3.5" />,
+        icon: <FolderIcon className="h-4 w-4" />,
         run: () => void closeVault(),
       },
     ],
@@ -262,7 +229,7 @@ function HomeInner() {
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             md:translate-x-0
             absolute md:relative z-20 md:z-auto inset-y-0 left-0
-            w-[280px] shrink-0
+            w-[240px] shrink-0
             bg-surface border-r border-border-subtle
             flex flex-col min-h-0
             transition-transform duration-200 ease-out
@@ -288,7 +255,7 @@ function HomeInner() {
             type="button"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden absolute inset-0 z-10 bg-fg-default/20 backdrop-blur-[1px]"
+            className="md:hidden absolute inset-0 z-10 bg-fg-default/35"
           />
         )}
 
@@ -301,7 +268,7 @@ function HomeInner() {
             ${rightOpen ? "translate-x-0" : "translate-x-full"}
             lg:translate-x-0
             absolute lg:relative z-20 lg:z-auto inset-y-0 right-0
-            w-[360px] shrink-0
+            w-[320px] shrink-0
             border-l border-border-subtle
             transition-transform duration-200 ease-out
             lg:transition-none
@@ -314,7 +281,7 @@ function HomeInner() {
             type="button"
             aria-label="Close panel"
             onClick={() => setRightOpen(false)}
-            className="lg:hidden absolute inset-0 z-10 bg-fg-default/20 backdrop-blur-[1px]"
+            className="lg:hidden absolute inset-0 z-10 bg-fg-default/35"
           />
         )}
       </div>

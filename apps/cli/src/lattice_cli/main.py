@@ -8,6 +8,7 @@ from .commands import (
     login_cmd,
     mcp_cmd,
     open_cmd,
+    rebuild_cmd,
     search_cmd,
     serve,
     sync_cmd,
@@ -25,6 +26,7 @@ def cli() -> None:
 
 cli.add_command(serve.serve)
 cli.add_command(open_cmd.open_cmd)
+cli.add_command(rebuild_cmd.rebuild_cmd)
 cli.add_command(search_cmd.search_cmd)
 cli.add_command(chat_cmd.chat_cmd)
 cli.add_command(mcp_cmd.mcp_cmd)

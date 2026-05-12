@@ -37,7 +37,11 @@ async def test_vault_open_indexes_three_notes(
 ) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             body = await _open_vault(client, fixture_vault)
             assert body["vault"]["root_path"].endswith("vault")
             assert body["indexed"]["notes_indexed"] == 3
@@ -54,7 +58,11 @@ async def test_notes_listing_and_read(
 ) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, fixture_vault)
             r = await client.get("/notes")
             assert r.status_code == 200
@@ -73,7 +81,11 @@ async def test_note_write_and_reindex(
 ) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, fixture_vault)
             r = await client.put(
                 "/notes/postgres.md",
@@ -94,7 +106,11 @@ async def test_note_path_traversal_rejected(
 ) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, fixture_vault)
             # Percent-encode so httpx doesn't normalize `..` away before sending.
             r = await client.put("/notes/%2E%2E/escape.md", json={"body": "nope"})
@@ -106,7 +122,11 @@ async def test_search_fts_and_hybrid(
 ) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, fixture_vault)
             r = await client.get("/search", params={"q": "replication", "mode": "fts"})
             assert r.status_code == 200
@@ -123,7 +143,11 @@ async def test_chat_returns_answer_with_parsed_citations(
 ) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open_vault(client, fixture_vault)
             r = await client.post(
                 "/chat",
@@ -142,6 +166,10 @@ async def test_chat_returns_answer_with_parsed_citations(
 async def test_chat_rejects_without_vault(settings: Settings, stub_llm: StubLLMProvider) -> None:
     app = build_app(settings, stub_llm)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/chat", json={"query": "anything"})
             assert r.status_code == 409

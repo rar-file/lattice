@@ -25,7 +25,6 @@ export default function DevicePage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-canvas">
-      <div className="absolute inset-0 bg-aurora pointer-events-none" aria-hidden />
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         <header className="flex items-center justify-between animate-fade-in">
           <Link href="/" className="focus-ring rounded px-1">
@@ -35,8 +34,8 @@ export default function DevicePage() {
 
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full card-elevated p-7 animate-scale-in">
-            <h1 className="text-[22px] font-semibold tracking-tight">Approve a device</h1>
-            <p className="mt-1.5 text-[13px] text-fg-muted leading-relaxed">
+            <h1 className="text-[20px] font-medium tracking-tight">Approve a device</h1>
+            <p className="mt-2 text-[13px] text-fg-muted leading-relaxed">
               Enter the 4-by-4 code shown by your Lattice CLI, desktop, or mobile app. The device
               will pick up its token within a few seconds of approval.
             </p>
@@ -47,7 +46,7 @@ export default function DevicePage() {
                   <CheckIcon className="h-4 w-4" />
                   <span className="text-[13px] font-medium">Device approved</span>
                 </div>
-                <p className="mt-1 text-[12.5px] text-fg-muted">
+                <p className="mt-1 text-[13px] text-fg-muted">
                   You can close this window and return to the device that was waiting.
                 </p>
               </div>
@@ -56,7 +55,7 @@ export default function DevicePage() {
                 <div>
                   <label
                     htmlFor="device-code"
-                    className="block text-[12px] font-medium text-fg-default mb-1.5"
+                    className="block text-[12px] font-medium text-fg-default mb-2"
                   >
                     Device code
                   </label>
@@ -77,9 +76,7 @@ export default function DevicePage() {
             )}
 
             {error && status === "error" && (
-              <div className="mt-4 rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
-                {error}
-              </div>
+              <div className="mt-4 text-[12px] text-fg-muted px-1">{error}</div>
             )}
           </div>
         </div>

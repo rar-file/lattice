@@ -11,7 +11,9 @@ from lattice_api.providers.embed.hash_provider import HashEmbeddingProvider
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash")
+    return Settings(
+        mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash", local_token="test"
+    )
 
 
 def make_app(settings: Settings):
@@ -22,7 +24,11 @@ async def test_init_creates_vault_and_starter_note(settings: Settings, tmp_path:
     target = tmp_path / "my-vault"
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/init", json={"root_path": str(target)})
             assert r.status_code == 200, r.text
             body = r.json()
@@ -42,7 +48,11 @@ async def test_init_rejects_non_empty_dir(settings: Settings, tmp_path: Path) ->
     (target / "something.md").write_text("hello", encoding="utf-8")
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/init", json={"root_path": str(target)})
             assert r.status_code == 400
             assert "not empty" in r.json()["detail"]
@@ -61,7 +71,11 @@ async def test_init_picks_path_from_name_when_root_missing(
 
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/init", json={"name": "Field Notes"})
             assert r.status_code == 200, r.text
             assert r.json()["vault"]["root_path"] == str(home / "Documents" / "Field-Notes")
@@ -76,7 +90,11 @@ async def test_init_rejects_in_cloud_mode(tmp_path: Path) -> None:
     s = Settings(mode=Mode.CLOUD, local_data_dir=tmp_path, embedding_provider="hash")
     app = create_app(s, embedder_override=HashEmbeddingProvider())
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/init", json={"root_path": str(tmp_path / "remote")})
             assert r.status_code == 400
             assert "local-only" in r.json()["detail"]

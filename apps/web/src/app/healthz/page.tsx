@@ -32,7 +32,7 @@ export default function HealthPage() {
 
   return (
     <main className="min-h-screen bg-canvas">
-      <nav className="border-b border-border-subtle bg-surface/60 backdrop-blur">
+      <nav className="border-b border-border-subtle bg-surface">
         <div className="mx-auto flex h-12 max-w-2xl items-center gap-3 px-6">
           <Link href="/" className="focus-ring rounded px-1">
             <LatticeMark />
@@ -44,8 +44,8 @@ export default function HealthPage() {
 
       <div className="mx-auto max-w-md px-6 py-12 animate-fade-in">
         <div className="card p-6">
-          <h1 className="text-[18px] font-semibold tracking-tight">API status</h1>
-          <p className="mt-1 text-[12.5px] text-fg-muted">
+          <h1 className="text-[20px] font-medium tracking-tight">API status</h1>
+          <p className="mt-1 text-[13px] text-fg-muted">
             Reachability and mode of the Lattice API this UI is talking to.
           </p>
 
@@ -57,12 +57,12 @@ export default function HealthPage() {
               {state.kind === "loading" && <span className="text-fg-muted">Checking…</span>}
               {state.kind === "ok" && (
                 <span className="inline-flex items-center gap-1 text-success">
-                  <CheckIcon className="h-3.5 w-3.5" /> Reachable
+                  <CheckIcon className="h-4 w-4" /> Reachable
                 </span>
               )}
               {state.kind === "error" && (
                 <span className="inline-flex items-center gap-1 text-danger">
-                  <XIcon className="h-3.5 w-3.5" /> Unreachable
+                  <XIcon className="h-4 w-4" /> Unreachable
                 </span>
               )}
             </Row>
@@ -77,9 +77,7 @@ export default function HealthPage() {
               </>
             )}
             {state.kind === "error" && (
-              <div className="mt-3 rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
-                {state.message}
-              </div>
+              <div className="mt-3 text-[12px] text-fg-muted px-1">{state.message}</div>
             )}
           </div>
         </div>
@@ -100,7 +98,7 @@ function Row({
   return (
     <div className="flex items-start justify-between gap-3 py-2 border-b border-border-subtle last:border-b-0">
       <div className="text-[12px] text-fg-muted">{label}</div>
-      <div className={`text-[12.5px] text-fg-default text-right ${mono ? "font-mono" : ""}`}>
+      <div className={`text-[13px] text-fg-default text-right ${mono ? "font-mono" : ""}`}>
         {children}
       </div>
     </div>

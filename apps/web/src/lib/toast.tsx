@@ -121,8 +121,8 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     <div
       className={`relative overflow-hidden card-elevated pointer-events-auto animate-slide-up ${tone}`}
     >
-      <div className="flex items-start gap-2 px-3.5 py-3">
-        <div className="mt-0.5 shrink-0">
+      <div className="flex items-start gap-2 px-4 py-3">
+        <div className="mt-1 shrink-0">
           {toast.kind === "success" ? (
             <CheckIcon className="h-4 w-4" />
           ) : toast.kind === "error" ? (
@@ -135,10 +135,10 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         <button
           type="button"
           onClick={onDismiss}
-          className="text-fg-faint hover:text-fg-default focus-ring rounded p-0.5 -mt-0.5"
+          className="text-fg-faint hover:text-fg-default focus-ring rounded p-1 -mt-1"
           aria-label="Dismiss"
         >
-          <XIcon className="h-3.5 w-3.5" />
+          <XIcon className="h-4 w-4" />
         </button>
       </div>
       <div

@@ -27,8 +27,8 @@
   --border-default: 222 216 208;
   --border-strong: 198 190 180;
 
-  --accent: 79 70 229; /* indigo-600 */
-  --accent-soft: 226 224 254;
+  --accent: 33 100 200; /* desaturated blue — the single accent */
+  --accent-soft: 224 232 247;
   --accent-fg: 255 255 255;
 
   --danger: 220 38 38;
@@ -60,8 +60,8 @@
     --border-default: 44 41 38;
     --border-strong: 64 60 56;
 
-    --accent: 129 140 248; /* indigo-400 — softer on dark */
-    --accent-soft: 49 46 92;
+    --accent: 122 176 240; /* lighter blue for dark mode */
+    --accent-soft: 24 44 72;
     --accent-fg: 14 13 11;
 
     --danger: 248 113 113;
@@ -96,8 +96,8 @@ html.theme-light {
   --border-default: 214 207 196;
   --border-strong: 184 174 158;
 
-  --accent: 79 70 229;
-  --accent-soft: 232 230 254;
+  --accent: 33 100 200;
+  --accent-soft: 224 232 247;
   --accent-fg: 255 255 255;
 
   --danger: 220 38 38;
@@ -126,8 +126,8 @@ html.theme-dark {
   --border-default: 44 41 38;
   --border-strong: 64 60 56;
 
-  --accent: 129 140 248;
-  --accent-soft: 49 46 92;
+  --accent: 122 176 240;
+  --accent-soft: 24 44 72;
   --accent-fg: 14 13 11;
 
   --danger: 248 113 113;
@@ -218,14 +218,14 @@ pre,
     letter-spacing: -0.005em;
   }
   .btn-sm {
-    height: 30px;
-    padding: 0 10px;
-    font-size: 12.5px;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 13px;
   }
   .btn-xs {
     height: 24px;
     padding: 0 8px;
-    font-size: 11.5px;
+    font-size: 12px;
     gap: 0.375rem;
   }
 
@@ -251,7 +251,7 @@ pre,
       focus:border-accent focus:shadow-ring;
     height: 36px;
     padding: 0 12px;
-    font-size: 13.5px;
+    font-size: 14px;
   }
   textarea.input {
     height: auto;
@@ -267,22 +267,21 @@ pre,
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full
-      border border-border-subtle bg-surface px-2.5 py-0.5
-      text-[11px] font-medium text-fg-muted;
+    @apply inline-flex items-center gap-2 rounded
+      border border-border-subtle bg-surface px-2 py-1
+      text-[12px] font-medium text-fg-muted;
   }
 
   .kbd {
     @apply inline-flex items-center justify-center
       rounded border border-border-subtle bg-sunken
-      px-1.5 font-mono text-[11px] text-fg-muted
+      px-2 font-mono text-[12px] text-fg-muted
       min-w-[20px] h-[20px];
-    box-shadow: 0 1px 0 rgb(var(--border-default));
   }
 
   /* Section labels — small caps with letter-spacing for a typographic feel.  */
   .section-label {
-    @apply text-[10.5px] font-semibold uppercase tracking-[0.08em] text-fg-faint;
+    @apply text-[12px] font-medium uppercase tracking-[0.08em] text-fg-faint;
   }
 }
 
@@ -380,41 +379,44 @@ pre,
  * Loading shimmer
  * --------------------------------------------------------------------------- */
 
-@keyframes lattice-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
+@keyframes lattice-pulse {
+  0%,
   100% {
-    background-position: 200% 0;
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
   }
 }
 .lattice-skeleton {
-  background: linear-gradient(
-    90deg,
-    rgb(var(--border-subtle)) 0%,
-    rgb(var(--border-default)) 50%,
-    rgb(var(--border-subtle)) 100%
-  );
-  background-size: 200% 100%;
-  animation: lattice-shimmer 1.4s linear infinite;
+  background: rgb(var(--border-subtle));
+  animation: lattice-pulse 1.4s ease-in-out infinite;
   border-radius: 4px;
 }
 
-/* ---------------------------------------------------------------------------
- * Decorative gradient used on the welcome hero
- * --------------------------------------------------------------------------- */
-
-.bg-aurora {
-  background: radial-gradient(60% 40% at 50% 0%, rgb(var(--accent) / 0.1) 0%, transparent 60%),
-    radial-gradient(40% 30% at 20% 80%, rgb(var(--accent) / 0.06) 0%, transparent 60%),
-    radial-gradient(40% 30% at 80% 70%, rgb(var(--accent) / 0.05) 0%, transparent 60%);
+/* The welcome and login surfaces use the same flat canvas as the rest of the
+ * app — no decorative gradients, no aurora, no glass. */
+.bg-aurora,
+.bg-mesh {
+  background: rgb(var(--bg-canvas));
 }
 
-/* Soft gradient mesh used as background of welcome / login cards. */
-.bg-mesh {
-  background: linear-gradient(to bottom right, rgb(var(--bg-surface)), rgb(var(--bg-canvas))),
-    radial-gradient(80% 50% at 50% 0%, rgb(var(--accent) / 0.06), transparent);
-  background-blend-mode: normal;
+/* Thin top progress bar (YouTube / GitHub style) for >400ms operations. */
+@keyframes lattice-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.lattice-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: rgb(var(--accent));
+  animation: lattice-progress 900ms ease-in-out infinite;
+  z-index: 60;
 }
 
 /* Hairline divider that aligns with the design's 1px borders. */

@@ -71,7 +71,7 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[16vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/35 p-4 pt-[16vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -83,19 +83,19 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
       >
         <form onSubmit={submit}>
           <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
-            <div className="text-[13.5px] font-semibold tracking-tight">New note</div>
+            <div className="text-[14px] font-medium tracking-tight">New note</div>
             <button
               type="button"
               onClick={onClose}
               className="btn btn-ghost btn-xs"
               aria-label="Close"
             >
-              <XIcon className="h-3.5 w-3.5" />
+              <XIcon className="h-4 w-4" />
             </button>
           </div>
           <div className="p-5 space-y-3">
             <label className="block">
-              <span className="block text-[12px] font-medium text-fg-default mb-1.5">Title</span>
+              <span className="block text-[12px] font-medium text-fg-default mb-2">Title</span>
               <input
                 ref={inputRef}
                 value={title}
@@ -105,23 +105,19 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
               />
             </label>
             <label className="block">
-              <span className="block text-[12px] font-medium text-fg-default mb-1.5">
+              <span className="block text-[12px] font-medium text-fg-default mb-2">
                 Folder <span className="text-fg-faint font-normal">(optional)</span>
               </span>
               <input
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
                 placeholder="e.g. Projects/2026"
-                className="input font-mono text-[12.5px]"
+                className="input font-mono text-[13px]"
               />
             </label>
-            {error && (
-              <div className="rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-[12px] text-fg-muted px-1">{error}</div>}
             <div className="flex items-center justify-between">
-              <p className="text-[11.5px] text-fg-muted">
+              <p className="text-[12px] text-fg-muted">
                 Saved as <span className="font-mono">slug.md</span> from the title.
               </p>
               <button

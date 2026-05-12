@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatShortcut } from "../lib/platform";
 import { ThemeToggle } from "./ThemeToggle";
-import { FolderIcon, LatticeMark, MenuIcon, SearchIcon, SparkleIcon } from "./icons";
+import { FolderIcon, InboxIcon, LatticeMark, MenuIcon, SearchIcon } from "./icons";
 
 interface Props {
   vault: VaultInfo;
@@ -50,7 +50,7 @@ export function TopBar({
   }, [menuOpen]);
 
   return (
-    <header className="relative z-30 flex h-12 items-center gap-2 border-b border-border-subtle bg-surface/80 backdrop-blur px-3">
+    <header className="relative z-30 flex h-12 items-center gap-2 border-b border-border-subtle bg-surface px-3">
       {onToggleSidebar && (
         <button
           type="button"
@@ -92,9 +92,9 @@ export function TopBar({
           </svg>
         </button>
         {menuOpen && (
-          <div className="absolute left-0 top-full mt-2 w-[320px] card-elevated p-1.5 z-30 animate-scale-in">
+          <div className="absolute left-0 top-full mt-2 w-[320px] card-elevated p-2 z-30 animate-scale-in">
             <div className="px-3 py-2 border-b border-border-subtle">
-              <div className="text-[11px] section-label">Vault path</div>
+              <div className="text-[12px] section-label">Vault path</div>
               <div className="text-[12px] font-mono mt-1 break-all text-fg-muted">
                 {vault.root_path}
               </div>
@@ -124,7 +124,7 @@ export function TopBar({
           className="btn btn-secondary btn-sm ml-auto max-w-[280px] flex-1 justify-start text-fg-muted"
           title={`Command palette (${formatShortcut("⌘P")})`}
         >
-          <SearchIcon className="h-3.5 w-3.5 shrink-0" />
+          <SearchIcon className="h-4 w-4 shrink-0" />
           <span className="hidden md:inline truncate">Jump to a note or run a command…</span>
           <span className="hidden md:inline kbd ml-auto shrink-0">{formatShortcut("⌘P")}</span>
         </button>
@@ -149,7 +149,7 @@ export function TopBar({
         className="btn btn-primary btn-sm"
         title={`Capture (${formatShortcut("⇧⌘C")})`}
       >
-        <SparkleIcon className="h-4 w-4" />
+        <InboxIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Capture</span>
       </button>
     </header>

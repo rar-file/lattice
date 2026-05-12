@@ -37,7 +37,9 @@ def _parse_tool_result(result) -> Any:
 
 @pytest.fixture
 async def mcp_setup(tmp_path: Path, fixture_vault: Path):
-    settings = Settings(mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash")
+    settings = Settings(
+        mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash", local_token="test"
+    )
     storage = SqliteStorage(settings.sqlite_path)
     await storage.init()
     embedder = HashEmbeddingProvider()

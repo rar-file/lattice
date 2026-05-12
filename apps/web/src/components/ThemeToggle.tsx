@@ -76,7 +76,7 @@ function Option({
         onPick(value);
         onClose();
       }}
-      className={`flex w-full items-center gap-2 px-3 py-1.5 rounded text-[13px] hover:bg-sunken focus-ring ${
+      className={`flex w-full items-center gap-2 px-3 py-2 rounded text-[13px] hover:bg-sunken focus-ring ${
         current === value ? "text-fg-default font-medium" : "text-fg-muted"
       }`}
     >

@@ -12,7 +12,9 @@ from lattice_api.providers.stub_llm import StubLLMProvider
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash")
+    return Settings(
+        mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash", local_token="test"
+    )
 
 
 def make_app(settings: Settings, drafted: str | None = None):
@@ -31,7 +33,11 @@ async def _open(client: AsyncClient, root: Path) -> None:
 async def test_suggest_links_ranks_existing_notes(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             r = await client.post(
                 "/suggest/links",
@@ -46,7 +52,11 @@ async def test_suggest_links_ranks_existing_notes(settings: Settings, fixture_va
 async def test_suggest_links_empty_paragraph(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             r = await client.post("/suggest/links", json={"paragraph": "   "})
             assert r.status_code == 200
@@ -64,7 +74,11 @@ async def test_capture_writes_inbox_note(settings: Settings, fixture_vault: Path
     )
     app = make_app(settings, drafted=drafted)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             r = await client.post(
                 "/capture",
@@ -88,7 +102,11 @@ async def test_capture_writes_inbox_note(settings: Settings, fixture_vault: Path
 async def test_capture_rejects_empty(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             r = await client.post("/capture", json={"text": "  "})
             assert r.status_code == 400
@@ -99,7 +117,11 @@ async def test_suggest_finds_anchor_in_paragraph(settings: Settings, fixture_vau
 
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             r = await client.post(
                 "/suggest/links",

@@ -12,7 +12,12 @@ from lattice_api.routes import vault as vault_routes
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(mode=Mode.LOCAL, local_data_dir=tmp_path / "data", embedding_provider="hash")
+    return Settings(
+        mode=Mode.LOCAL,
+        local_data_dir=tmp_path / "data",
+        embedding_provider="hash",
+        local_token="test",
+    )
 
 
 @pytest.fixture
@@ -36,7 +41,11 @@ async def test_auto_creates_default_vault_on_first_launch(
     """No state.json, no default folder — should create ~/Documents/Lattice and open it."""
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/auto")
             assert r.status_code == 200, r.text
             body = r.json()
@@ -52,7 +61,11 @@ async def test_auto_reopens_last_vault(settings: Settings, fake_home: Path, tmp_
     other = tmp_path / "my-other-vault"
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/init", json={"root_path": str(other)})
             assert r.status_code == 200
             # State persisted to settings.local_data_dir/state.json
@@ -61,7 +74,11 @@ async def test_auto_reopens_last_vault(settings: Settings, fake_home: Path, tmp_
     # Simulate a relaunch: brand-new app, same on-disk state.
     app2 = make_app(settings)
     async with app2.router.lifespan_context(app2):
-        async with AsyncClient(transport=ASGITransport(app=app2), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app2),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/auto")
             assert r.status_code == 200, r.text
             assert r.json()["vault"]["root_path"] == str(other)
@@ -74,7 +91,11 @@ async def test_auto_returns_current_session_if_one_is_open(
     target = tmp_path / "already-open"
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await client.post("/vault/init", json={"root_path": str(target)})
             r = await client.post("/vault/auto")
             assert r.status_code == 200
@@ -87,7 +108,11 @@ async def test_auto_rejected_in_cloud_mode(tmp_path: Path) -> None:
     s = Settings(mode=Mode.CLOUD, local_data_dir=tmp_path, embedding_provider="hash")
     app = create_app(s, embedder_override=HashEmbeddingProvider())
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/auto")
             assert r.status_code == 400
             assert "local-only" in r.json()["detail"]

@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 import { markdownHighlight } from "../lib/cm-highlight";
 import { formatShortcut } from "../lib/platform";
-import { CheckIcon, FileIcon, LinkIcon, SparkleIcon } from "./icons";
+import { CheckIcon, FileIcon, LinkIcon } from "./icons";
 
 interface Props {
   notePath: string | null;
@@ -58,9 +58,9 @@ export function CodeMirrorEditor({
             "&": { height: "100%", backgroundColor: "transparent" },
             ".cm-scroller": {
               fontFamily: "var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif",
-              fontSize: "15px",
+              fontSize: "16px",
               lineHeight: "1.65",
-              maxWidth: "780px",
+              maxWidth: "720px",
               margin: "0 auto",
               padding: "0 24px",
             },
@@ -226,7 +226,7 @@ export function CodeMirrorEditor({
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sunken mb-4">
           <FileIcon className="h-5 w-5 text-fg-muted" />
         </div>
-        <h2 className="text-[16px] font-semibold tracking-tight text-fg-default">
+        <h2 className="text-[16px] font-medium tracking-tight text-fg-default">
           Pick a note to start
         </h2>
         <p className="mt-2 max-w-sm text-[13px] text-fg-muted leading-relaxed">
@@ -245,12 +245,12 @@ export function CodeMirrorEditor({
 
   return (
     <div className="flex h-full flex-col bg-canvas" onKeyDown={onKeyDown}>
-      <div className="flex items-center gap-3 border-b border-border-subtle bg-surface/60 backdrop-blur px-6 py-2.5">
+      <div className="flex items-center gap-3 border-b border-border-subtle bg-surface px-6 py-3">
         <div className="flex-1 min-w-0">
-          <div className="text-[14px] font-semibold tracking-tight text-fg-default truncate">
+          <div className="text-[14px] font-medium tracking-tight text-fg-default truncate">
             {title?.trim() || stripMd(basename(notePath))}
           </div>
-          <div className="text-[11px] text-fg-faint font-mono truncate" title={notePath}>
+          <div className="text-[12px] text-fg-faint font-mono truncate" title={notePath}>
             {notePath}
           </div>
         </div>
@@ -265,11 +265,7 @@ export function CodeMirrorEditor({
           <span className="kbd">{formatShortcut("⌘S")}</span>
         </button>
       </div>
-      {error && (
-        <div className="mx-6 mt-2 rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
-          {error}
-        </div>
-      )}
+      {error && <div className="mx-6 mt-2 text-[12px] text-fg-muted px-1">{error}</div>}
       <div className="flex-1 min-h-0 relative">
         <div ref={hostRef} className="absolute inset-0 overflow-auto scrollbar-thin" />
         {loading && (
@@ -279,15 +275,14 @@ export function CodeMirrorEditor({
         )}
       </div>
       {suggestionsEnabled && suggestions.length > 0 && (
-        <div className="border-t border-border-subtle bg-surface/60 backdrop-blur px-6 py-2.5 animate-slide-up">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <SparkleIcon className="h-3.5 w-3.5 text-accent" />
+        <div className="border-t border-border-subtle border-l-2 border-l-accent bg-surface px-6 py-3 animate-slide-up">
+          <div className="flex items-center gap-2 mb-2">
             <span className="section-label">Linked notes</span>
-            <span className="text-[10.5px] text-fg-faint">
+            <span className="text-[12px] text-fg-faint">
               — click to insert <span className="font-mono">[[wikilink]]</span>
             </span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
               <button
                 key={s.path}
@@ -307,9 +302,9 @@ export function CodeMirrorEditor({
         </div>
       )}
       {backlinks.length > 0 && (
-        <div className="border-t border-border-subtle bg-surface/40 px-6 py-2.5 animate-slide-up">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <LinkIcon className="h-3.5 w-3.5 text-fg-muted" />
+        <div className="border-t border-border-subtle bg-surface px-6 py-3 animate-slide-up">
+          <div className="flex items-center gap-2 mb-2">
+            <LinkIcon className="h-4 w-4 text-fg-muted" />
             <span className="section-label">
               Linked from {backlinks.length} {backlinks.length === 1 ? "note" : "notes"}
             </span>
@@ -320,12 +315,12 @@ export function CodeMirrorEditor({
                 key={b.path}
                 type="button"
                 onClick={() => onJumpToNote?.(b.path)}
-                className="text-left rounded-md px-2 py-1.5 hover:bg-sunken transition-colors focus-ring"
+                className="text-left rounded-md px-2 py-2 hover:bg-sunken transition-colors focus-ring"
               >
-                <div className="text-[12.5px] font-medium text-fg-default truncate">
+                <div className="text-[13px] font-medium text-fg-default truncate">
                   {b.title?.trim() || stripMd(basename(b.path))}
                 </div>
-                <div className="text-[11.5px] text-fg-muted truncate">{b.snippet}</div>
+                <div className="text-[12px] text-fg-muted truncate">{b.snippet}</div>
               </button>
             ))}
           </div>
@@ -341,7 +336,7 @@ function EditorFooter({ body, notePath }: { body: string; notePath: string }) {
   // ~225 wpm is the median for prose reading on screen.
   const minutes = Math.max(1, Math.round(words / 225));
   return (
-    <div className="flex items-center justify-between border-t border-border-subtle bg-surface/60 px-6 py-1.5 text-[11px] text-fg-faint font-mono">
+    <div className="flex items-center justify-between border-t border-border-subtle bg-surface px-6 py-2 text-[12px] text-fg-faint font-mono">
       <div className="flex items-center gap-3">
         <span>
           {words.toLocaleString()} {words === 1 ? "word" : "words"}
@@ -371,17 +366,17 @@ function countWords(s: string): number {
 
 function SaveIndicator({ dirty, saving }: { dirty: boolean; saving: boolean }) {
   if (saving) {
-    return <span className="text-[11.5px] text-fg-muted animate-fade-in">Saving…</span>;
+    return <span className="text-[12px] text-fg-muted animate-fade-in">Saving…</span>;
   }
   if (dirty) {
     return (
-      <span className="inline-flex items-center gap-1 text-[11.5px] text-warning">
+      <span className="inline-flex items-center gap-1 text-[12px] text-warning">
         <span className="h-1.5 w-1.5 rounded-full bg-warning" /> Unsaved
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[11.5px] text-fg-faint">
+    <span className="inline-flex items-center gap-1 text-[12px] text-fg-faint">
       <CheckIcon className="h-3 w-3" /> Saved
     </span>
   );
@@ -389,7 +384,7 @@ function SaveIndicator({ dirty, saving }: { dirty: boolean; saving: boolean }) {
 
 function ShortcutHint({ k, label }: { k: string; label: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 rounded-md border border-border-subtle bg-surface px-2 py-1.5 text-[11.5px] text-fg-muted">
+    <div className="flex items-center justify-center gap-2 rounded-md border border-border-subtle bg-surface px-2 py-2 text-[12px] text-fg-muted">
       <kbd className="kbd">{k}</kbd>
       <span>{label}</span>
     </div>

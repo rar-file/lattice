@@ -2,15 +2,7 @@
 
 import type { NoteSummary } from "@lattice/sdk";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowRightIcon,
-  ChatIcon,
-  FileIcon,
-  PlusIcon,
-  SearchIcon,
-  SparkleIcon,
-  XIcon,
-} from "./icons";
+import { ArrowRightIcon, FileIcon, PlusIcon, SearchIcon, XIcon } from "./icons";
 
 export interface CommandAction {
   id: string;
@@ -119,7 +111,7 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[14vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/35 p-4 pt-[14vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -165,13 +157,13 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
                       active ? "bg-sunken" : ""
                     }`}
                   >
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent-soft text-accent shrink-0">
-                      {a.icon ?? <SparkleIcon className="h-3.5 w-3.5" />}
+                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
+                      {a.icon ?? <ArrowRightIcon className="h-4 w-4" />}
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-[13px] text-fg-default truncate">{a.label}</span>
                       {a.hint && (
-                        <span className="block text-[11.5px] text-fg-muted truncate">{a.hint}</span>
+                        <span className="block text-[12px] text-fg-muted truncate">{a.hint}</span>
                       )}
                     </span>
                     {a.shortcut && <kbd className="kbd shrink-0">{a.shortcut}</kbd>}
@@ -193,30 +185,30 @@ export function CommandPalette({ open, onClose, notes, onJumpToNote, actions }: 
                     active ? "bg-sunken" : ""
                   }`}
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
-                    <FileIcon className="h-3.5 w-3.5" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-md bg-sunken text-fg-muted shrink-0">
+                    <FileIcon className="h-4 w-4" />
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-[13px] text-fg-default truncate">
                       {n.title?.trim() || stripMd(basename(n.path))}
                     </span>
-                    <span className="block text-[11px] font-mono text-fg-faint truncate">
+                    <span className="block text-[12px] font-mono text-fg-faint truncate">
                       {n.path}
                     </span>
                   </span>
-                  <ArrowRightIcon className="h-3.5 w-3.5 text-fg-faint shrink-0" />
+                  <ArrowRightIcon className="h-4 w-4 text-fg-faint shrink-0" />
                 </button>
               );
             })
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-border-subtle px-4 py-2 text-[11px] text-fg-muted">
+        <div className="flex items-center justify-between border-t border-border-subtle px-4 py-2 text-[12px] text-fg-muted">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-2">
               <kbd className="kbd">↑↓</kbd> navigate
             </span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-2">
               <kbd className="kbd">↵</kbd> select
             </span>
           </div>
@@ -274,4 +266,4 @@ function scoreMatch(text: string, query: string): number {
 }
 
 // Helpful icon re-exports for callers building action lists.
-export { ChatIcon, PlusIcon, SearchIcon, SparkleIcon, XIcon };
+export { PlusIcon, SearchIcon, XIcon };

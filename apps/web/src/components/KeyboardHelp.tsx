@@ -41,7 +41,7 @@ export function KeyboardHelp({ open, onClose }: Props) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/35 p-4 animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -52,14 +52,14 @@ export function KeyboardHelp({ open, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
-          <div className="text-[13.5px] font-semibold tracking-tight">Keyboard shortcuts</div>
+          <div className="text-[14px] font-medium tracking-tight">Keyboard shortcuts</div>
           <button
             type="button"
             onClick={onClose}
             className="btn btn-ghost btn-xs"
             aria-label="Close"
           >
-            <XIcon className="h-3.5 w-3.5" />
+            <XIcon className="h-4 w-4" />
           </button>
         </div>
         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
@@ -84,7 +84,7 @@ export function KeyboardHelp({ open, onClose }: Props) {
             </section>
           ))}
         </div>
-        <div className="px-5 py-2.5 border-t border-border-subtle text-[11.5px] text-fg-muted">
+        <div className="px-5 py-3 border-t border-border-subtle text-[12px] text-fg-muted">
           Press <kbd className="kbd">?</kbd> any time to show this list.
         </div>
       </div>

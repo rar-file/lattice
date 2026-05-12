@@ -12,12 +12,12 @@ type IconProps = { className?: string; "aria-hidden"?: boolean } & React.SVGProp
 // Setting `aria-hidden` and `role="img"` keeps Biome's a11y rule happy and
 // is the correct semantic for decorative glyphs.
 const base = {
-  width: 18,
-  height: 18,
+  width: 16,
+  height: 16,
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.6,
+  strokeWidth: 1.5,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   "aria-hidden": true,
@@ -56,25 +56,10 @@ export function SearchIcon(p: IconProps) {
     </svg>
   );
 }
-export function ChatIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="M21 12c0 4.418-4.03 8-9 8-1.247 0-2.434-.222-3.514-.623L4 21l1.108-3.696C4.41 16.123 4 14.604 4 13c0-4.418 4.03-8 9-8s8 3.582 8 7Z" />
-    </svg>
-  );
-}
 export function PlusIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>
       <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-export function SparkleIcon(p: IconProps) {
-  return (
-    <svg {...base} {...p}>
-      <path d="M12 4v4M12 16v4M4 12h4M16 12h4" />
-      <path d="M12 8a4 4 0 0 0 4 4 4 4 0 0 0-4 4 4 4 0 0 0-4-4 4 4 0 0 0 4-4Z" />
     </svg>
   );
 }
@@ -185,9 +170,7 @@ export function LatticeMark({
         <path d="M7.6 5.2h2.4v11.2H17v2.4H7.6V5.2Z" fill="#e8e6e1" />
       </svg>
       {withWordmark && (
-        <span className="text-[15px] font-semibold tracking-[-0.01em] text-fg-default">
-          Lattice
-        </span>
+        <span className="text-[14px] font-medium tracking-[-0.01em] text-fg-default">Lattice</span>
       )}
     </span>
   );

@@ -11,7 +11,9 @@ from lattice_api.providers.embed.hash_provider import HashEmbeddingProvider
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash")
+    return Settings(
+        mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash", local_token="test"
+    )
 
 
 def make_app(settings: Settings):
@@ -26,7 +28,11 @@ async def _open(client: AsyncClient, root: Path) -> None:
 async def test_rename_moves_file_and_reindexes(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             # Pick an existing fixture note
             notes = (await client.get("/notes")).json()
@@ -51,7 +57,11 @@ async def test_rename_moves_file_and_reindexes(settings: Settings, fixture_vault
 async def test_rename_rejects_existing_destination(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             notes = (await client.get("/notes")).json()
             a, b = notes[0]["path"], notes[1]["path"]
@@ -63,7 +73,11 @@ async def test_rename_rejects_existing_destination(settings: Settings, fixture_v
 async def test_rename_rejects_escape(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             await _open(client, fixture_vault)
             notes = (await client.get("/notes")).json()
             r = await client.post(

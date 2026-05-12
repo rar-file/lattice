@@ -13,7 +13,9 @@ from lattice_api.providers.stub_llm import StubLLMProvider
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    return Settings(mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash")
+    return Settings(
+        mode=Mode.LOCAL, local_data_dir=tmp_path, embedding_provider="hash", local_token="test"
+    )
 
 
 def make_app(settings: Settings, drafted: str | None = None):
@@ -38,7 +40,11 @@ async def test_synthesize_writes_weekly_note(settings: Settings, fixture_vault: 
     )
     app = make_app(settings, drafted=drafted)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/open", json={"root_path": str(fixture_vault)})
             assert r.status_code == 200
 
@@ -61,7 +67,11 @@ async def test_synthesize_writes_weekly_note(settings: Settings, fixture_vault: 
 async def test_synthesize_empty_week(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings, drafted="ignored")
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/open", json={"root_path": str(fixture_vault)})
             assert r.status_code == 200
             # Pick a far-past week — none of the fixture notes will fall inside.
@@ -75,7 +85,11 @@ async def test_synthesize_empty_week(settings: Settings, fixture_vault: Path) ->
 async def test_synthesize_rejects_bad_week_label(settings: Settings, fixture_vault: Path) -> None:
     app = make_app(settings)
     async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"Authorization": "Bearer test"},
+        ) as client:
             r = await client.post("/vault/open", json={"root_path": str(fixture_vault)})
             assert r.status_code == 200
             r = await client.post("/synthesize", json={"week": "not-a-week"})

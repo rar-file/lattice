@@ -44,14 +44,14 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
       <div className="flex items-center gap-1 px-3 pt-3 pb-2">
         <div className="relative flex-1">
           <SearchIcon
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-fg-faint"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-faint"
             aria-hidden
           />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter notes…"
-            className="input pl-8 h-8 text-[12.5px]"
+            className="input pl-8 h-8 text-[13px]"
             disabled={!notes.length}
           />
         </div>
@@ -63,7 +63,7 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
             title={`New note (${formatShortcut("⌘N")})`}
             aria-label="New note"
           >
-            <PlusIcon className="h-3.5 w-3.5" />
+            <PlusIcon className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -73,7 +73,7 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sunken">
             <FileIcon className="h-5 w-5 text-fg-muted" />
           </div>
-          <div className="text-[13.5px] font-medium text-fg-default">No notes yet</div>
+          <div className="text-[14px] font-medium text-fg-default">No notes yet</div>
           <p className="text-[12px] text-fg-muted leading-relaxed">
             Create a fresh note, capture a thought, or drop Markdown files into the vault folder.
           </p>
@@ -99,10 +99,10 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
           ) : (
             groups.map((g) => (
               <section key={g.label} className="pb-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 text-fg-faint">
+                <div className="flex items-center gap-2 px-3 py-2 text-fg-faint">
                   {iconFor(g.label)}
                   <span className="section-label">{g.label}</span>
-                  <span className="ml-auto text-[10.5px] text-fg-faint">{g.items.length}</span>
+                  <span className="ml-auto text-[12px] text-fg-faint">{g.items.length}</span>
                 </div>
                 <ul>
                   {g.items.map((n) => (
@@ -200,13 +200,13 @@ function FileRow({
       <button
         type="button"
         onClick={onSelect}
-        className="w-full text-left px-3 py-1.5 pr-9 focus-ring rounded-md"
+        className="w-full text-left px-3 py-2 pr-9 focus-ring rounded-md"
         title={note.path}
       >
         <div className="text-[13px] font-medium truncate leading-snug">
           {note.title?.trim() || stripMd(basename(note.path))}
         </div>
-        <div className="text-[11px] text-fg-faint truncate font-mono mt-0.5 group-hover:text-fg-muted">
+        <div className="text-[12px] text-fg-faint truncate font-mono mt-1 group-hover:text-fg-muted">
           {note.path}
         </div>
       </button>
@@ -216,7 +216,7 @@ function FileRow({
           e.stopPropagation();
           onOpenMenu();
         }}
-        className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md flex items-center justify-center text-fg-faint
+        className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-md flex items-center justify-center text-fg-faint
           ${
             menuOpen
               ? "bg-sunken text-fg-default"
@@ -240,14 +240,14 @@ function FileRow({
           <button
             type="button"
             onClick={onRename}
-            className="block w-full text-left px-3 py-1.5 rounded text-[13px] hover:bg-sunken focus-ring"
+            className="block w-full text-left px-3 py-2 rounded text-[13px] hover:bg-sunken focus-ring"
           >
             Rename…
           </button>
           <button
             type="button"
             onClick={onDelete}
-            className="block w-full text-left px-3 py-1.5 rounded text-[13px] text-danger hover:bg-danger-soft focus-ring"
+            className="block w-full text-left px-3 py-2 rounded text-[13px] text-danger hover:bg-danger-soft focus-ring"
           >
             Delete…
           </button>
@@ -300,7 +300,7 @@ function RenameDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 pt-[18vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-fg-default/35 p-4 pt-[18vh] animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -312,33 +312,29 @@ function RenameDialog({
       >
         <form onSubmit={submit}>
           <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
-            <div className="text-[13.5px] font-semibold tracking-tight">Rename note</div>
+            <div className="text-[14px] font-medium tracking-tight">Rename note</div>
             <button
               type="button"
               onClick={onClose}
               className="btn btn-ghost btn-xs"
               aria-label="Close"
             >
-              <XIcon className="h-3.5 w-3.5" />
+              <XIcon className="h-4 w-4" />
             </button>
           </div>
           <div className="p-5 space-y-3">
             <label className="block">
-              <span className="block text-[12px] font-medium text-fg-default mb-1.5">
+              <span className="block text-[12px] font-medium text-fg-default mb-2">
                 New path (without .md)
               </span>
               <input
                 autoFocus
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="input font-mono text-[12.5px]"
+                className="input font-mono text-[13px]"
               />
             </label>
-            {error && (
-              <div className="rounded-md bg-danger-soft text-danger px-3 py-2 text-[12px]">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-[12px] text-fg-muted px-1">{error}</div>}
             <div className="flex justify-end gap-2">
               <button type="button" onClick={onClose} className="btn btn-ghost btn-sm">
                 Cancel
@@ -396,7 +392,7 @@ function ConfirmDelete({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/40 backdrop-blur-sm p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-fg-default/35 p-4 animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -407,10 +403,10 @@ function ConfirmDelete({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5">
-          <div className="text-[14px] font-semibold tracking-tight text-fg-default">
+          <div className="text-[14px] font-medium tracking-tight text-fg-default">
             Delete this note?
           </div>
-          <p className="mt-1.5 text-[12.5px] text-fg-muted leading-relaxed">
+          <p className="mt-2 text-[13px] text-fg-muted leading-relaxed">
             <span className="font-mono">{note.path}</span> will be removed from the vault folder and
             the index. This action cannot be undone.
           </p>
@@ -456,9 +452,9 @@ function groupByFolder(notes: NoteSummary[]): Group[] {
 }
 
 function iconFor(label: string) {
-  if (label === "Inbox") return <InboxIcon className="h-3.5 w-3.5" />;
-  if (label === "Synthesis") return <LayersIcon className="h-3.5 w-3.5" />;
-  return <FileIcon className="h-3.5 w-3.5" />;
+  if (label === "Inbox") return <InboxIcon className="h-4 w-4" />;
+  if (label === "Synthesis") return <LayersIcon className="h-4 w-4" />;
+  return <FileIcon className="h-4 w-4" />;
 }
 
 function basename(p: string): string {

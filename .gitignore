@@ -44,3 +44,7 @@ data/
 
 # Logs
 *.log
+
+# Local Claude Code session config and goal-file backups
+.claude/
+*.save

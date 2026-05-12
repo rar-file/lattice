@@ -42,33 +42,28 @@ export default {
         sm: "4px",
         DEFAULT: "6px",
         md: "8px",
-        lg: "12px",
-        xl: "16px",
-        "2xl": "20px",
+        lg: "8px",
+        xl: "8px",
+        "2xl": "8px",
       },
       boxShadow: {
-        card: "0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.02)",
-        popover: "0 10px 30px -10px rgb(0 0 0 / 0.18), 0 4px 8px -4px rgb(0 0 0 / 0.08)",
-        ring: "0 0 0 3px rgb(var(--accent) / 0.18)",
+        // Goal allows a single 1px solid rgba(0,0,0,0.06) hairline on elevated
+        // surfaces. Nothing heavier. The "ring" is a 1px solid accent stroke.
+        card: "0 0 0 1px rgb(0 0 0 / 0.06)",
+        popover: "0 0 0 1px rgb(0 0 0 / 0.06)",
+        ring: "0 0 0 1px rgb(var(--accent))",
       },
       keyframes: {
         "fade-in": {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        "scale-in": {
-          "0%": { opacity: "0", transform: "scale(0.96) translateY(4px)" },
-          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
-        },
-        "slide-up": {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
       },
       animation: {
-        "fade-in": "fade-in 180ms ease-out",
-        "scale-in": "scale-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1)",
-        "slide-up": "slide-up 200ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+        // Opacity only — no slide, no scale, no bounce.
+        "fade-in": "fade-in 150ms ease-out",
+        "scale-in": "fade-in 150ms ease-out",
+        "slide-up": "fade-in 150ms ease-out",
       },
     },
   },
