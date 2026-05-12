@@ -1,6 +1,10 @@
 "use client";
 
+import { IS_MAC } from "../lib/platform";
 import { XIcon } from "./icons";
+
+const MOD = IS_MAC ? "⌘" : "Ctrl";
+const SHIFT = IS_MAC ? "⇧" : "Shift";
 
 interface Props {
   open: boolean;
@@ -11,24 +15,24 @@ const SHORTCUTS: { section: string; rows: { keys: string[]; label: string }[] }[
   {
     section: "Navigation",
     rows: [
-      { keys: ["⌘", "P"], label: "Command palette — jump to any note or action" },
-      { keys: ["⌘", "K"], label: "Focus search panel" },
+      { keys: [MOD, "P"], label: "Command palette — jump to any note or action" },
+      { keys: [MOD, "K"], label: "Focus search panel" },
       { keys: ["?"], label: "Show this shortcut help" },
     ],
   },
   {
     section: "Writing",
     rows: [
-      { keys: ["⌘", "S"], label: "Save the current note" },
-      { keys: ["⇧", "⌘", "C"], label: "Capture — drop a thought into Inbox" },
-      { keys: ["⌘", "N"], label: "New note in the current vault" },
+      { keys: [MOD, "S"], label: "Save the current note" },
+      { keys: [SHIFT, MOD, "C"], label: "Capture — drop a thought into Inbox" },
+      { keys: [MOD, "N"], label: "New note in the current vault" },
     ],
   },
   {
     section: "Vault",
     rows: [
-      { keys: ["⌘", "/", "⌘", ","], label: "Open settings (tokens, etc.)" },
-      { keys: ["esc"], label: "Close any modal or panel" },
+      { keys: [MOD, ",", MOD, "/"], label: "Open settings (tokens, etc.)" },
+      { keys: ["Esc"], label: "Close any modal or panel" },
     ],
   },
 ];

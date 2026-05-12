@@ -3,6 +3,7 @@
 import type { ChatResponseBody, SearchHit } from "@lattice/sdk";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { getClient } from "../lib/client";
+import { formatShortcut } from "../lib/platform";
 import { ChatIcon, SearchIcon, SparkleIcon } from "./icons";
 
 interface Props {
@@ -38,7 +39,7 @@ export const SidePanel = forwardRef<SidePanelHandle, Props>(function SidePanel(
           onClick={() => setTab("search")}
           icon={<SearchIcon className="h-3.5 w-3.5" />}
           label="Search"
-          shortcut="⌘K"
+          shortcut={formatShortcut("⌘K")}
         />
         <TabButton
           active={tab === "chat"}

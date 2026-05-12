@@ -3,6 +3,7 @@
 import type { VaultInfo } from "@lattice/sdk";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { formatShortcut } from "../lib/platform";
 import { ThemeToggle } from "./ThemeToggle";
 import { FolderIcon, LatticeMark, MenuIcon, SearchIcon, SparkleIcon } from "./icons";
 
@@ -121,11 +122,11 @@ export function TopBar({
           type="button"
           onClick={onOpenPalette}
           className="btn btn-secondary btn-sm ml-auto max-w-[280px] flex-1 justify-start text-fg-muted"
-          title="Command palette (⌘P)"
+          title={`Command palette (${formatShortcut("⌘P")})`}
         >
           <SearchIcon className="h-3.5 w-3.5 shrink-0" />
           <span className="hidden md:inline truncate">Jump to a note or run a command…</span>
-          <span className="hidden md:inline kbd ml-auto shrink-0">⌘P</span>
+          <span className="hidden md:inline kbd ml-auto shrink-0">{formatShortcut("⌘P")}</span>
         </button>
       )}
 
@@ -133,11 +134,11 @@ export function TopBar({
         type="button"
         onClick={onFocusSearch}
         className={`btn btn-ghost btn-sm ${onOpenPalette ? "" : "ml-auto"}`}
-        title="Search (⌘K)"
+        title={`Search (${formatShortcut("⌘K")})`}
         aria-label="Search vault"
       >
         <SearchIcon className="h-4 w-4" />
-        <span className="hidden sm:inline kbd">⌘K</span>
+        <span className="hidden sm:inline kbd">{formatShortcut("⌘K")}</span>
       </button>
 
       <ThemeToggle />
@@ -146,7 +147,7 @@ export function TopBar({
         type="button"
         onClick={onCapture}
         className="btn btn-primary btn-sm"
-        title="Capture (⇧⌘C)"
+        title={`Capture (${formatShortcut("⇧⌘C")})`}
       >
         <SparkleIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Capture</span>

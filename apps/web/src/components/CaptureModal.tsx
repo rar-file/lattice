@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
+import { IS_MAC } from "../lib/platform";
 import { SparkleIcon, XIcon } from "./icons";
 
 interface Props {
@@ -80,8 +81,8 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
             <SparkleIcon className="h-4 w-4 text-accent" />
             <div className="text-[13.5px] font-semibold tracking-tight">Capture a thought</div>
             <div className="ml-auto text-[11px] text-fg-muted flex items-center gap-1.5">
-              <kbd className="kbd">⌘</kbd>
-              <kbd className="kbd">↵</kbd>
+              <kbd className="kbd">{IS_MAC ? "⌘" : "Ctrl"}</kbd>
+              <kbd className="kbd">{IS_MAC ? "↵" : "Enter"}</kbd>
               <span>to save</span>
             </div>
             <button

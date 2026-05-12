@@ -13,6 +13,7 @@ import { TopBar } from "../components/TopBar";
 import { Welcome } from "../components/Welcome";
 import { ChatIcon, FolderIcon, PlusIcon, SearchIcon, SparkleIcon } from "../components/icons";
 import { getClient } from "../lib/client";
+import { formatShortcut } from "../lib/platform";
 import { useShortcuts } from "../lib/shortcuts";
 import { ToastProvider, useToast } from "../lib/toast";
 
@@ -119,7 +120,7 @@ function HomeInner() {
         id: "new-note",
         label: "New note",
         hint: "Create a fresh note in the vault",
-        shortcut: "⌘N",
+        shortcut: formatShortcut("⌘N"),
         icon: <PlusIcon className="h-3.5 w-3.5" />,
         run: () => setNewNoteOpen(true),
       },
@@ -127,7 +128,7 @@ function HomeInner() {
         id: "capture",
         label: "Capture a thought",
         hint: "Drop a thought into Inbox — Claude shapes it",
-        shortcut: "⇧⌘C",
+        shortcut: formatShortcut("⇧⌘C"),
         icon: <SparkleIcon className="h-3.5 w-3.5" />,
         run: () => setCaptureOpen(true),
       },
@@ -135,7 +136,7 @@ function HomeInner() {
         id: "search",
         label: "Search the vault",
         hint: "Hybrid (semantic + keyword)",
-        shortcut: "⌘K",
+        shortcut: formatShortcut("⌘K"),
         icon: <SearchIcon className="h-3.5 w-3.5" />,
         run: () => {
           setRightOpen(true);

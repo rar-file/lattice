@@ -3,6 +3,7 @@
 import type { NoteSummary } from "@lattice/sdk";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getClient } from "../lib/client";
+import { formatShortcut } from "../lib/platform";
 import { useToast } from "../lib/toast";
 import { FileIcon, InboxIcon, LayersIcon, PlusIcon, SearchIcon, XIcon } from "./icons";
 
@@ -59,7 +60,7 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
             type="button"
             onClick={onNewNote}
             className="btn btn-secondary btn-xs h-8 shrink-0"
-            title="New note (⌘N)"
+            title={`New note (${formatShortcut("⌘N")})`}
             aria-label="New note"
           >
             <PlusIcon className="h-3.5 w-3.5" />

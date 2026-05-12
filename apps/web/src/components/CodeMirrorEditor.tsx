@@ -10,6 +10,7 @@ import type { BacklinkHit, LinkSuggestion } from "@lattice/sdk";
 import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 import { markdownHighlight } from "../lib/cm-highlight";
+import { formatShortcut } from "../lib/platform";
 import { CheckIcon, FileIcon, LinkIcon, SparkleIcon } from "./icons";
 
 interface Props {
@@ -217,13 +218,14 @@ export function CodeMirrorEditor({
           Pick a note to start
         </h2>
         <p className="mt-2 max-w-sm text-[13px] text-fg-muted leading-relaxed">
-          Choose any note from the sidebar to begin writing, or press <kbd className="kbd">⇧⌘C</kbd>{" "}
-          to capture a new thought into your Inbox.
+          Choose any note from the sidebar to begin writing, or press{" "}
+          <kbd className="kbd">{formatShortcut("⇧⌘C")}</kbd> to capture a new thought into your
+          Inbox.
         </p>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-md w-full">
-          <ShortcutHint k="⌘K" label="Search" />
-          <ShortcutHint k="⌘S" label="Save" />
-          <ShortcutHint k="⇧⌘C" label="Capture" />
+          <ShortcutHint k={formatShortcut("⌘K")} label="Search" />
+          <ShortcutHint k={formatShortcut("⌘S")} label="Save" />
+          <ShortcutHint k={formatShortcut("⇧⌘C")} label="Capture" />
         </div>
       </div>
     );
@@ -248,7 +250,7 @@ export function CodeMirrorEditor({
           className="btn btn-secondary btn-xs"
         >
           {saving ? "Saving…" : "Save"}
-          <span className="kbd">⌘S</span>
+          <span className="kbd">{formatShortcut("⌘S")}</span>
         </button>
       </div>
       {error && (
