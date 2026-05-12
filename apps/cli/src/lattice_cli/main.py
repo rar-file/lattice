@@ -4,7 +4,6 @@ from rich.console import Console
 from . import __version__
 from .commands import (
     capture_cmd,
-    chat_cmd,
     login_cmd,
     mcp_cmd,
     open_cmd,
@@ -28,7 +27,6 @@ cli.add_command(serve.serve)
 cli.add_command(open_cmd.open_cmd)
 cli.add_command(rebuild_cmd.rebuild_cmd)
 cli.add_command(search_cmd.search_cmd)
-cli.add_command(chat_cmd.chat_cmd)
 cli.add_command(mcp_cmd.mcp_cmd)
 cli.add_command(login_cmd.login_cmd)
 cli.add_command(login_cmd.logout_cmd)

@@ -24,8 +24,8 @@ def test_subcommands_registered() -> None:
     out = result.output.lower()
     for expected in [
         "open",
+        "rebuild",
         "search",
-        "chat",
         "mcp",
         "login",
         "logout",
@@ -35,6 +35,15 @@ def test_subcommands_registered() -> None:
         "serve",
     ]:
         assert expected in out, f"{expected!r} missing from CLI help"
+
+
+def test_chat_command_not_registered() -> None:
+    """Goal: Lattice never requires an AI key for any user-facing feature.
+    `lattice chat` was the lone surface that called Claude directly; removed
+    in v0.3.2 so the CLI matches the 'bring your own AI tool via MCP' story."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--help"])
+    assert "  chat" not in result.output.lower()
 
 
 def test_sync_subgroup_lists_commands() -> None:
