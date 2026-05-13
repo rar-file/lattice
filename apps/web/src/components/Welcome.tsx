@@ -10,12 +10,6 @@ interface Props {
   onOpened: (resp: OpenVaultResponse) => void;
 }
 
-/**
- * One question: where should your vault live? No wizard, no multi-step. The
- * common case is auto-opened upstream — this screen is the recovery path when
- * the server can't pick a default for us (denied permissions, fresh install
- * after the auto-open route failed).
- */
 export function Welcome({ onOpened }: Props) {
   const [folder, setFolder] = useState("");
   const [busy, setBusy] = useState(false);
@@ -57,12 +51,15 @@ export function Welcome({ onOpened }: Props) {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
+    <main
+      className="flex min-h-screen flex-col items-center justify-center px-6 py-12"
+      style={{ background: "var(--surface-base)" }}
+    >
       <div className="w-full max-w-md animate-fade-in">
-        <div className="flex flex-col items-center text-center mb-10">
-          <LatticeMark withWordmark={false} size={36} />
-          <h1 className="mt-6 text-section">Where should your vault live?</h1>
-          <p className="mt-2 text-meta max-w-xs">
+        <div className="flex flex-col items-start mb-8">
+          <LatticeMark withWordmark={false} size={28} />
+          <h1 className="mt-6 text-page">Open a vault</h1>
+          <p className="mt-2 text-meta max-w-sm">
             Any folder of Markdown files. Existing Obsidian vaults work as-is.
           </p>
         </div>
@@ -92,7 +89,14 @@ export function Welcome({ onOpened }: Props) {
               type="button"
               onClick={createDefault}
               disabled={busy}
-              className="text-caption hover:text-fg-default focus-ring rounded px-1"
+              className="text-caption focus-ring rounded px-1 transition-colors"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--text-default)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+              }}
             >
               or create one in ~/Documents/Lattice
             </button>

@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 import { markdownHighlight } from "../lib/cm-highlight";
 import { formatShortcut } from "../lib/platform";
-import { CheckIcon, FileIcon, LinkIcon } from "./icons";
+import { FileIcon, LinkIcon } from "./icons";
 
 interface Props {
   notePath: string | null;
@@ -40,8 +40,6 @@ export function CodeMirrorEditor({
 
   const dirty = body !== originalBody;
 
-  // Build the editor once; tie its content to React state via dispatch on the
-  // outside and onChange via update listener on the inside.
   useEffect(() => {
     if (!hostRef.current) return;
     const view = new EditorView({
@@ -58,15 +56,18 @@ export function CodeMirrorEditor({
             "&": { height: "100%", backgroundColor: "transparent" },
             ".cm-scroller": {
               fontFamily: "var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif",
-              fontSize: "16px",
+              fontSize: "15px",
               lineHeight: "1.65",
               maxWidth: "720px",
               margin: "0 auto",
               padding: "0 24px",
             },
-            ".cm-content": { padding: "32px 0 200px" },
+            ".cm-content": { padding: "32px 0 200px", color: "var(--text-default)" },
             ".cm-line": { padding: "0" },
-            ".cm-cursor": { borderLeftColor: "currentColor", borderLeftWidth: "1.5px" },
+            ".cm-cursor": {
+              borderLeftColor: "var(--accent)",
+              borderLeftWidth: "1.5px",
+            },
           }),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
@@ -84,7 +85,6 @@ export function CodeMirrorEditor({
     };
   }, []);
 
-  // Load the note when notePath changes.
   useEffect(() => {
     if (!notePath) {
       _setDoc("");
@@ -99,9 +99,6 @@ export function CodeMirrorEditor({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    // Defensive retry: a freshly-captured note can momentarily 404 on slow
-    // disks (the indexer commit hasn't landed by the time the redirect to
-    // the new note fires). Up to 3 quick retries before surfacing the error.
     (async () => {
       let lastErr: unknown = null;
       for (let i = 0; i < 3 && !cancelled; i++) {
@@ -127,7 +124,6 @@ export function CodeMirrorEditor({
     })().finally(() => {
       if (!cancelled) setLoading(false);
     });
-    // Backlinks fetched in parallel — slow path, render when ready.
     getClient()
       .backlinks(notePath)
       .then((hits) => {
@@ -149,8 +145,6 @@ export function CodeMirrorEditor({
     view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
   }
 
-  // `body` is intentionally a dep so each keystroke restarts the debounce
-  // even though we read content from the editor view, not `body`.
   // biome-ignore lint/correctness/useExhaustiveDependencies: body retriggers debounce on edit
   useEffect(() => {
     if (!suggestionsEnabled || !notePath) {
@@ -222,17 +216,23 @@ export function CodeMirrorEditor({
 
   if (!notePath) {
     return (
-      <div className="flex h-full flex-col items-center justify-center px-6 text-center bg-canvas">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sunken mb-4">
-          <FileIcon className="h-5 w-5 text-fg-muted" />
+      <div
+        className="flex h-full flex-col items-center justify-center px-6 text-center"
+        style={{ background: "var(--surface-raised)" }}
+      >
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-xl mb-4"
+          style={{ background: "var(--surface-hover)" }}
+        >
+          <FileIcon className="h-5 w-5" style={{ color: "var(--text-tertiary)" }} />
         </div>
-        <h2 className="text-[16px] font-medium tracking-tight text-fg-default">
-          Pick a note to start
-        </h2>
-        <p className="mt-2 max-w-sm text-[13px] text-fg-muted leading-relaxed">
-          Choose any note from the sidebar to begin writing, or press{" "}
-          <kbd className="kbd">{formatShortcut("⇧⌘C")}</kbd> to capture a new thought into your
-          Inbox.
+        <h2 className="text-section">Pick a note to start</h2>
+        <p
+          className="mt-2 max-w-sm text-[13px] leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          Choose any note from the left rail, or press{" "}
+          <kbd className="kbd">{formatShortcut("⇧⌘C")}</kbd> to drop a thought into your Inbox.
         </p>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-md w-full">
           <ShortcutHint k={formatShortcut("⌘K")} label="Search" />
@@ -244,13 +244,24 @@ export function CodeMirrorEditor({
   }
 
   return (
-    <div className="flex h-full flex-col bg-canvas" onKeyDown={onKeyDown}>
-      <div className="flex items-center gap-3 px-8 pt-6 pb-4">
+    <div
+      className="flex h-full flex-col"
+      style={{ background: "var(--surface-raised)" }}
+      onKeyDown={onKeyDown}
+    >
+      <div className="flex items-center gap-3 px-8 pt-6 pb-3">
         <div className="flex-1 min-w-0">
-          <div className="text-body font-medium text-fg-strong truncate leading-snug">
+          <div
+            className="text-[15px] truncate leading-snug"
+            style={{ color: "var(--text-emphasis)", fontWeight: 500 }}
+          >
             {title?.trim() || stripMd(basename(notePath))}
           </div>
-          <div className="mt-1 text-caption font-mono truncate" title={notePath}>
+          <div
+            className="mt-1 text-[11px] font-mono truncate"
+            style={{ color: "var(--text-tertiary)" }}
+            title={notePath}
+          >
             {notePath}
           </div>
         </div>
@@ -265,17 +276,17 @@ export function CodeMirrorEditor({
           <kbd className="kbd">{formatShortcut("⌘S")}</kbd>
         </button>
       </div>
-      {error && <div className="mx-8 -mt-2 mb-2 text-meta">{error}</div>}
+      {error && <div className="mx-8 -mt-1 mb-2 text-meta">{error}</div>}
       <div className="flex-1 min-h-0 relative">
         <div ref={hostRef} className="absolute inset-0 overflow-auto scrollbar-thin" />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="lattice-skeleton h-3 w-24" />
+            <span className="live-dot" />
           </div>
         )}
       </div>
       {suggestionsEnabled && suggestions.length > 0 && (
-        <div className="px-8 pt-3 pb-4 animate-fade-in">
+        <div className="px-8 pt-3 pb-3 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-eyebrow">Linked notes</span>
             <span className="text-caption">click to insert</span>
@@ -288,11 +299,18 @@ export function CodeMirrorEditor({
                 onClick={() => applySuggestion(s)}
                 onDoubleClick={() => onJumpToNote?.(s.path)}
                 title={s.snippet}
-                className="inline-flex items-center gap-1.5 rounded-md bg-sunken px-2 h-7 text-[12px]
-                  text-fg-muted hover:bg-neutral-200 hover:text-fg-strong
-                  transition-colors duration-fast ease-out focus-ring"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 h-7 text-[12px] focus-ring transition-colors"
+                style={{ background: "var(--surface-hover)", color: "var(--text-secondary)" }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-active)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--text-emphasis)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+                }}
               >
-                <LinkIcon className="h-3.5 w-3.5 text-fg-faint" />
+                <LinkIcon className="h-3.5 w-3.5" style={{ color: "var(--text-tertiary)" }} />
                 <span className="font-mono">
                   [[{s.title?.trim() || stripMd(basename(s.path))}]]
                 </span>
@@ -302,25 +320,35 @@ export function CodeMirrorEditor({
         </div>
       )}
       {backlinks.length > 0 && (
-        <div className="px-8 pt-3 pb-4 animate-fade-in">
+        <div className="px-8 pt-3 pb-3 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-eyebrow">
               Linked from {backlinks.length} {backlinks.length === 1 ? "note" : "notes"}
             </span>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             {backlinks.slice(0, 5).map((b) => (
               <button
                 key={b.path}
                 type="button"
                 onClick={() => onJumpToNote?.(b.path)}
-                className="text-left rounded-md px-2 py-1.5 hover:bg-sunken focus-ring
-                  transition-colors duration-fast ease-out"
+                className="text-left rounded-md px-2 py-1.5 focus-ring transition-colors"
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                }}
               >
-                <div className="text-[13px] text-fg-default truncate">
+                <div className="text-[13px] truncate" style={{ color: "var(--text-emphasis)" }}>
                   {b.title?.trim() || stripMd(basename(b.path))}
                 </div>
-                <div className="text-caption truncate">{b.snippet}</div>
+                <div
+                  className="text-[11px] truncate font-mono"
+                  style={{ color: "var(--text-tertiary)" }}
+                >
+                  {b.path}
+                </div>
               </button>
             ))}
           </div>
@@ -333,10 +361,12 @@ export function CodeMirrorEditor({
 
 function EditorFooter({ body, notePath }: { body: string; notePath: string }) {
   const words = countWords(body);
-  // ~225 wpm is the median for prose reading on screen.
   const minutes = Math.max(1, Math.round(words / 225));
   return (
-    <div className="flex items-center justify-between px-8 py-3 text-caption font-mono">
+    <div
+      className="flex items-center justify-between px-8 py-3 text-[11px] font-mono"
+      style={{ color: "var(--text-tertiary)" }}
+    >
       <div className="flex items-center gap-3">
         <span>
           {words.toLocaleString()} {words === 1 ? "word" : "words"}
@@ -354,8 +384,6 @@ function EditorFooter({ body, notePath }: { body: string; notePath: string }) {
 }
 
 function countWords(s: string): number {
-  // Strip code fences and inline code so we don't inflate the count with
-  // language tokens; markdown punctuation is fine to ignore.
   const stripped = s
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`]*`/g, " ")
@@ -366,25 +394,42 @@ function countWords(s: string): number {
 
 function SaveIndicator({ dirty, saving }: { dirty: boolean; saving: boolean }) {
   if (saving) {
-    return <span className="text-[12px] text-fg-muted animate-fade-in">Saving…</span>;
+    return (
+      <span
+        className="inline-flex items-center gap-2 text-[12px] animate-fade-in"
+        style={{ color: "var(--text-secondary)" }}
+      >
+        <span className="live-dot" aria-hidden /> Saving
+      </span>
+    );
   }
   if (dirty) {
     return (
-      <span className="inline-flex items-center gap-1 text-[12px] text-warning">
-        <span className="h-1.5 w-1.5 rounded-full bg-warning" /> Unsaved
+      <span
+        className="inline-flex items-center gap-1.5 text-[12px]"
+        style={{ color: "rgb(var(--warning))" }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "rgb(var(--warning))" }} />{" "}
+        Unsaved
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[12px] text-fg-faint">
-      <CheckIcon className="h-3 w-3" /> Saved
+    <span
+      className="inline-flex items-center gap-1 text-[12px]"
+      style={{ color: "var(--text-tertiary)" }}
+    >
+      Saved
     </span>
   );
 }
 
 function ShortcutHint({ k, label }: { k: string; label: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 rounded-md border border-border-subtle bg-surface px-2 py-2 text-[12px] text-fg-muted">
+    <div
+      className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px]"
+      style={{ background: "var(--surface-hover)", color: "var(--text-secondary)" }}
+    >
       <kbd className="kbd">{k}</kbd>
       <span>{label}</span>
     </div>
@@ -407,7 +452,6 @@ function currentParagraph(view: EditorView): string {
 function currentParagraphRange(view: EditorView): { from: number; to: number } {
   const head = view.state.selection.main.head;
   const doc = view.state.doc;
-  // Walk back to the previous blank line; walk forward to the next.
   let from = head;
   for (let i = head - 1; i >= 0; i--) {
     if (doc.sliceString(i, i + 1) === "\n" && doc.sliceString(i - 1, i) === "\n") {

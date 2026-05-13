@@ -4,40 +4,45 @@ import type { VaultInfo } from "@lattice/sdk";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatShortcut } from "../lib/platform";
-import { ThemeToggle } from "./ThemeToggle";
 import {
-  ChevronDownIcon,
+  ChevronRightIcon,
   FolderIcon,
   InboxIcon,
   LatticeMark,
   MenuIcon,
   SearchIcon,
   SettingsIcon,
-  XIcon,
 } from "./icons";
 
 interface Props {
   vault: VaultInfo;
+  currentNote?: string | null;
   onCapture(): void;
   onClose(): void;
   onFocusSearch(): void;
   onOpenPalette?(): void;
   onToggleSidebar?: () => void;
+  /** When the AI sidecar is doing something — embedder running, suggestions
+   *  streaming. Renders the live dot in the bar. */
+  aiActive?: boolean;
 }
 
 /**
- * Workspace top bar. Vault name on the left, command palette in the centre,
- * Settings + theme + Capture on the right. Subtracted chrome: no border on
- * the bar (the editor surface lifts away through its own bg shift), no
- * dividers between right-side actions.
+ * Workspace top bar.
+ *
+ * Left: Lattice mark → vault → folder → file path (mono, ending in .md).
+ * Right: command launcher, settings, capture. Surfaces step instead of
+ * separating with a border, so there's no seam between the bar and the rail.
  */
 export function TopBar({
   vault,
+  currentNote,
   onCapture,
   onClose,
   onFocusSearch,
   onOpenPalette,
   onToggleSidebar,
+  aiActive,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,8 +63,13 @@ export function TopBar({
     };
   }, [menuOpen]);
 
+  const crumbs = breadcrumbFor(vault, currentNote);
+
   return (
-    <header className="relative z-30 flex h-12 items-center gap-2 bg-canvas px-3">
+    <header
+      className="relative z-30 flex h-11 items-center gap-2 px-3"
+      style={{ background: "var(--surface-base)" }}
+    >
       {onToggleSidebar && (
         <button
           type="button"
@@ -73,63 +83,111 @@ export function TopBar({
 
       <Link
         href="/"
-        className="hidden md:flex items-center h-7 px-1 focus-ring rounded mr-2"
+        className="hidden md:flex items-center h-7 px-1 focus-ring rounded"
         aria-label="Lattice home"
       >
-        <LatticeMark withWordmark={false} size={20} />
+        <LatticeMark withWordmark={false} size={18} />
       </Link>
 
-      <div className="relative" ref={menuRef}>
-        <button
-          type="button"
-          onClick={() => setMenuOpen((v) => !v)}
-          className="inline-flex items-center gap-2 h-7 pl-2 pr-1.5 rounded-md
-            text-[13px] text-fg-default
-            hover:bg-sunken focus-ring max-w-[280px]
-            transition-colors duration-fast ease-out"
-          title={vault.root_path}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 min-w-0 flex-1">
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="inline-flex items-center gap-1.5 h-7 px-2 rounded text-[13px] focus-ring transition-colors"
+            style={{ color: "var(--text-default)" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
+            title={vault.root_path}
+          >
+            <FolderIcon className="h-3.5 w-3.5" style={{ color: "var(--text-tertiary)" }} />
+            <span className="truncate leading-none">{vault.name}</span>
+          </button>
+          {menuOpen && (
+            <div className="absolute left-0 top-full mt-1 w-[320px] card-elevated p-1 z-30 animate-fade-in">
+              <div className="px-3 pt-3 pb-2">
+                <div className="text-eyebrow">Vault path</div>
+                <div className="mt-2 break-all text-meta font-mono">{vault.root_path}</div>
+              </div>
+              <div className="p-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onClose();
+                  }}
+                  className="flex w-full items-center gap-2 px-3 h-8 rounded text-[13px] focus-ring text-left transition-colors"
+                  style={{ color: "var(--text-default)" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
+                >
+                  Close vault
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {crumbs.map((c, i) => (
+          <span
+            key={`${c.text}-${i}`}
+            className="hidden sm:inline-flex items-center gap-1.5 min-w-0"
+          >
+            <ChevronRightIcon
+              className="h-3 w-3 shrink-0"
+              style={{ color: "var(--text-tertiary)" }}
+            />
+            <span
+              className={`text-[12px] truncate font-mono leading-none ${c.terminal ? "" : ""}`}
+              style={{
+                color: c.terminal ? "var(--text-emphasis)" : "var(--text-secondary)",
+              }}
+              title={c.text}
+            >
+              {c.text}
+            </span>
+          </span>
+        ))}
+      </nav>
+
+      {aiActive && (
+        <span
+          className="hidden sm:inline-flex items-center gap-2 px-2 h-7 text-[12px]"
+          title="Lattice is reading your note"
+          style={{ color: "var(--text-secondary)" }}
         >
-          <FolderIcon className="h-4 w-4 text-fg-muted shrink-0" />
-          <span className="truncate leading-none">{vault.name}</span>
-          <ChevronDownIcon className="h-3.5 w-3.5 text-fg-faint shrink-0" />
-        </button>
-        {menuOpen && (
-          <div className="absolute left-0 top-full mt-1 w-[320px] card-elevated p-1 z-30 animate-fade-in">
-            <div className="px-3 pt-2 pb-3">
-              <div className="text-eyebrow">Vault path</div>
-              <div className="mt-2 break-all text-meta font-mono">{vault.root_path}</div>
-            </div>
-            <div className="hr mx-1" />
-            <div className="p-1">
-              <MenuItem
-                onClick={() => {
-                  setMenuOpen(false);
-                  onClose();
-                }}
-                icon={<XIcon className="h-4 w-4 text-fg-muted" />}
-              >
-                Close vault
-              </MenuItem>
-            </div>
-          </div>
-        )}
-      </div>
+          <span className="live-dot" aria-hidden />
+          watching
+        </span>
+      )}
 
       {onOpenPalette && (
         <button
           type="button"
           onClick={onOpenPalette}
-          className="inline-flex items-center gap-2 h-7 pl-2 pr-2 rounded-md
-            text-[13px] text-fg-muted
-            hover:bg-sunken hover:text-fg-default focus-ring
-            ml-auto max-w-[320px] flex-1 min-w-0
-            transition-colors duration-fast ease-out"
+          className="inline-flex items-center gap-2 h-7 pl-2 pr-2 rounded
+            text-[12px] focus-ring max-w-[280px] transition-colors"
+          style={{ background: "var(--surface-raised)", color: "var(--text-secondary)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-emphasis)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "var(--surface-raised)";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+          }}
           title={`Command palette (${formatShortcut("⌘P")})`}
         >
-          <SearchIcon className="h-4 w-4 shrink-0" />
-          <span className="hidden md:inline truncate flex-1 text-left leading-none">
-            Jump to a note or run a command…
-          </span>
+          <SearchIcon className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden md:inline truncate leading-none">Jump to a note or command</span>
           <kbd className="hidden md:inline-flex kbd shrink-0">{formatShortcut("⌘P")}</kbd>
         </button>
       )}
@@ -137,13 +195,11 @@ export function TopBar({
       <Link
         href="/settings/tokens"
         className="btn btn-ghost btn-icon"
-        title="Settings — agent tokens"
+        title="Settings"
         aria-label="Settings"
       >
         <SettingsIcon className="h-4 w-4" />
       </Link>
-
-      <ThemeToggle />
 
       <button
         type="button"
@@ -158,25 +214,14 @@ export function TopBar({
   );
 }
 
-function MenuItem({
-  onClick,
-  icon,
-  children,
-}: {
-  onClick: () => void;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-2 px-3 h-8 rounded-md text-[13px]
-        text-fg-default hover:bg-sunken focus-ring text-left
-        transition-colors duration-fast ease-out"
-    >
-      {icon}
-      <span className="flex-1">{children}</span>
-    </button>
-  );
+interface Crumb {
+  text: string;
+  terminal: boolean;
+}
+
+function breadcrumbFor(_vault: VaultInfo, notePath?: string | null): Crumb[] {
+  if (!notePath) return [];
+  const parts = notePath.split("/").filter(Boolean);
+  if (parts.length === 0) return [];
+  return parts.map((p, i) => ({ text: p, terminal: i === parts.length - 1 }));
 }

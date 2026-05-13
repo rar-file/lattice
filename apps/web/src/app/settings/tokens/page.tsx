@@ -79,13 +79,13 @@ export default function TokensPage() {
   }
 
   return (
-    <main className="min-h-screen bg-canvas">
+    <main className="min-h-screen" style={{ background: "var(--surface-base)" }}>
       <Breadcrumb trail={[{ label: "Settings" }, { label: "Agent tokens" }]} />
 
-      <div className="mx-auto max-w-3xl px-8 pt-12 pb-16 animate-fade-in">
+      <div className="mx-auto max-w-3xl px-8 pt-10 pb-16 animate-fade-in">
         <header>
           <h1 className="text-page">Agent tokens</h1>
-          <p className="mt-3 text-lede text-fg-muted max-w-[58ch]">
+          <p className="mt-3 text-meta max-w-[58ch]">
             Issue scoped tokens for MCP clients — Claude Desktop, Cursor, custom agents. Each token
             grants only the scopes you check. The plaintext is shown once at creation, then stored
             as a SHA-256 hash.
@@ -94,8 +94,7 @@ export default function TokensPage() {
 
         {error && <p className="mt-6 text-meta">{error}</p>}
 
-        {/* SECTION — Create a token. 48px above next section, 24px between field groups. */}
-        <section className="mt-12">
+        <section className="mt-10">
           <h2 className="text-section">New token</h2>
 
           <div className="mt-6 space-y-6">
@@ -111,36 +110,43 @@ export default function TokensPage() {
                 className="input max-w-md"
               />
               <p className="mt-2 text-caption">
-                Pick something memorable — you'll see it next to last-used timestamps below.
+                You'll see this next to last-used timestamps below.
               </p>
             </div>
 
             <div>
               <div className="block text-meta mb-2">Scopes</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl">
-                {Object.entries(SCOPE_DESCRIPTIONS).map(([scope, desc]) => (
-                  <label
-                    key={scope}
-                    className={`flex items-start gap-3 rounded-md px-3 py-3 cursor-pointer
-                      transition-colors duration-fast ease-out
-                      ${
-                        newScopes.includes(scope)
-                          ? "bg-accent-soft"
-                          : "bg-sunken/40 hover:bg-sunken"
-                      }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={newScopes.includes(scope)}
-                      onChange={() => toggleScope(scope)}
-                      className="mt-0.5 accent-[rgb(var(--accent))]"
-                    />
-                    <div className="min-w-0">
-                      <div className="font-mono text-[12px] text-fg-strong">{scope}</div>
-                      <div className="mt-1 text-caption">{desc}</div>
-                    </div>
-                  </label>
-                ))}
+                {Object.entries(SCOPE_DESCRIPTIONS).map(([scope, desc]) => {
+                  const on = newScopes.includes(scope);
+                  return (
+                    <label
+                      key={scope}
+                      className="flex items-start gap-3 rounded-md px-3 py-3 cursor-pointer transition-colors"
+                      style={{
+                        background: on ? "var(--surface-active)" : "var(--surface-raised)",
+                        color: on ? "var(--text-emphasis)" : "var(--text-default)",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => toggleScope(scope)}
+                        className="mt-0.5"
+                        style={{ accentColor: "var(--accent)" }}
+                      />
+                      <div className="min-w-0">
+                        <div
+                          className="font-mono text-[12px]"
+                          style={{ color: "var(--text-emphasis)" }}
+                        >
+                          {scope}
+                        </div>
+                        <div className="mt-1 text-caption">{desc}</div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
@@ -156,14 +162,23 @@ export default function TokensPage() {
             </div>
 
             {created && (
-              <div className="mt-2 p-4 rounded-md bg-sunken animate-fade-in">
+              <div
+                className="mt-2 p-4 rounded-md animate-fade-in"
+                style={{ background: "var(--surface-raised)" }}
+              >
                 <div className="flex items-center gap-2">
-                  <CheckIcon className="h-4 w-4 text-success" />
-                  <span className="text-meta text-fg-strong">
+                  <CheckIcon className="h-4 w-4" style={{ color: "rgb(var(--success))" }} />
+                  <span className="text-meta" style={{ color: "var(--text-emphasis)" }}>
                     Copy now — this token won't be shown again
                   </span>
                 </div>
-                <pre className="mt-3 font-mono text-[12px] break-all whitespace-pre-wrap select-all text-fg-strong bg-canvas rounded p-3">
+                <pre
+                  className="mt-3 font-mono text-[12px] break-all whitespace-pre-wrap select-all p-3 rounded"
+                  style={{
+                    background: "var(--surface-sunken)",
+                    color: "var(--text-emphasis)",
+                  }}
+                >
                   {created.token}
                 </pre>
                 <div className="mt-3 flex items-center justify-between gap-3">
@@ -178,7 +193,6 @@ export default function TokensPage() {
           </div>
         </section>
 
-        {/* SECTION — Existing tokens. */}
         <section className="mt-12">
           <h2 className="text-section">Existing tokens</h2>
 
@@ -189,16 +203,16 @@ export default function TokensPage() {
               <p className="text-meta">No tokens yet — create one above to give an agent access.</p>
             ) : (
               <ul>
-                {tokens.map((t, i) => (
-                  <li
-                    key={t.id}
-                    className={`flex items-start gap-4 py-4 ${
-                      i === 0 ? "" : "border-t border-border-subtle"
-                    }`}
-                  >
+                {tokens.map((t) => (
+                  <li key={t.id} className="flex items-start gap-4 py-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-body font-medium text-fg-strong">{t.name}</span>
+                        <span
+                          className="text-body"
+                          style={{ color: "var(--text-emphasis)", fontWeight: 500 }}
+                        >
+                          {t.name}
+                        </span>
                         {t.kind !== "agent" && <span className="chip uppercase">{t.kind}</span>}
                         {t.revoked_at && (
                           <span className="chip" style={{ color: "rgb(var(--danger))" }}>
@@ -213,7 +227,7 @@ export default function TokensPage() {
                           </span>
                         ))}
                       </div>
-                      <div className="mt-2 text-caption">
+                      <div className="mt-2 text-caption font-mono">
                         {t.last_used_at ? `Last used ${formatDate(t.last_used_at)}` : "Never used"}
                         {" · "}Created {formatDate(t.created_at)}
                       </div>
@@ -243,13 +257,11 @@ export default function TokensPage() {
 function formatDate(iso: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const month = d.toLocaleString(undefined, { month: "short" });
+    const day = d.getDate();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${month} ${day} · ${hh}:${mm}`;
   } catch {
     return iso;
   }

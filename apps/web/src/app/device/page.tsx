@@ -24,7 +24,10 @@ export default function DevicePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-canvas">
+    <main
+      className="relative min-h-screen overflow-hidden"
+      style={{ background: "var(--surface-base)" }}
+    >
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         <header className="flex items-center justify-between animate-fade-in">
           <Link href="/" className="focus-ring rounded px-1">
@@ -33,7 +36,7 @@ export default function DevicePage() {
         </header>
 
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full card-elevated p-7 animate-scale-in">
+          <div className="w-full card-elevated p-7 animate-fade-in">
             <h1 className="text-section">Approve a device</h1>
             <p className="mt-2 text-meta">
               Enter the 4-by-4 code shown by your Lattice CLI, desktop, or mobile app. The device
@@ -41,12 +44,17 @@ export default function DevicePage() {
             </p>
 
             {status === "ok" ? (
-              <div className="mt-6 rounded-md border border-success/30 bg-success-soft/40 px-4 py-3 animate-fade-in">
-                <div className="flex items-center gap-2 text-success">
+              <div
+                className="mt-6 rounded-md px-4 py-3 animate-fade-in"
+                style={{ background: "var(--surface-hover)" }}
+              >
+                <div className="flex items-center gap-2" style={{ color: "rgb(var(--success))" }}>
                   <CheckIcon className="h-4 w-4" />
-                  <span className="text-[13px] font-medium">Device approved</span>
+                  <span className="text-[13px]" style={{ fontWeight: 500 }}>
+                    Device approved
+                  </span>
                 </div>
-                <p className="mt-1 text-[13px] text-fg-muted">
+                <p className="mt-1 text-[13px]" style={{ color: "var(--text-secondary)" }}>
                   You can close this window and return to the device that was waiting.
                 </p>
               </div>
@@ -55,7 +63,8 @@ export default function DevicePage() {
                 <div>
                   <label
                     htmlFor="device-code"
-                    className="block text-[12px] font-medium text-fg-default mb-2"
+                    className="block text-[12px] mb-2"
+                    style={{ color: "var(--text-default)", fontWeight: 500 }}
                   >
                     Device code
                   </label>
@@ -76,7 +85,9 @@ export default function DevicePage() {
             )}
 
             {error && status === "error" && (
-              <div className="mt-4 text-[12px] text-fg-muted px-1">{error}</div>
+              <div className="mt-4 text-[12px] px-1" style={{ color: "var(--text-secondary)" }}>
+                {error}
+              </div>
             )}
           </div>
         </div>

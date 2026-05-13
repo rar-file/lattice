@@ -1,27 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { CheckIcon, XIcon } from "../components/icons";
-
-/**
- * Minimal toast system — no dependency, designed-system styled.
- *
- *   const toast = useToast();
- *   toast.success("Saved");
- *   toast.error("Couldn't reach the vault");
- *
- * Mount <ToastProvider> once near the root; <ToastViewport> is rendered
- * inside the provider so it gets pushed to the top of the DOM stacking
- * order via fixed positioning.
- */
 
 type ToastKind = "success" | "error" | "info";
 
@@ -53,7 +33,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const push = useCallback((kind: ToastKind, message: string) => {
     const id = ++idRef.current;
     setToasts((cur) => [...cur, { id, kind, message }]);
-    // Auto-dismiss after 3.5s.
     setTimeout(() => {
       setToasts((cur) => cur.filter((t) => t.id !== id));
     }, 3500);
@@ -97,54 +76,50 @@ function ToastViewport({
 }
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
-  // Tiny progress-bar that drains over the toast's lifetime, for visual
-  // confirmation that auto-dismiss is happening.
-  const [progress, setProgress] = useState(100);
-  useEffect(() => {
-    const start = Date.now();
-    const duration = 3500;
-    const id = setInterval(() => {
-      const left = Math.max(0, 100 - ((Date.now() - start) / duration) * 100);
-      setProgress(left);
-    }, 60);
-    return () => clearInterval(id);
-  }, []);
-
-  const tone =
+  const color =
     toast.kind === "success"
-      ? "border-success/30 text-success"
+      ? "rgb(var(--success))"
       : toast.kind === "error"
-        ? "border-danger/30 text-danger"
-        : "border-border-default text-fg-default";
+        ? "rgb(var(--danger))"
+        : "var(--text-default)";
 
   return (
-    <div
-      className={`relative overflow-hidden card-elevated pointer-events-auto animate-slide-up ${tone}`}
-    >
+    <div className="card-elevated pointer-events-auto animate-fade-in">
       <div className="flex items-start gap-2 px-4 py-3">
-        <div className="mt-1 shrink-0">
+        <div className="mt-0.5 shrink-0" style={{ color }}>
           {toast.kind === "success" ? (
             <CheckIcon className="h-4 w-4" />
           ) : toast.kind === "error" ? (
             <XIcon className="h-4 w-4" />
           ) : (
-            <div className="h-4 w-4 rounded-full bg-accent" />
+            <span
+              className="block h-2 w-2 rounded-full"
+              style={{ background: "var(--text-secondary)" }}
+            />
           )}
         </div>
-        <div className="flex-1 text-[13px] text-fg-default leading-relaxed">{toast.message}</div>
+        <div
+          className="flex-1 text-[13px] leading-relaxed"
+          style={{ color: "var(--text-default)" }}
+        >
+          {toast.message}
+        </div>
         <button
           type="button"
           onClick={onDismiss}
-          className="text-fg-faint hover:text-fg-default focus-ring rounded p-1 -mt-1"
+          className="focus-ring rounded p-1 -mt-1 transition-colors"
+          style={{ color: "var(--text-tertiary)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "var(--text-emphasis)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+          }}
           aria-label="Dismiss"
         >
           <XIcon className="h-4 w-4" />
         </button>
       </div>
-      <div
-        className="absolute bottom-0 left-0 h-[2px] bg-current opacity-30"
-        style={{ width: `${progress}%`, transition: "width 60ms linear" }}
-      />
     </div>
   );
 }

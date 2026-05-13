@@ -61,29 +61,21 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/40 p-4 pt-[14vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-[14vh] animate-fade-in"
+      style={{ background: "rgba(7,8,13,0.6)" }}
       onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
       role="presentation"
     >
-      {/* Plain <div role="dialog"> avoids the <dialog> UA stylesheet, which
-          in WebView2 (Windows) anchors the element via position:absolute +
-          inset-inline:0 + margin:auto and breaks flex centering. */}
       <div
         role="dialog"
         aria-modal="true"
-        className="card-elevated w-full max-w-xl animate-scale-in"
+        className="card-elevated w-full max-w-xl animate-fade-in"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") onClose();
-        }}
       >
         <form onSubmit={submit}>
           <div className="flex items-center gap-2 px-6 pt-5">
-            <InboxIcon className="h-4 w-4 text-fg-muted" />
-            <div className="text-lede font-medium">Capture a thought</div>
+            <InboxIcon className="h-4 w-4" style={{ color: "var(--text-tertiary)" }} />
+            <div className="text-lede">Capture a thought</div>
             <button
               type="button"
               onClick={onClose}
@@ -107,7 +99,10 @@ export function CaptureModal({ open, onClose, onCaptured }: Props) {
             {error && <div className="mt-2 text-meta">{error}</div>}
             <div className="mt-6 flex items-center justify-between gap-4">
               <p className="text-caption">
-                Saves to <span className="font-mono text-fg-muted">Inbox/YYYY-MM-DD-slug.md</span>
+                Saves to{" "}
+                <span className="font-mono" style={{ color: "var(--text-secondary)" }}>
+                  Inbox/YYYY-MM-DD-slug.md
+                </span>
               </p>
               <div className="flex items-center gap-3">
                 <span className="hidden sm:inline-flex items-center gap-1 text-caption">

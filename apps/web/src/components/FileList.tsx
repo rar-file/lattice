@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getClient } from "../lib/client";
 import { formatShortcut } from "../lib/platform";
 import { useToast } from "../lib/toast";
-import { FileIcon, PlusIcon, SearchIcon, XIcon } from "./icons";
+import { PlusIcon, SearchIcon, XIcon } from "./icons";
 
 interface Props {
   notes: NoteSummary[];
@@ -17,11 +17,13 @@ interface Props {
 }
 
 /**
- * Sidebar file list.
+ * Left rail file list — the highest-frequency component in the workspace.
  *
- * Notes are grouped by top-level folder (Inbox, Synthesis, everything else),
- * and a built-in filter lets the user type to narrow. Each row has a kebab
- * menu with Rename + Delete actions.
+ * Filename in mono (chrome speaks slugs); titles in the body face. Six row
+ * states are implemented in {@link FileRow}: default / hover / focus-visible /
+ * active / disabled / selected. Selected gets the live-state treatment
+ * (accent-bg + soft accent-glow) — it is the active rail item, one of the
+ * design-locked accent surfaces.
  */
 export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onChanged }: Props) {
   const [query, setQuery] = useState("");
@@ -44,14 +46,15 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
       <div className="flex items-center gap-2 px-3 pt-3 pb-2">
         <div className="relative flex-1">
           <SearchIcon
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-faint pointer-events-none"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none"
+            style={{ color: "var(--text-tertiary)" }}
             aria-hidden
           />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter notes"
-            className="input pl-8 h-8"
+            className="input pl-8 h-8 text-[13px]"
             disabled={!notes.length}
           />
         </div>
@@ -69,13 +72,12 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
       </div>
 
       {!notes.length ? (
-        <div className="flex flex-col items-center text-center px-6 pt-10 pb-12 gap-2">
-          <FileIcon className="h-5 w-5 text-fg-faint" />
-          <div className="mt-2 text-body font-medium text-fg-strong">No notes yet</div>
+        <div className="flex flex-col items-start px-4 pt-8 pb-12 gap-2">
+          <div className="text-lede">No notes yet</div>
           <p className="text-meta max-w-[220px]">
-            Create one, capture a thought, or drop Markdown files into the vault folder.
+            Create a note, capture a thought, or drop Markdown into the vault folder.
           </p>
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-3">
             {onNewNote && (
               <button type="button" onClick={onNewNote} className="btn btn-secondary btn-xs">
                 <PlusIcon className="h-3.5 w-3.5" /> New note
@@ -91,15 +93,20 @@ export function FileList({ notes, selected, onSelect, onCapture, onNewNote, onCh
       ) : (
         <div className="flex-1 overflow-y-auto scrollbar-thin pb-4">
           {groups.length === 0 ? (
-            <div className="px-3 pt-8 text-center text-meta">No notes match "{query}".</div>
+            <div className="px-4 pt-8 text-meta">No notes match “{query}”.</div>
           ) : (
             groups.map((g, gi) => (
-              <section key={g.label} className={gi === 0 ? "pt-2" : "pt-6"}>
-                <div className="flex items-center gap-2 px-3 pb-1.5">
+              <section key={g.label} className={gi === 0 ? "pt-2" : "pt-5"}>
+                <div className="flex items-center gap-2 px-4 pb-1.5">
                   <span className="text-eyebrow">{g.label}</span>
-                  <span className="ml-auto text-caption">{g.items.length}</span>
+                  <span
+                    className="ml-auto text-[11px] font-mono"
+                    style={{ color: "var(--text-tertiary)" }}
+                  >
+                    {g.items.length}
+                  </span>
                 </div>
-                <ul>
+                <ul className="px-1.5">
                   {g.items.map((n) => (
                     <li key={n.path}>
                       <FileRow
@@ -159,6 +166,15 @@ interface FileRowProps {
   onDelete(): void;
 }
 
+/**
+ * The six states, in implementation order:
+ *   default        — surface-base background (transparent), text-default
+ *   hover          — surface-hover, text-emphasis on the title
+ *   focus-visible  — 1px accent ring (.focus-ring)
+ *   active (press) — surface-active background
+ *   disabled       — opacity 0.4 (handled by the .btn class on dialogs)
+ *   selected       — accent-bg + accent-glow (the live rail item)
+ */
 function FileRow({
   note,
   selected,
@@ -186,11 +202,32 @@ function FileRow({
     };
   }, [menuOpen, onCloseMenu]);
 
+  const slug = basename(note.path);
+  const title = note.title?.trim() || stripMd(slug);
+
   return (
     <div
-      className={`group relative mx-1 rounded-md transition-colors duration-fast ease-out ${
-        selected ? "bg-accent-soft selected-rule" : "hover:bg-sunken"
-      }`}
+      className={`group relative my-px rounded-md transition-colors ${selected ? "live-bg" : ""}`}
+      onMouseEnter={(e) => {
+        if (!selected) {
+          (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!selected) {
+          (e.currentTarget as HTMLElement).style.background = "transparent";
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!selected) {
+          (e.currentTarget as HTMLElement).style.background = "var(--surface-active)";
+        }
+      }}
+      onMouseUp={(e) => {
+        if (!selected) {
+          (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
+        }
+      }}
     >
       <button
         type="button"
@@ -199,13 +236,20 @@ function FileRow({
         title={note.path}
       >
         <div
-          className={`truncate leading-snug ${
-            selected ? "text-fg-strong font-medium" : "text-fg-default"
-          } text-[13px]`}
+          className="truncate text-[13px] leading-snug"
+          style={{
+            color: selected ? "var(--text-emphasis)" : "var(--text-default)",
+            fontWeight: selected ? 500 : 400,
+          }}
         >
-          {note.title?.trim() || stripMd(basename(note.path))}
+          {title}
         </div>
-        <div className="text-caption truncate font-mono mt-1 leading-snug">{note.path}</div>
+        <div
+          className="text-[11px] truncate font-mono mt-1 leading-snug"
+          style={{ color: "var(--text-tertiary)" }}
+        >
+          {slug}
+        </div>
       </button>
       <button
         type="button"
@@ -213,13 +257,9 @@ function FileRow({
           e.stopPropagation();
           onOpenMenu();
         }}
-        className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md flex items-center justify-center text-fg-faint
-          transition-opacity duration-fast ease-out focus-ring
-          ${
-            menuOpen
-              ? "bg-sunken text-fg-default opacity-100"
-              : "opacity-0 group-hover:opacity-100 hover:bg-sunken hover:text-fg-default focus:opacity-100"
-          }`}
+        className={`absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded flex items-center justify-center focus-ring
+          transition-opacity ${menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100"}`}
+        style={{ color: "var(--text-tertiary)" }}
         aria-label="Note actions"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden role="img" focusable="false">
@@ -234,23 +274,42 @@ function FileRow({
           ref={menuRef}
           className="absolute right-1 top-full mt-1 z-30 w-44 card-elevated p-1 animate-fade-in"
         >
-          <button
-            type="button"
-            onClick={onRename}
-            className="block w-full text-left px-3 h-8 rounded-md text-[13px] hover:bg-sunken focus-ring"
-          >
-            Rename
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="block w-full text-left px-3 h-8 rounded-md text-[13px] text-danger hover:bg-danger-soft focus-ring"
-          >
+          <MenuItem onClick={onRename}>Rename</MenuItem>
+          <MenuItem onClick={onDelete} danger>
             Delete
-          </button>
+          </MenuItem>
         </div>
       )}
     </div>
+  );
+}
+
+function MenuItem({
+  onClick,
+  danger,
+  children,
+}: {
+  onClick: () => void;
+  danger?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="block w-full text-left px-3 h-8 rounded text-[13px] focus-ring transition-colors"
+      style={{ color: danger ? "rgb(var(--danger))" : "var(--text-default)" }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = danger
+          ? "rgba(244,134,134,0.08)"
+          : "var(--surface-hover)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -296,56 +355,28 @@ function RenameDialog({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/40 p-4 pt-[18vh] animate-fade-in"
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="card-elevated w-full max-w-md animate-fade-in"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <form onSubmit={submit}>
-          <div className="flex items-center justify-between px-6 pt-5">
-            <div className="text-lede font-medium">Rename note</div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-ghost btn-icon"
-              aria-label="Close"
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="px-6 pb-6 pt-4">
-            <label className="block">
-              <span className="block text-meta mb-2">New path (without .md)</span>
-              <input
-                autoFocus
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                className="input font-mono text-[13px]"
-              />
-            </label>
-            {error && <div className="mt-2 text-meta">{error}</div>}
-            <div className="mt-6 flex justify-end gap-2">
-              <button type="button" onClick={onClose} className="btn btn-ghost btn-sm">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!value.trim() || busy}
-                className="btn btn-primary btn-sm"
-              >
-                {busy ? "Renaming…" : "Rename"}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+    <DialogShell onClose={onClose} title="Rename note">
+      <form onSubmit={submit}>
+        <label className="block">
+          <span className="block text-meta mb-2">New path (without .md)</span>
+          <input
+            autoFocus
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="input font-mono text-[13px]"
+          />
+        </label>
+        {error && <div className="mt-2 text-meta">{error}</div>}
+        <div className="mt-6 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="btn btn-ghost btn-sm">
+            Cancel
+          </button>
+          <button type="submit" disabled={!value.trim() || busy} className="btn btn-primary btn-sm">
+            {busy ? "Renaming…" : "Rename"}
+          </button>
+        </div>
+      </form>
+    </DialogShell>
   );
 }
 
@@ -386,8 +417,42 @@ function ConfirmDelete({
   }
 
   return (
+    <DialogShell onClose={onClose} title="Delete this note?">
+      <p className="text-meta">
+        <span className="font-mono">{note.path}</span> will be removed from the vault folder and the
+        index. This action cannot be undone.
+      </p>
+      <div className="mt-6 flex justify-end gap-2">
+        <button type="button" onClick={onClose} className="btn btn-ghost btn-sm">
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={go}
+          disabled={busy}
+          className="btn btn-sm"
+          style={{ background: "rgb(var(--danger))", color: "var(--surface-base)" }}
+        >
+          {busy ? "Deleting…" : "Delete"}
+        </button>
+      </div>
+    </DialogShell>
+  );
+}
+
+function DialogShell({
+  onClose,
+  title,
+  children,
+}: {
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-neutral-900/40 p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 animate-fade-in"
+      style={{ background: "rgba(7,8,13,0.6)" }}
       onClick={onClose}
       role="presentation"
     >
@@ -397,26 +462,18 @@ function ConfirmDelete({
         className="card-elevated w-full max-w-md animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-5">
-          <div className="text-lede font-medium text-fg-strong">Delete this note?</div>
-          <p className="mt-2 text-meta">
-            <span className="font-mono">{note.path}</span> will be removed from the vault folder and
-            the index. This action cannot be undone.
-          </p>
-          <div className="mt-6 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn btn-ghost btn-sm">
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={go}
-              disabled={busy}
-              className="btn btn-sm bg-danger text-white hover:bg-danger/90"
-            >
-              {busy ? "Deleting…" : "Delete"}
-            </button>
-          </div>
+        <div className="flex items-center justify-between px-6 pt-5">
+          <div className="text-lede">{title}</div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-ghost btn-icon"
+            aria-label="Close"
+          >
+            <XIcon className="h-4 w-4" />
+          </button>
         </div>
+        <div className="px-6 pb-6 pt-4">{children}</div>
       </div>
     </div>
   );

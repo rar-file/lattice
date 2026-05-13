@@ -243,16 +243,12 @@ export function PencilIcon(p: IconProps) {
 }
 
 /**
- * Brand mark — bold L letterform on a near-black rounded tile, mirrors the
- * bundled app icon (icon.png). Width × height stay identical across light
- * and dark themes so the in-app logo and the OS icon read as the same object.
+ * Lattice mark — the four-square grid, verbatim from the design goal. The
+ * mark is *always* drawn in the accent colour (one of the six allowed accent
+ * touches per screen); the two off-diagonals fade to 35% so the symbol reads
+ * as a graph of nodes and not a checkerboard.
  *
- * Two display modes:
- *   • bare      — icon only, sits cleanly next to body text at its `size`.
- *   • wordmark  — icon + the word "Lattice", baseline-aligned with the icon.
- *
- * Default size = 20px. The wordmark font-size derives from `size` so the
- * icon and wordmark stay visually balanced at any scale.
+ * The optional wordmark sits to the right in Inter 500.
  */
 export function LatticeMark({
   className = "",
@@ -266,22 +262,25 @@ export function LatticeMark({
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <svg
-        viewBox="0 0 24 24"
+        viewBox="0 0 16 16"
         width={size}
         height={size}
         className="shrink-0"
+        style={{ color: "var(--accent)" }}
         aria-hidden
         role="img"
         focusable="false"
       >
         <title>Lattice</title>
-        <rect x="0" y="0" width="24" height="24" rx="5" fill="#0e0d0b" />
-        <path d="M7.6 5.2h2.4v11.2H17v2.4H7.6V5.2Z" fill="#e8e6e1" />
+        <rect x="0" y="0" width="7" height="7" rx="1.5" fill="currentColor" />
+        <rect x="9" y="0" width="7" height="7" rx="1.5" fill="currentColor" opacity=".35" />
+        <rect x="0" y="9" width="7" height="7" rx="1.5" fill="currentColor" opacity=".35" />
+        <rect x="9" y="9" width="7" height="7" rx="1.5" fill="currentColor" />
       </svg>
       {withWordmark && (
         <span
-          className="font-medium tracking-[-0.01em] text-fg-default leading-none"
-          style={{ fontSize: Math.max(13, Math.round(size * 0.7)) }}
+          className="font-medium tracking-[-0.01em] leading-none"
+          style={{ fontSize: Math.max(13, Math.round(size * 0.7)), color: "var(--text-emphasis)" }}
         >
           Lattice
         </span>

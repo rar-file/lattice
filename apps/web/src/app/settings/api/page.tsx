@@ -5,10 +5,6 @@ import { Breadcrumb } from "../../../components/Breadcrumb";
 import { CheckIcon } from "../../../components/icons";
 import { getApiUrl, setApiUrl } from "../../../lib/client";
 
-/**
- * Settings → API endpoint. Lets a user (especially on iOS/Android) point the
- * app at a custom Lattice API host without rebuilding.
- */
 export default function ApiSettingsPage() {
   const [value, setValue] = useState("");
   const [current, setCurrent] = useState("");
@@ -37,7 +33,7 @@ export default function ApiSettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-canvas">
+    <main className="min-h-screen" style={{ background: "var(--surface-base)" }}>
       <Breadcrumb trail={[{ label: "Settings" }, { label: "API endpoint" }]} />
 
       <div className="mx-auto max-w-2xl px-6 py-10 animate-fade-in">
@@ -45,14 +41,14 @@ export default function ApiSettingsPage() {
           <h1 className="text-section">API endpoint</h1>
           <p className="mt-2 text-meta">
             Point this client at a custom Lattice API host. Useful for mobile builds talking to a
-            cloud deployment, or for testing against a staging API without rebuilding the app.
-            Stored in your browser's local storage — only this device is affected.
+            cloud deployment, or for testing against a staging API without rebuilding. Stored in
+            your browser's local storage — only this device is affected.
           </p>
         </header>
 
         <form onSubmit={save} className="card mt-6 p-5 space-y-4">
           <label className="block">
-            <span className="block text-[12px] font-medium text-fg-default mb-2">URL</span>
+            <span className="block text-meta mb-2">URL</span>
             <input
               type="url"
               value={value}
@@ -60,7 +56,7 @@ export default function ApiSettingsPage() {
               placeholder="https://cloud.lattice.example"
               className="input font-mono text-[13px]"
             />
-            <p className="mt-2 text-[12px] text-fg-muted">
+            <p className="mt-2 text-caption">
               Currently: <span className="font-mono">{current}</span>
             </p>
           </label>
@@ -71,7 +67,10 @@ export default function ApiSettingsPage() {
             </button>
             <div className="flex items-center gap-3">
               {saved && (
-                <span className="inline-flex items-center gap-1 text-[12px] text-success animate-fade-in">
+                <span
+                  className="inline-flex items-center gap-1 text-[12px] animate-fade-in"
+                  style={{ color: "rgb(var(--success))" }}
+                >
                   <CheckIcon className="h-4 w-4" /> Saved
                 </span>
               )}

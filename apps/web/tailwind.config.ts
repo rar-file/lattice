@@ -1,29 +1,27 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Tailwind is the utility layer; the design tokens live in globals.css and
+ * are bridged here as rgb-triplet vars so utilities like `bg-surface/60`
+ * keep working. The new Lattice palette is dark-only — no light variants.
+ */
 export default {
   content: ["./src/**/*.{ts,tsx}"],
-  darkMode: "media",
+  // Dark-only product. We pin the class but `color-scheme:dark` is forced
+  // on :root so this is effectively a no-op.
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: [
-          "var(--font-mono)",
-          "JetBrains Mono",
-          "ui-monospace",
-          "SFMono-Regular",
-          "Menlo",
-          "monospace",
-        ],
-        display: ["var(--font-sans)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "SF Mono", "Menlo", "monospace"],
+        display: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         canvas: "rgb(var(--bg-canvas) / <alpha-value>)",
         surface: "rgb(var(--bg-surface) / <alpha-value>)",
         elevated: "rgb(var(--bg-elevated) / <alpha-value>)",
         sunken: "rgb(var(--bg-sunken) / <alpha-value>)",
-        // Neutral ramp — exposed so utilities like `bg-neutral-100` work
-        // alongside the role-based colors below.
         "neutral-0": "rgb(var(--neutral-0) / <alpha-value>)",
         "neutral-50": "rgb(var(--neutral-50) / <alpha-value>)",
         "neutral-100": "rgb(var(--neutral-100) / <alpha-value>)",
@@ -37,8 +35,8 @@ export default {
         "fg-muted": "rgb(var(--fg-muted) / <alpha-value>)",
         "fg-default": "rgb(var(--fg-default) / <alpha-value>)",
         "fg-strong": "rgb(var(--fg-strong) / <alpha-value>)",
-        "border-subtle": "rgb(var(--border-subtle) / <alpha-value>)",
-        "border-default": "rgb(var(--border-default) / <alpha-value>)",
+        "border-subtle": "rgb(var(--border-default-rgb) / 0.05)",
+        "border-default": "rgb(var(--border-default-rgb) / 0.08)",
         "border-strong": "rgb(var(--border-strong) / <alpha-value>)",
         accent: "rgb(var(--accent) / <alpha-value>)",
         "accent-soft": "rgb(var(--accent-soft) / <alpha-value>)",
@@ -50,44 +48,31 @@ export default {
         warning: "rgb(var(--warning) / <alpha-value>)",
         "warning-soft": "rgb(var(--warning-soft) / <alpha-value>)",
       },
-      // Spacing extensions — exposes the rhythm scale (4 / 8 / 24 / 48) as
-      // named utilities so callsites can say `gap-rhythm-tight` instead of
-      // remembering the px.
-      spacing: {
-        "rhythm-x": "4px", // label ↔ input, icon ↔ text within a control
-        "rhythm-tight": "8px", // within a field group
-        "rhythm-base": "16px", // default
-        "rhythm-group": "24px", // between field groups
-        "rhythm-section": "48px", // between page sections
-      },
       borderRadius: {
-        // Goal: 6px default for inputs/buttons, 8px for cards. Two radii max.
         none: "0",
-        sm: "4px",
+        sm: "6px",
         DEFAULT: "6px",
-        md: "6px",
-        lg: "8px",
-        xl: "8px",
-        "2xl": "8px",
+        md: "10px",
+        lg: "14px",
+        xl: "14px",
+        "2xl": "14px",
         full: "9999px",
       },
+      // Box-shadow is reserved for accent-glow on live state. No drop shadows,
+      // no hairline rings — surfaces step instead.
       boxShadow: {
-        // Single elevation system: hairline only. No drop shadows.
         none: "none",
-        card: "0 0 0 1px rgb(0 0 0 / 0.06)",
-        popover: "0 0 0 1px rgb(0 0 0 / 0.06)",
-        ring: "0 0 0 1px rgb(var(--accent))",
+        glow: "0 0 16px var(--accent-glow)",
+        "glow-sm": "0 0 8px var(--accent-glow)",
       },
       transitionTimingFunction: {
-        // One curve, used everywhere.
-        DEFAULT: "cubic-bezier(0.16, 1, 0.3, 1)",
-        out: "cubic-bezier(0.16, 1, 0.3, 1)",
+        DEFAULT: "cubic-bezier(0.4, 0, 0.2, 1)",
+        out: "cubic-bezier(0.4, 0, 0.2, 1)",
       },
       transitionDuration: {
-        // Two durations — fast (hover/focus) and base (open/close).
-        DEFAULT: "120ms",
+        DEFAULT: "160ms",
         fast: "120ms",
-        base: "200ms",
+        base: "160ms",
       },
       keyframes: {
         "fade-in": {
@@ -96,11 +81,9 @@ export default {
         },
       },
       animation: {
-        // Opacity only. Aliases keep existing call-sites working without
-        // re-introducing slide/scale.
-        "fade-in": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "scale-in": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "slide-up": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "fade-in": "fade-in 120ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "scale-in": "fade-in 120ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "slide-up": "fade-in 120ms cubic-bezier(0.4, 0, 0.2, 1)",
       },
     },
   },

@@ -11,10 +11,6 @@ interface Props {
   onCreated(path: string): void;
 }
 
-/**
- * Inline-style new-note dialog. Always creates a Markdown file with an H1 of
- * the title; the user can immediately start editing in the main pane.
- */
 export function NewNoteForm({ open, onClose, onCreated }: Props) {
   const [title, setTitle] = useState("");
   const [folder, setFolder] = useState("");
@@ -50,6 +46,7 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
     try {
       const slug = title
         .trim()
+        .toLowerCase()
         .replace(/[^\w\s-]/g, "")
         .replace(/\s+/g, "-")
         .slice(0, 80);
@@ -71,19 +68,20 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/40 p-4 pt-[16vh] animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-[16vh] animate-fade-in"
+      style={{ background: "rgba(7,8,13,0.6)" }}
       onClick={onClose}
       role="presentation"
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="card-elevated w-full max-w-md animate-scale-in"
+        className="card-elevated w-full max-w-md animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         <form onSubmit={submit}>
           <div className="flex items-center justify-between px-6 pt-5">
-            <div className="text-lede font-medium">New note</div>
+            <div className="text-lede">New note</div>
             <button
               type="button"
               onClick={onClose}
@@ -93,7 +91,7 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
               <XIcon className="h-4 w-4" />
             </button>
           </div>
-          <div className="px-6 pb-6 pt-4 space-y-6">
+          <div className="px-6 pb-6 pt-4 space-y-5">
             <label className="block">
               <span className="block text-meta mb-2">Title</span>
               <input
@@ -106,19 +104,22 @@ export function NewNoteForm({ open, onClose, onCreated }: Props) {
             </label>
             <label className="block">
               <span className="block text-meta mb-2">
-                Folder <span className="text-fg-faint">(optional)</span>
+                Folder <span style={{ color: "var(--text-tertiary)" }}>(optional)</span>
               </span>
               <input
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
-                placeholder="e.g. Projects/2026"
+                placeholder="projects/2026"
                 className="input font-mono text-[13px]"
               />
             </label>
             {error && <div className="text-meta">{error}</div>}
             <div className="flex items-center justify-between gap-4">
               <p className="text-caption">
-                Saves as <span className="font-mono text-fg-muted">slug.md</span> from the title
+                Saves as{" "}
+                <span className="font-mono" style={{ color: "var(--text-secondary)" }}>
+                  slug.md
+                </span>
               </p>
               <button
                 type="submit"

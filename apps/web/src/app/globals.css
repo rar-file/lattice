@@ -3,227 +3,160 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
- * DESIGN TOKENS
+ * LATTICE TOKENS — dark-only, accent = live state.
  *
- * Lattice commits to a warm-neutral ramp (a slight ochre cast across both
- * light and dark) and one accent (desaturated blue). Tokens are RGB triplets
- * so Tailwind's <alpha-value> syntax works (`bg-surface/60`, `text-fg/80`).
+ * Six surfaces (base / raised / sunken / hover / active + a divider seam),
+ * three text levels of depth, one accent (violet) reserved exclusively for
+ * live state: active rail item, switcher tab, wikilink, current graph node,
+ * AI-watching dot, the Lattice mark.
  *
- * Roles:
- *   --neutral-0…900  : warm-neutral ramp (consistent hue, 9 stops)
- *   --bg-canvas      : page background
- *   --bg-surface     : default elevated plane (cards, sidebar)
- *   --bg-sunken      : hover / pressed / inset wells
- *   --border-subtle  : the ONE chrome line; one weight, one color
- *   --fg-faint       : disabled text, metadata at lowest density
- *   --fg-muted       : secondary text (labels, hints, paths)
- *   --fg-default     : body
- *   --fg-strong      : headings
- *   --accent / --accent-soft / --accent-fg
- *   --danger / --success                (semantic, used at point of action only)
+ * Borders only at structural seams; everything else separates by stepping
+ * a surface. No shadows except --accent-glow. No gradients. No 700.
  * --------------------------------------------------------------------------- */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Warm-neutral ramp — light mode. Hue stays consistent (12° warm) across
-   * stops; only luminance changes. */
-  --neutral-0: 255 254 252;
-  --neutral-50: 250 248 244;
-  --neutral-100: 244 241 234;
-  --neutral-200: 232 226 215;
-  --neutral-300: 214 207 192;
-  --neutral-400: 154 145 132;
-  --neutral-500: 110 102 92;
-  --neutral-700: 56 51 45;
-  --neutral-900: 24 22 19;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
 
-  --bg-canvas: var(--neutral-50);
-  --bg-surface: var(--neutral-0);
-  --bg-elevated: var(--neutral-0);
-  --bg-sunken: var(--neutral-100);
+  --size-caption: 11px;
+  --size-label: 12px;
+  --size-ui: 13px;
+  --size-body: 14px;
+  --size-subhead: 15px;
+  --size-section: 17px;
+  --size-heading: 20px;
+  --size-display: 30px;
 
-  --border-subtle: var(--neutral-200);
-  --border-default: var(--neutral-300);
-  --border-strong: var(--neutral-400);
+  --surface-base: #0b0d14;
+  --surface-raised: #14171f;
+  --surface-sunken: #07080d;
+  --surface-hover: #1b1f2a;
+  --surface-active: #232838;
 
-  --fg-faint: var(--neutral-400);
-  --fg-muted: var(--neutral-500);
-  --fg-default: var(--neutral-700);
-  --fg-strong: var(--neutral-900);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.08);
 
-  --accent: 33 100 200;
-  --accent-soft: 224 232 247;
-  --accent-fg: 255 255 255;
+  --text-tertiary: #5b6072;
+  --text-secondary: #8b91a4;
+  --text-default: #c5c9d6;
+  --text-emphasis: #f0f1f5;
 
-  --danger: 184 36 36;
-  --danger-soft: 250 232 232;
-  --success: 22 122 70;
-  --success-soft: 224 244 232;
-  --warning: 180 100 9;
-  --warning-soft: 250 240 220;
+  --accent: #a78bfa;
+  --accent-bright: #c4b5fd;
+  --accent-bg: rgba(167, 139, 250, 0.1);
+  --accent-glow: rgba(167, 139, 250, 0.2);
 
-  /* Motion — one curve, two durations. Out-expo: quick start, soft landing. */
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --warn: #fbbf24;
+  --ok: #34d399;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t: 160ms;
+
+  /* ---- Tailwind bridge ---------------------------------------------------
+   * Existing components use Tailwind utilities that resolve via the
+   * tailwind.config.ts `colors` map (rgb(var(--bg-canvas) / <alpha>) etc.).
+   * Map those legacy names to the new tokens so we don't have to chase every
+   * className in the same pass. The role names map cleanly:
+   *   bg-canvas  → --surface-base
+   *   bg-surface → --surface-raised
+   *   bg-sunken  → --surface-hover  (true hover; for fills, see below)
+   * --------------------------------------------------------------------- */
+  --bg-canvas: 11 13 20; /* #0B0D14 */
+  --bg-surface: 20 23 31; /* #14171F */
+  --bg-elevated: 27 31 42; /* #1B1F2A */
+  --bg-sunken: 27 31 42; /* hover wells */
+
+  --neutral-0: 11 13 20;
+  --neutral-50: 7 8 13;
+  --neutral-100: 20 23 31;
+  --neutral-200: 35 40 56; /* surface-active */
+  --neutral-300: 56 60 75;
+  --neutral-400: 91 96 114; /* text-tertiary */
+  --neutral-500: 139 145 164; /* text-secondary */
+  --neutral-700: 197 201 214; /* text-default */
+  --neutral-900: 240 241 245; /* text-emphasis */
+
+  --border-subtle-rgb: 255 255 255;
+  --border-default-rgb: 255 255 255;
+  --border-strong: 56 60 75;
+
+  --fg-faint: 91 96 114;
+  --fg-muted: 139 145 164;
+  --fg-default: 197 201 214;
+  --fg-strong: 240 241 245;
+
+  --accent-rgb: 167 139 250;
+  --accent-soft-rgb: 31 24 56;
+  --accent-fg: 240 241 245;
+
+  --danger: 244 134 134;
+  --danger-soft: 70 26 26;
+  --success: 52 211 153;
+  --success-soft: 22 50 38;
+  --warning: 251 191 36;
+  --warning-soft: 60 42 18;
+
   --dur-fast: 120ms;
   --dur-base: 200ms;
 }
 
-@media (prefers-color-scheme: dark) {
-  html:not(.theme-light) {
-    color-scheme: dark;
-
-    --neutral-0: 24 22 19;
-    --neutral-50: 19 17 15;
-    --neutral-100: 28 26 22;
-    --neutral-200: 40 37 32;
-    --neutral-300: 56 51 44;
-    --neutral-400: 112 103 92;
-    --neutral-500: 156 145 132;
-    --neutral-700: 210 200 187;
-    --neutral-900: 240 234 224;
-
-    --bg-canvas: var(--neutral-50);
-    --bg-surface: var(--neutral-0);
-    --bg-elevated: var(--neutral-100);
-    --bg-sunken: var(--neutral-100);
-
-    --border-subtle: var(--neutral-200);
-    --border-default: var(--neutral-300);
-    --border-strong: var(--neutral-400);
-
-    --fg-faint: var(--neutral-400);
-    --fg-muted: var(--neutral-500);
-    --fg-default: var(--neutral-700);
-    --fg-strong: var(--neutral-900);
-
-    --accent: 122 176 240;
-    --accent-soft: 22 38 60;
-    --accent-fg: 14 13 11;
-
-    --danger: 244 134 134;
-    --danger-soft: 70 26 26;
-    --success: 100 200 145;
-    --success-soft: 22 50 38;
-    --warning: 244 188 90;
-    --warning-soft: 60 42 18;
-  }
-}
-
-html.theme-light {
-  color-scheme: light;
-
-  --neutral-0: 255 254 252;
-  --neutral-50: 250 248 244;
-  --neutral-100: 244 241 234;
-  --neutral-200: 232 226 215;
-  --neutral-300: 214 207 192;
-  --neutral-400: 154 145 132;
-  --neutral-500: 110 102 92;
-  --neutral-700: 56 51 45;
-  --neutral-900: 24 22 19;
-
-  --bg-canvas: var(--neutral-50);
-  --bg-surface: var(--neutral-0);
-  --bg-elevated: var(--neutral-0);
-  --bg-sunken: var(--neutral-100);
-
-  --border-subtle: var(--neutral-200);
-  --border-default: var(--neutral-300);
-  --border-strong: var(--neutral-400);
-
-  --fg-faint: var(--neutral-400);
-  --fg-muted: var(--neutral-500);
-  --fg-default: var(--neutral-700);
-  --fg-strong: var(--neutral-900);
-
-  --accent: 33 100 200;
-  --accent-soft: 224 232 247;
-  --accent-fg: 255 255 255;
-
-  --danger: 184 36 36;
-  --danger-soft: 250 232 232;
-  --success: 22 122 70;
-  --success-soft: 224 244 232;
-  --warning: 180 100 9;
-  --warning-soft: 250 240 220;
-}
-
-html.theme-dark {
-  color-scheme: dark;
-
-  --neutral-0: 24 22 19;
-  --neutral-50: 19 17 15;
-  --neutral-100: 28 26 22;
-  --neutral-200: 40 37 32;
-  --neutral-300: 56 51 44;
-  --neutral-400: 112 103 92;
-  --neutral-500: 156 145 132;
-  --neutral-700: 210 200 187;
-  --neutral-900: 240 234 224;
-
-  --bg-canvas: var(--neutral-50);
-  --bg-surface: var(--neutral-0);
-  --bg-elevated: var(--neutral-100);
-  --bg-sunken: var(--neutral-100);
-
-  --border-subtle: var(--neutral-200);
-  --border-default: var(--neutral-300);
-  --border-strong: var(--neutral-400);
-
-  --fg-faint: var(--neutral-400);
-  --fg-muted: var(--neutral-500);
-  --fg-default: var(--neutral-700);
-  --fg-strong: var(--neutral-900);
-
-  --accent: 122 176 240;
-  --accent-soft: 22 38 60;
-  --accent-fg: 14 13 11;
-
-  --danger: 244 134 134;
-  --danger-soft: 70 26 26;
-  --success: 100 200 145;
-  --success-soft: 22 50 38;
-  --warning: 244 188 90;
-  --warning-soft: 60 42 18;
+/* tailwind's <alpha-value> expects rgb-triplet variables — alias them. */
+:root {
+  --accent: 167 139 250;
+  --accent-soft: 31 24 56;
 }
 
 /* ---------------------------------------------------------------------------
  * GLOBAL BASE
  * --------------------------------------------------------------------------- */
 
+html {
+  color-scheme: dark;
+}
+
 html,
 body {
   height: 100%;
-  /* Tabular numerals everywhere by default — UIs are mostly aligned columns
-   * of numbers; proportional figures look ragged. Editor body opts out via
-   * `.cm-content` below so prose reads naturally. */
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "ss01", "cv01", "cv11", "tnum";
-  font-variant-ligatures: common-ligatures;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 body {
-  font-size: 14px;
+  font-size: var(--size-body);
   line-height: 1.55;
-  letter-spacing: -0.005em;
-  color: rgb(var(--fg-default));
-  background: rgb(var(--bg-canvas));
+  color: var(--text-default);
+  background: var(--surface-base);
 }
 
 code,
 kbd,
 pre,
 .font-mono {
+  font-family: var(--font-mono);
   font-variant-ligatures: none;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 
-/* Scrollbars — neutral, thin, only visible on hover surfaces. */
+/* Italics are reserved for pull-quotes — never used for emphasis in body. */
+em {
+  font-style: italic;
+  color: var(--text-emphasis);
+}
+
+/* ---------------------------------------------------------------------------
+ * SCROLLBARS — thin, surface-coloured, only show on hover.
+ * --------------------------------------------------------------------------- */
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -232,105 +165,110 @@ pre,
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgb(var(--border-default));
+  background: var(--surface-hover);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--border-strong));
+  background: var(--surface-active);
   background-clip: padding-box;
 }
 
 /* ---------------------------------------------------------------------------
- * TYPE SCALE — semantic utilities. Each role has size, line-height, tracking,
- * and a target color set together so callers stay short.
+ * TYPE SCALE — sized via the token scale, four text levels (faint / muted /
+ * default / emphasis), no fifth.
  * --------------------------------------------------------------------------- */
 
 @layer components {
   .text-caption {
-    font-size: 12px;
-    line-height: 1.45;
-    letter-spacing: 0;
-    color: rgb(var(--fg-faint));
+    font-size: var(--size-caption);
+    line-height: 1.5;
+    color: var(--text-tertiary);
   }
   .text-meta {
-    font-size: 13px;
+    font-size: var(--size-label);
     line-height: 1.5;
-    letter-spacing: -0.003em;
-    color: rgb(var(--fg-muted));
+    color: var(--text-secondary);
   }
   .text-body {
-    font-size: 14px;
+    font-size: var(--size-body);
     line-height: 1.55;
-    letter-spacing: -0.005em;
-    color: rgb(var(--fg-default));
+    color: var(--text-default);
   }
   .text-lede {
-    font-size: 16px;
-    line-height: 1.55;
-    letter-spacing: -0.012em;
-    color: rgb(var(--fg-default));
+    font-size: var(--size-subhead);
+    line-height: 1.5;
+    color: var(--text-emphasis);
   }
   .text-section {
-    font-size: 20px;
+    font-size: var(--size-section);
     line-height: 1.3;
-    letter-spacing: -0.018em;
-    color: rgb(var(--fg-strong));
+    color: var(--text-emphasis);
     font-weight: 500;
   }
   .text-page {
-    font-size: 28px;
-    line-height: 1.2;
-    letter-spacing: -0.022em;
-    color: rgb(var(--fg-strong));
+    font-size: var(--size-heading);
+    line-height: 1.25;
+    color: var(--text-emphasis);
     font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .text-display {
+    font-size: var(--size-display);
+    line-height: 1.15;
+    color: var(--text-emphasis);
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
-  /* Small-caps label — used for table headers and "section name above a card". */
+  /* Category label — small caps, never accent. */
   .text-eyebrow {
-    font-size: 11px;
+    font-size: var(--size-caption);
     line-height: 1;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 500;
-    color: rgb(var(--fg-faint));
+    color: var(--text-tertiary);
+  }
+
+  .text-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum";
   }
 }
 
 /* ---------------------------------------------------------------------------
- * BUTTONS — three sizes, three semantic variants. One radius, one motion
- * voice. Hover shifts luminance via bg-sunken; active is a barely darker
- * pressed state; focus is a 1px solid accent ring + 1px canvas offset.
+ * BUTTONS — never accent. Default sits on surface-raised; active step is
+ * surface-active + text-emphasis. Focus is a 1px accent ring; the ring is the
+ * ONE place accent touches a button.
  * --------------------------------------------------------------------------- */
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium
-      select-none whitespace-nowrap
-      disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none
-      focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
-      focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
+    @apply inline-flex items-center justify-center gap-2 select-none whitespace-nowrap
+      disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none;
     height: 32px;
     padding: 0 12px;
-    font-size: 13px;
-    letter-spacing: -0.005em;
-    /* Optical balance: cap-height of Geist/Inter sits slightly above center,
-     * so shift padding 1px upward to make text feel centered. */
-    padding-top: 0;
-    padding-bottom: 1px;
-    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
-      border-color var(--dur-fast) var(--ease);
+    font-size: var(--size-ui);
+    font-weight: 500;
+    border-radius: var(--r-sm);
+    transition: background-color var(--t) var(--ease), color var(--t) var(--ease);
+    outline: none;
+  }
+  .btn:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 1px;
   }
   .btn-sm {
     height: 28px;
-    padding: 0 10px 1px;
-    font-size: 13px;
+    padding: 0 10px;
+    font-size: var(--size-ui);
   }
   .btn-xs {
     height: 24px;
-    padding: 0 8px 1px;
-    font-size: 12px;
+    padding: 0 8px;
+    font-size: var(--size-label);
     gap: 6px;
   }
   .btn-icon {
@@ -340,40 +278,41 @@ pre,
     gap: 0;
   }
 
+  /* Primary = surface-active + emphasis. Accent never paints a button. */
   .btn-primary {
-    background: rgb(var(--accent));
-    color: rgb(var(--accent-fg));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+    background: var(--surface-active);
+    color: var(--text-emphasis);
   }
   .btn-primary:hover {
-    background: rgb(var(--accent) / 0.92);
+    background: var(--surface-hover);
+    color: var(--text-emphasis);
   }
   .btn-primary:active {
-    background: rgb(var(--accent) / 0.82);
+    background: var(--surface-active);
   }
 
   .btn-secondary {
-    background: rgb(var(--bg-surface));
-    color: rgb(var(--fg-default));
-    border: 1px solid rgb(var(--border-default));
+    background: var(--surface-raised);
+    color: var(--text-default);
   }
   .btn-secondary:hover {
-    background: rgb(var(--bg-sunken));
+    background: var(--surface-hover);
+    color: var(--text-emphasis);
   }
   .btn-secondary:active {
-    background: rgb(var(--neutral-200));
+    background: var(--surface-active);
   }
 
   .btn-ghost {
     background: transparent;
-    color: rgb(var(--fg-muted));
+    color: var(--text-secondary);
   }
   .btn-ghost:hover {
-    color: rgb(var(--fg-strong));
-    background: rgb(var(--bg-sunken));
+    background: var(--surface-hover);
+    color: var(--text-emphasis);
   }
   .btn-ghost:active {
-    background: rgb(var(--neutral-200));
+    background: var(--surface-active);
   }
 
   .btn-danger {
@@ -381,42 +320,45 @@ pre,
     color: rgb(var(--danger));
   }
   .btn-danger:hover {
-    background: rgb(var(--danger-soft));
+    background: rgba(244, 134, 134, 0.08);
   }
 }
 
 /* ---------------------------------------------------------------------------
- * INPUTS — single radius, no glow, 1px accent border on focus. Disabled
- * inputs lose color saturation, not just opacity.
+ * INPUTS — sunken well, no border-as-decoration. Focus replaces the seam line
+ * with a thin accent ring; hover lifts the surface.
  * --------------------------------------------------------------------------- */
 
 @layer components {
   .input {
     width: 100%;
-    border-radius: 6px;
-    background: rgb(var(--bg-surface));
-    border: 1px solid rgb(var(--border-default));
-    color: rgb(var(--fg-default));
+    border-radius: var(--r-sm);
+    background: var(--surface-sunken);
+    color: var(--text-default);
+    border: 1px solid var(--border-subtle);
     height: 32px;
     padding: 0 12px;
-    font-size: 14px;
+    font-size: var(--size-body);
     line-height: 1;
     outline: none;
-    transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast)
-      var(--ease);
+    transition: border-color var(--t) var(--ease), background-color var(--t) var(--ease);
+    font-family: var(--font-sans);
   }
   .input::placeholder {
-    color: rgb(var(--fg-faint));
+    color: var(--text-tertiary);
   }
   .input:hover:not(:focus):not(:disabled) {
-    border-color: rgb(var(--border-strong));
+    border-color: var(--border-default);
   }
-  .input:focus {
-    border-color: rgb(var(--accent));
+  .input:focus,
+  .input:focus-visible {
+    border-color: var(--accent);
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
   }
   .input:disabled {
-    background: rgb(var(--bg-sunken));
-    color: rgb(var(--fg-faint));
+    background: var(--surface-base);
+    color: var(--text-tertiary);
     cursor: not-allowed;
   }
   textarea.input {
@@ -427,28 +369,27 @@ pre,
 }
 
 /* ---------------------------------------------------------------------------
- * SURFACES — no decorative borders. Cards rely on a 1-stop background lift
- * against canvas; popovers add a single hairline ring as the ONLY signal of
- * elevation.
+ * SURFACES — cards rely on a step in surface; popovers add ONE hairline seam.
+ * No borders between cards; no dividers between rows (use spacing).
  * --------------------------------------------------------------------------- */
 
 @layer components {
   .card {
-    background: rgb(var(--bg-surface));
-    border-radius: 8px;
+    background: var(--surface-raised);
+    border-radius: var(--r-md);
   }
   .card-elevated {
-    background: rgb(var(--bg-elevated));
-    border-radius: 8px;
-    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06);
+    background: var(--surface-raised);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border-subtle);
   }
   .card-interactive {
-    background: rgb(var(--bg-surface));
-    border-radius: 8px;
-    transition: background-color var(--dur-fast) var(--ease);
+    background: var(--surface-raised);
+    border-radius: var(--r-md);
+    transition: background-color var(--t) var(--ease);
   }
   .card-interactive:hover {
-    background: rgb(var(--bg-sunken));
+    background: var(--surface-hover);
   }
 
   .chip {
@@ -457,10 +398,10 @@ pre,
     gap: 6px;
     height: 20px;
     padding: 0 8px;
-    border-radius: 4px;
-    background: rgb(var(--bg-sunken));
-    color: rgb(var(--fg-muted));
-    font-size: 12px;
+    border-radius: 999px;
+    background: var(--surface-hover);
+    color: var(--text-secondary);
+    font-size: var(--size-caption);
     font-weight: 500;
     line-height: 1;
   }
@@ -473,61 +414,83 @@ pre,
     height: 20px;
     padding: 0 5px;
     border-radius: 4px;
-    background: rgb(var(--bg-sunken));
-    color: rgb(var(--fg-muted));
-    font-family: var(--font-mono), ui-monospace, monospace;
-    font-size: 11px;
+    background: var(--surface-hover);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--size-caption);
     line-height: 1;
-    box-shadow: inset 0 -1px 0 rgb(var(--border-default));
   }
 
-  /* Section label — small caps eyebrow, used for table column headers and
-   * subdued group titles. */
   .section-label {
-    font-size: 11px;
+    font-size: var(--size-caption);
     line-height: 1;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 500;
-    color: rgb(var(--fg-faint));
+    color: var(--text-tertiary);
   }
 
-  /* Hairline divider (the ONE chrome line). Use sparingly. */
   .hr {
     height: 1px;
-    background: rgb(var(--border-subtle));
+    background: var(--border-subtle);
     border: 0;
   }
 
-  /* Focus ring helper for non-button interactive elements. */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
-      focus-visible:ring-offset-1 focus-visible:ring-offset-canvas;
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 1px;
+    border-radius: var(--r-sm);
   }
 
-  /* Selected row indicator — a 2px accent left rule + accent-soft tint. Used
-   * for file list selection and the focused command-palette row. */
-  .selected-rule {
-    box-shadow: inset 2px 0 0 rgb(var(--accent));
+  /* ---- Live-state primitives -----------------------------------------
+   * `live` = the accent + glow recipe. Capped at three glows per screen.
+   * Used for: active rail item, AI-watching dot, current graph node.
+   * ----------------------------------------------------------------- */
+  .live-bg {
+    background: var(--accent-bg);
+    color: var(--text-emphasis);
+    box-shadow: 0 0 16px var(--accent-glow);
+  }
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+    animation: lattice-breath 2400ms var(--ease) infinite;
+  }
+
+  /* Wikilink — color + 1px accent-bg underline. Hover → bright. */
+  .wikilink {
+    color: var(--accent);
+    text-decoration: underline 1px solid;
+    text-decoration-color: var(--accent-bg);
+    text-underline-offset: 3px;
+    transition: color var(--t) var(--ease), text-decoration-color var(--t) var(--ease);
+  }
+  .wikilink:hover {
+    color: var(--accent-bright);
+    text-decoration-color: var(--accent);
   }
 }
 
 /* ---------------------------------------------------------------------------
- * CODEMIRROR — keep the editor surface flat and the highlight in the same
- * neutral family.
+ * CODEMIRROR — sans body, no shadowed cursor, no decorative borders.
  * --------------------------------------------------------------------------- */
 
 .cm-editor {
-  color: rgb(var(--fg-strong));
+  color: var(--text-default);
+  font-family: var(--font-sans);
 }
 .cm-editor .cm-content {
-  /* Body prose opts back to proportional figures — tabular nums look weird
-   * inside flowing paragraphs. */
   font-variant-numeric: normal;
-  caret-color: rgb(var(--fg-strong));
+  caret-color: var(--accent);
 }
 .cm-editor .cm-cursor {
-  border-left-color: rgb(var(--fg-strong));
+  border-left-color: var(--accent);
 }
 .cm-editor .cm-line:has(> .tok-heading1),
 .cm-editor .cm-line:has(> .cm-formatting-header-1) {
@@ -550,19 +513,16 @@ pre,
 .cm-editor .cm-selectionBackground,
 .cm-editor.cm-focused .cm-selectionBackground,
 .cm-editor ::selection {
-  background: rgb(var(--accent) / 0.18) !important;
+  background: rgba(167, 139, 250, 0.18) !important;
 }
 .cm-editor .cm-gutters {
   user-select: none;
   background: transparent;
   border-right: none;
-  color: rgb(var(--fg-faint));
+  color: var(--text-tertiary);
 }
 .cm-editor .cm-line {
   padding: 0 4px;
-}
-.cm-editor .cm-line:has(> .cm-formatting-header) {
-  margin-top: 0.35rem;
 }
 .cm-editor .cm-activeLine,
 .cm-editor .cm-activeLineGutter {
@@ -570,49 +530,39 @@ pre,
 }
 
 /* ---------------------------------------------------------------------------
- * MOTION PRIMITIVES
+ * MOTION — opacity-only mounts, no slide/scale. Skeleton wipes are gone.
+ * Single "breath" loop is the only ambient animation.
  * --------------------------------------------------------------------------- */
 
-@keyframes lattice-pulse {
+@keyframes lattice-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: lattice-fade-in 120ms var(--ease);
+}
+/* legacy aliases — opacity-only, no transform. */
+.animate-scale-in,
+.animate-slide-up {
+  animation: lattice-fade-in 120ms var(--ease);
+}
+
+@keyframes lattice-breath {
   0%,
   100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.45;
   }
 }
+
 .lattice-skeleton {
-  background: rgb(var(--bg-sunken));
-  animation: lattice-pulse 1.4s var(--ease) infinite;
+  background: var(--surface-hover);
   border-radius: 4px;
-}
-
-@keyframes lattice-progress {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-.lattice-progress {
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: rgb(var(--accent));
-  animation: lattice-progress 900ms var(--ease) infinite;
-  z-index: 60;
-}
-
-/* Welcome / login share the same flat canvas — no decorative gradients. */
-.bg-aurora,
-.bg-mesh {
-  background: rgb(var(--bg-canvas));
-}
-
-.hairline {
-  background: rgb(var(--border-subtle));
-  height: 1px;
-  width: 100%;
+  /* No shimmer. A static block is honest. */
 }

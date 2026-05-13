@@ -206,10 +206,11 @@ function HomeInner() {
 
   if (bootstrapping) {
     return (
-      <main className="flex h-screen items-center justify-center bg-canvas">
-        <div className="flex items-center gap-3 text-fg-muted text-[13px]">
-          <span className="lattice-skeleton h-3 w-24" />
-        </div>
+      <main
+        className="flex h-screen items-center justify-center"
+        style={{ background: "var(--surface-base)" }}
+      >
+        <span className="live-dot" aria-label="loading" />
       </main>
     );
   }
@@ -219,9 +220,10 @@ function HomeInner() {
   }
 
   return (
-    <main className="flex h-screen flex-col bg-canvas">
+    <main className="flex h-screen flex-col" style={{ background: "var(--surface-base)" }}>
       <TopBar
         vault={vault}
+        currentNote={selected}
         onCapture={() => setCaptureOpen(true)}
         onClose={closeVault}
         onFocusSearch={() => {
@@ -238,12 +240,11 @@ function HomeInner() {
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             md:translate-x-0
             absolute md:relative z-20 md:z-auto inset-y-0 left-0
-            w-[240px] shrink-0
-            bg-surface
+            w-[248px] shrink-0
             flex flex-col min-h-0
-            transition-transform duration-base ease-out
-            md:transition-none
+            transition-transform
           `}
+          style={{ background: "var(--surface-base)" }}
         >
           <FileList
             notes={notes}
@@ -264,11 +265,12 @@ function HomeInner() {
             type="button"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden absolute inset-0 z-10 bg-neutral-900/40"
+            className="md:hidden absolute inset-0 z-10"
+            style={{ background: "rgba(7,8,13,0.6)" }}
           />
         )}
 
-        <section className="flex-1 min-w-0 min-h-0">
+        <section className="flex-1 min-w-0 min-h-0" style={{ background: "var(--surface-raised)" }}>
           <CodeMirrorEditor notePath={selected} onSaved={refreshNotes} onJumpToNote={setSelected} />
         </section>
 
@@ -278,10 +280,9 @@ function HomeInner() {
             lg:translate-x-0
             absolute lg:relative z-20 lg:z-auto inset-y-0 right-0
             w-[320px] shrink-0
-            bg-surface
-            transition-transform duration-base ease-out
-            lg:transition-none
+            transition-transform
           `}
+          style={{ background: "var(--surface-base)" }}
         >
           <SidePanel ref={sidePanelRef} vaultOpen={vault !== null} onJumpToNote={setSelected} />
         </aside>
@@ -290,7 +291,8 @@ function HomeInner() {
             type="button"
             aria-label="Close panel"
             onClick={() => setRightOpen(false)}
-            className="lg:hidden absolute inset-0 z-10 bg-neutral-900/40"
+            className="lg:hidden absolute inset-0 z-10"
+            style={{ background: "rgba(7,8,13,0.6)" }}
           />
         )}
       </div>

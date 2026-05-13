@@ -41,7 +41,8 @@ export function KeyboardHelp({ open, onClose }: Props) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-neutral-900/40 p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 animate-fade-in"
+      style={{ background: "rgba(7,8,13,0.6)" }}
       onClick={onClose}
       role="presentation"
     >
@@ -52,7 +53,7 @@ export function KeyboardHelp({ open, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 pt-5">
-          <div className="text-lede font-medium">Keyboard shortcuts</div>
+          <div className="text-lede">Keyboard shortcuts</div>
           <button
             type="button"
             onClick={onClose}
@@ -84,7 +85,7 @@ export function KeyboardHelp({ open, onClose }: Props) {
             </section>
           ))}
         </div>
-        <div className="px-6 py-3 bg-sunken/60 text-caption">
+        <div className="px-6 py-3 text-caption" style={{ background: "var(--surface-sunken)" }}>
           Press <kbd className="kbd">?</kbd> any time to show this list.
         </div>
       </div>

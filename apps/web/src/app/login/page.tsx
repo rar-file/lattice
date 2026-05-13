@@ -26,7 +26,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-canvas">
+    <main
+      className="relative min-h-screen overflow-hidden"
+      style={{ background: "var(--surface-base)" }}
+    >
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         <header className="flex items-center justify-between animate-fade-in">
           <Link href="/" className="focus-ring rounded px-1">
@@ -34,34 +37,41 @@ export default function LoginPage() {
           </Link>
           <Link
             href="/"
-            className="text-xs text-fg-muted hover:text-fg-default transition-colors focus-ring rounded px-1"
+            className="text-[12px] transition-colors focus-ring rounded px-1"
+            style={{ color: "var(--text-tertiary)" }}
           >
             ← Back
           </Link>
         </header>
 
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full card-elevated p-7 animate-scale-in">
+          <div className="w-full card-elevated p-7 animate-fade-in">
             <h1 className="text-section">Sign in to Lattice</h1>
             <p className="mt-2 text-meta">
               We'll email you a one-time sign-in link. No password to remember, no tracking pixels.
             </p>
 
             {sent ? (
-              <div className="mt-6 rounded-md border border-success/30 bg-success-soft/40 px-4 py-3 animate-fade-in">
-                <div className="flex items-center gap-2 text-success">
+              <div
+                className="mt-6 rounded-md px-4 py-3 animate-fade-in"
+                style={{ background: "var(--surface-hover)" }}
+              >
+                <div className="flex items-center gap-2" style={{ color: "rgb(var(--success))" }}>
                   <CheckIcon className="h-4 w-4" />
-                  <span className="text-[13px] font-medium">Check your inbox</span>
+                  <span className="text-[13px]" style={{ fontWeight: 500 }}>
+                    Check your inbox
+                  </span>
                 </div>
-                <p className="mt-1 text-[13px] text-fg-muted">
+                <p className="mt-1 text-[13px]" style={{ color: "var(--text-secondary)" }}>
                   A sign-in link is on the way to{" "}
-                  <span className="font-medium text-fg-default">{email}</span>. The link is valid
+                  <span style={{ color: "var(--text-emphasis)" }}>{email}</span>. The link is valid
                   for 15 minutes.
                 </p>
                 <button
                   type="button"
                   onClick={() => setSent(false)}
-                  className="mt-3 text-[12px] text-fg-muted hover:text-fg-default underline-offset-2 hover:underline focus-ring rounded px-1"
+                  className="mt-3 text-[12px] focus-ring rounded px-1 transition-colors"
+                  style={{ color: "var(--text-tertiary)" }}
                 >
                   Use a different email
                 </button>
@@ -71,7 +81,8 @@ export default function LoginPage() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-[12px] font-medium text-fg-default mb-2"
+                    className="block text-[12px] mb-2"
+                    style={{ color: "var(--text-default)", fontWeight: 500 }}
                   >
                     Email
                   </label>
@@ -102,9 +113,16 @@ export default function LoginPage() {
               </form>
             )}
 
-            {error && <div className="mt-4 text-[12px] text-fg-muted px-1">{error}</div>}
+            {error && (
+              <div className="mt-4 text-[12px] px-1" style={{ color: "var(--text-secondary)" }}>
+                {error}
+              </div>
+            )}
 
-            <div className="mt-6 pt-6 border-t border-border-subtle text-caption">
+            <div
+              className="mt-6 pt-6 text-caption"
+              style={{ borderTop: "1px solid var(--border-subtle)" }}
+            >
               <p>
                 Signing in connects your local Lattice to the cloud, enabling sync across devices
                 and hosted MCP for AI agents. Your notes remain on your disk; only what you choose
@@ -114,12 +132,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <footer className="text-center text-[12px] text-fg-faint pt-2">
+        <footer className="text-center text-[12px] pt-2" style={{ color: "var(--text-tertiary)" }}>
           Don't have a vault yet?{" "}
-          <Link
-            href="/"
-            className="text-fg-muted hover:text-fg-default underline-offset-2 hover:underline"
-          >
+          <Link href="/" style={{ color: "var(--text-secondary)" }}>
             Start local first
           </Link>
         </footer>

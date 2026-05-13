@@ -10,11 +10,6 @@ type State =
   | { kind: "ok"; mode: "local" | "cloud"; version: string }
   | { kind: "error"; message: string };
 
-/**
- * Visible health page — useful when debugging connectivity or showing the user
- * "yes, the API is reachable and here's which mode it's in". Keep it simple
- * and information-dense.
- */
 export default function HealthPage() {
   const [state, setState] = useState<State>({ kind: "loading" });
 
@@ -31,29 +26,37 @@ export default function HealthPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-canvas">
+    <main className="min-h-screen" style={{ background: "var(--surface-base)" }}>
       <Breadcrumb trail={[{ label: "Health" }]} />
 
-      <div className="mx-auto max-w-md px-6 py-12 animate-fade-in">
+      <div className="mx-auto max-w-md px-6 py-10 animate-fade-in">
         <div className="card p-6">
           <h1 className="text-section">API status</h1>
-          <p className="mt-1 text-[13px] text-fg-muted">
+          <p className="mt-1 text-[13px]" style={{ color: "var(--text-secondary)" }}>
             Reachability and mode of the Lattice API this UI is talking to.
           </p>
 
-          <div className="mt-5 space-y-2">
+          <div className="mt-5">
             <Row label="Endpoint" mono>
               {process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8787"}
             </Row>
             <Row label="Status">
-              {state.kind === "loading" && <span className="text-fg-muted">Checking…</span>}
+              {state.kind === "loading" && (
+                <span style={{ color: "var(--text-secondary)" }}>Checking…</span>
+              )}
               {state.kind === "ok" && (
-                <span className="inline-flex items-center gap-1 text-success">
+                <span
+                  className="inline-flex items-center gap-1"
+                  style={{ color: "rgb(var(--success))" }}
+                >
                   <CheckIcon className="h-4 w-4" /> Reachable
                 </span>
               )}
               {state.kind === "error" && (
-                <span className="inline-flex items-center gap-1 text-danger">
+                <span
+                  className="inline-flex items-center gap-1"
+                  style={{ color: "rgb(var(--danger))" }}
+                >
                   <XIcon className="h-4 w-4" /> Unreachable
                 </span>
               )}
@@ -69,7 +72,9 @@ export default function HealthPage() {
               </>
             )}
             {state.kind === "error" && (
-              <div className="mt-3 text-[12px] text-fg-muted px-1">{state.message}</div>
+              <div className="mt-3 text-[12px] px-1" style={{ color: "var(--text-secondary)" }}>
+                {state.message}
+              </div>
             )}
           </div>
         </div>
@@ -88,9 +93,14 @@ function Row({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 py-2 border-b border-border-subtle last:border-b-0">
-      <div className="text-[12px] text-fg-muted">{label}</div>
-      <div className={`text-[13px] text-fg-default text-right ${mono ? "font-mono" : ""}`}>
+    <div className="flex items-start justify-between gap-3 py-2">
+      <div className="text-[12px]" style={{ color: "var(--text-secondary)" }}>
+        {label}
+      </div>
+      <div
+        className={`text-[13px] text-right ${mono ? "font-mono" : ""}`}
+        style={{ color: "var(--text-default)" }}
+      >
         {children}
       </div>
     </div>
